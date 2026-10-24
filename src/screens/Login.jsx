@@ -1,0 +1,78 @@
+import { useState } from "react"
+import logo from "../imports/logo.png"
+import { Button, Field } from "../components/ui"
+
+export default function LoginScreen({ onLogin }) {
+  const [correo, setCorreo] = useState("consuelo@asiscoup.org")
+  const [contrasena, setContrasena] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+      onLogin()
+    }, 900)
+  }
+
+  return (
+    <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background p-4">
+      <div
+        aria-hidden="true"
+        className="absolute -left-24 top-12 size-72 rounded-full bg-info-soft blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -right-24 bottom-12 size-72 rounded-full bg-primary-soft blur-3xl"
+      />
+      <section className="animate-enter relative flex w-full max-w-md flex-col items-center gap-6 rounded-3xl border border-border bg-surface p-6 shadow-dialog sm:p-9">
+        <div className="flex flex-col items-center gap-2">
+          <img src={logo} alt="ASISCO UP" className="w-48 object-contain" />
+          <p className="text-center font-heading text-sm font-bold text-info">
+            ¡No somos Down, somos UP!
+          </p>
+        </div>
+
+        <div className="h-px w-full bg-border" />
+
+        <div className="w-full">
+          <h1 className="mb-1 text-center text-3xl font-extrabold">
+            Bienvenida a Gestión
+          </h1>
+          <p className="mb-6 text-center text-sm text-muted">
+            Ingresa con tu cuenta de ASISCO UP
+          </p>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Field
+              label="Correo electrónico"
+              type="email"
+              autoComplete="username"
+              value={correo}
+              onChange={(event) => setCorreo(event.target.value)}
+              required
+              placeholder="correo@asiscoup.org"
+            />
+            <Field
+              label="Contraseña"
+              type="password"
+              autoComplete="current-password"
+              value={contrasena}
+              onChange={(event) => setContrasena(event.target.value)}
+              required
+              placeholder="Escribe tu contraseña"
+            />
+            <Button type="submit" loading={loading} className="mt-2 w-full">
+              Entrar
+            </Button>
+          </form>
+        </div>
+      </section>
+
+      <p className="relative mt-7 text-center text-xs font-semibold text-muted">
+        Fundación ASISCO UP · Uso interno
+      </p>
+    </main>
+  )
+}
