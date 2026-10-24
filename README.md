@@ -1,5 +1,3 @@
-# SAGA-UP Frontend
-
 Frontend del sistema SAGA-UP desarrollado con React y Vite. Este proyecto se encarga de la capa visual y la interacción con el usuario, permitiendo la gestión de la información del sistema de una manera moderna, organizada y reutilizable.
 
 ## Descripción del proyecto
