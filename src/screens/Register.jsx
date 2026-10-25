@@ -1,5 +1,5 @@
 import { useState } from "react"
-import logo from "../imports/logo.png"
+import logoSaga from "../imports/texto.png"
 import {
   Button,
   Field,
@@ -32,30 +32,32 @@ export default function RegisterScreen({
   }
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-y-auto bg-background p-4">
+    <main className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-white md:flex-row">
       <div
         aria-hidden="true"
-        className="absolute -left-24 top-12 size-72 rounded-full bg-info-soft blur-3xl"
+        className="pointer-events-none absolute inset-y-0 left-0 hidden w-[74%] bg-[linear-gradient(to_right,#02bdb1_0%,#b9e9e6_30%,#e8f7f6_60%,#ffffff_100%)] md:block"
       />
-      <div
-        aria-hidden="true"
-        className="absolute -right-24 bottom-12 size-72 rounded-full bg-primary-soft blur-3xl"
-      />
-      <section className="animate-enter relative my-4 flex w-full max-w-md flex-col items-center gap-5 rounded-3xl border border-border bg-surface p-6 shadow-dialog sm:p-9">
-        <div className="flex h-32 w-48 items-center justify-center">
+
+      <div className="relative flex min-h-[25vh] w-full items-center justify-center overflow-hidden bg-linear-to-br from-[#02bdb1] via-teal-50 to-teal-100 p-8 md:min-h-screen md:w-1/2 md:bg-none md:p-16">
+        <div className="z-10 flex flex-col items-center text-center">
           <img
-            src={logo}
-            alt="ASISCO UP"
-            className="h-full w-full object-contain mix-blend-multiply"
+            src={logoSaga}
+            alt="SAGA UP - Sistema de Administración y Gestión de Asisco Up"
+            className="w-full max-w-75 object-contain md:max-w-lg"
           />
         </div>
-        <div className="w-full">
-          <h1 className="mb-1 text-center text-3xl font-extrabold">
-            Crear una cuenta
-          </h1>
-          <p className="mb-6 text-center text-sm text-muted">
-            Regístrate en SAGA-UP
-          </p>
+      </div>
+
+      <div className="z-10 flex w-full flex-col justify-center bg-white px-8 py-10 md:w-1/2 md:bg-transparent md:px-16 md:py-12 lg:px-24">
+        <div className="mx-auto w-full max-w-md">
+          <div className="mb-8">
+            <h1 className="mb-1 text-2xl font-extrabold text-gray-900 sm:text-3xl">
+              Crear una cuenta
+            </h1>
+            <p className="text-sm text-gray-500">
+              Regístrate en SAGA-UP
+            </p>
+          </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Field
@@ -125,18 +127,18 @@ export default function RegisterScreen({
             </Button>
           </form>
 
-          <div className="mt-5 text-center text-sm text-muted">
+          <div className="mt-8 text-center text-sm text-gray-500">
             <span>¿Ya tienes cuenta? </span>
             <button
               type="button"
               onClick={onBackToLogin}
-              className="font-bold text-info underline-offset-4 hover:underline"
+              className="font-bold text-teal-600 underline-offset-4 hover:underline"
             >
               Inicia sesión
             </button>
           </div>
         </div>
-      </section>
+      </div>
     </main>
   )
 }
