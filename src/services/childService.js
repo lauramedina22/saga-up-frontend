@@ -31,7 +31,6 @@ export const childService = {
 
     return {
       children,
-      enrollments: response?.enrollments ?? [],
       payments: response?.payments ?? [],
       sponsors: response?.sponsors ?? [],
     }

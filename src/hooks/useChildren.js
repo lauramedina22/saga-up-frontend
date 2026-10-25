@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { guardianService } from "../services/guardianService"
 import { childService } from "../services/childService"
 import { childGuardianService } from "../services/childGuardianService"
+import { enrollmentService } from "../services/enrollmentService"
 
 export function useChildren() {
   const [children, setChildren] = useState([])
@@ -43,9 +44,18 @@ export function useChildren() {
         await addGuardianRelationships(data.children, guardianData.guardians),
       )
       setGuardians(guardianData.guardians)
-      setEnrollments(data.enrollments)
       setPayments(data.payments)
       setSponsors(data.sponsors)
+      try {
+        const enrollmentData = await enrollmentService.getEnrollmentData()
+        setEnrollments(enrollmentData.enrollments)
+      } catch (enrollmentError) {
+        setEnrollments([])
+        setError(
+          enrollmentError.message ||
+            "No fue posible cargar las matrículas relacionadas.",
+        )
+      }
     } catch (requestError) {
       setError(requestError.message || "No fue posible cargar los beneficiarios.")
     } finally {

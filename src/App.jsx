@@ -12,6 +12,7 @@ import Login from "./screens/Login"
 import Register from "./screens/Register"
 import GuardiansScreen from "./screens/Guardians"
 import ChildrenScreen from "./screens/Children"
+import EnrollmentsScreen from "./screens/Enrollments"
 
 function AppLayout({ session, onLogout }) {
   const navigate = useNavigate()
@@ -21,7 +22,9 @@ function AppLayout({ session, onLogout }) {
       ? "beneficiarios"
       : pathname === "/guardians"
         ? "acudientes"
-        : "dashboard"
+        : pathname === "/enrollments"
+          ? "matriculas"
+          : "dashboard"
   const userName =
     session?.usuario?.username ||
     session?.usuario?.email ||
@@ -33,6 +36,7 @@ function AppLayout({ session, onLogout }) {
     const routes = {
       beneficiarios: "/children",
       acudientes: "/guardians",
+      matriculas: "/enrollments",
     }
     if (routes[screen]) navigate(routes[screen])
   }
@@ -134,6 +138,7 @@ const App = () => {
         />
         <Route path="/children" element={<ChildrenScreen />} />
         <Route path="/guardians" element={<GuardiansScreen />} />
+        <Route path="/enrollments" element={<EnrollmentsScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

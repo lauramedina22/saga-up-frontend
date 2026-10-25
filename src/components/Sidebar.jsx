@@ -80,7 +80,9 @@ export default function Sidebar({
         {navItems.map((item) => {
           const active = currentScreen === item.screen
           const available =
-            item.screen === "beneficiarios" || item.screen === "acudientes"
+            item.screen === "beneficiarios" ||
+            item.screen === "acudientes" ||
+            item.screen === "matriculas"
 
           return (
             <button

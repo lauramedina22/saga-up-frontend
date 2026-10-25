@@ -54,6 +54,7 @@ Cada servicio gestiona su propio dominio y se conecta directamente al backend, s
 
 - `childService.js`: `GET/POST /children`, `PUT/DELETE /children/:id`.
 - `guardianService.js`: `GET/POST /guardians`, `DELETE /guardians/:id`.
+- `enrollmentService.js`: `GET /enrollments`. La ruta se asume provisionalmente y debe validarse con el contrato del backend.
 - `childGuardianService.js`: rutas anidadas para consultar, crear y eliminar relaciones entre children y guardians. Estas rutas se asumieron provisionalmente y deben ajustarse al contrato que confirme el backend.
 
 ### src/data.js
@@ -71,8 +72,9 @@ Contiene las pantallas principales de la aplicación, como login, dashboard, per
 - `/register`: registro público.
 - `/children`: pantalla de beneficiarios, cargada desde el backend.
 - `/guardians`: pantalla de acudientes, cargada desde el backend.
+- `/enrollments`: pantalla de matrículas, cargada desde el backend.
 
-Las rutas `/children` y `/guardians` están disponibles directamente para facilitar la revisión de las pantallas. Aún no tienen protección por roles; antes de producción, la autorización debe implementarse en el frontend y validarse también en el backend.
+Las rutas `/children`, `/guardians` y `/enrollments` están disponibles directamente para facilitar la revisión de las pantallas. Aún no tienen protección por roles; antes de producción, la autorización debe implementarse en el frontend y validarse también en el backend.
 
 ## Requisitos previos
 
