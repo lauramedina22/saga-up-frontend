@@ -2,18 +2,13 @@ import { useState } from "react"
 import logo from "../imports/logo.png"
 import { Button, Field } from "../components/ui"
 
-export default function LoginScreen({ onLogin }) {
-  const [correo, setCorreo] = useState("consuelo@asiscoup.org")
-  const [contrasena, setContrasena] = useState("")
-  const [loading, setLoading] = useState(false)
+export default function LoginScreen({ onLogin, loading, error }) {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      onLogin()
-    }, 900)
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    onLogin(email, password)
   }
 
   return (
@@ -49,8 +44,8 @@ export default function LoginScreen({ onLogin }) {
               label="Correo electrónico"
               type="email"
               autoComplete="username"
-              value={correo}
-              onChange={(event) => setCorreo(event.target.value)}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               required
               placeholder="correo@asiscoup.org"
             />
@@ -58,11 +53,16 @@ export default function LoginScreen({ onLogin }) {
               label="Contraseña"
               type="password"
               autoComplete="current-password"
-              value={contrasena}
-              onChange={(event) => setContrasena(event.target.value)}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               required
               placeholder="Escribe tu contraseña"
             />
+            {error && (
+              <p className="text-sm font-semibold text-danger" role="alert">
+                {error}
+              </p>
+            )}
             <Button type="submit" loading={loading} className="mt-2 w-full">
               Entrar
             </Button>
