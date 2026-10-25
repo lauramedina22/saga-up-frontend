@@ -4,16 +4,16 @@ import { Avatar } from "../components/ui"
 import { useEnrollments } from "../hooks/useEnrollments"
 
 const STATUS = {
-  activa: { label: "Activa", className: "bg-success-soft text-success" },
+  pagado: { label: "Pagado", className: "bg-success-soft text-success" },
   pendiente: { label: "Pendiente", className: "bg-warning-soft text-warning" },
-  retirada: { label: "Retirada", className: "bg-danger-soft text-danger" },
+  vencido: { label: "Vencido", className: "bg-danger-soft text-danger" },
 }
 
 const FILTERS = [
   { id: "todos", label: "Todas" },
-  { id: "activa", label: "Activas" },
+  { id: "pagado", label: "Pagadas" },
   { id: "pendiente", label: "Pendientes" },
-  { id: "retirada", label: "Retiradas" },
+  { id: "vencido", label: "Vencidas" },
 ]
 
 export default function EnrollmentsScreen() {
@@ -23,10 +23,7 @@ export default function EnrollmentsScreen() {
   const filteredEnrollments = enrollments.filter(
     (enrollment) => filter === "todos" || enrollment.status === filter,
   )
-  const activeEnrollments = enrollments.filter(
-    (enrollment) => enrollment.status === "activa",
-  )
-  const activeTotal = activeEnrollments.reduce(
+  const totalAmount = enrollments.reduce(
     (total, enrollment) => total + (Number(enrollment.amount) || 0),
     0,
   )
@@ -57,16 +54,16 @@ export default function EnrollmentsScreen() {
       <div className="mb-6 grid grid-cols-2 gap-4">
         <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
           <p className="text-2xl font-extrabold text-foreground">
-            {activeEnrollments.length}
+            {enrollments.length}
           </p>
-          <p className="text-sm font-medium text-muted">Matrículas activas</p>
+          <p className="text-sm font-medium text-muted">Pagos registrados</p>
         </div>
         <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
           <p className="text-2xl font-extrabold text-foreground">
-            {formatCOP(activeTotal)}
+            {formatCOP(totalAmount)}
           </p>
           <p className="text-sm font-medium text-muted">
-            Valor de matrículas activas
+            Valor total registrado
           </p>
         </div>
       </div>
@@ -92,7 +89,7 @@ export default function EnrollmentsScreen() {
       <div className="flex flex-col gap-3">
         {filteredEnrollments.map((enrollment) => {
           const child = children.find(
-            (record) => record.id === enrollment.childId,
+            (record) => record.childId === enrollment.childId,
           )
           if (!child) return null
 
@@ -106,12 +103,17 @@ export default function EnrollmentsScreen() {
               key={enrollment.id}
               className="flex items-center gap-4 rounded-3xl border border-border bg-surface p-4 shadow-sm"
             >
-              <Avatar name={child.fullName} size="sm" />
+              <Avatar
+                name={`${child.firstName} ${child.lastName}`}
+                size="sm"
+              />
               <div className="min-w-0 flex-1">
-                <p className="font-extrabold text-foreground">{child.fullName}</p>
+                <p className="font-extrabold text-foreground">
+                  {child.firstName} {child.lastName}
+                </p>
                 <p className="text-sm text-muted">
-                  Año {enrollment.year} · Inicio:{" "}
-                  {formatFecha(enrollment.startDate)}
+                  Fecha de pago: {formatFecha(enrollment.paidDate)} · Medio:{" "}
+                  {enrollment.paymentMethod || "Sin registrar"}
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1.5">

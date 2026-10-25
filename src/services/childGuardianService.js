@@ -1,99 +1,54 @@
 import apiClient from "../api/apiClient"
-import { toChildGuardianModel } from "../models/childGuardianModel"
+import {
+  toChildGuardianModel,
+  toChildGuardianPayload,
+} from "../models/childGuardianModel.js"
 
 const CHILDREN_ENDPOINT = "/children"
 const GUARDIANS_ENDPOINT = "/guardians"
 
-function getIdList(response, collectionKey, idKeys) {
-  const records = Array.isArray(response)
+function getRelationshipList(response) {
+  const relationships = Array.isArray(response)
     ? response
-    : response?.[collectionKey]
+    : response?.children_guardians ?? response?.relationships
 
-  if (!Array.isArray(records)) {
+  if (!Array.isArray(relationships)) {
     throw new Error(
-      `La respuesta del servidor no contiene una lista de ${collectionKey}.`,
+      "La respuesta del servidor no contiene una lista de relaciones child-guardian.",
     )
   }
 
-  return records.map((record) => {
-    if (typeof record === "string") return record
-
-    const relationship = toChildGuardianModel(record)
-    const id =
-      (collectionKey === "guardians"
-        ? relationship.guardianId
-        : relationship.childId) ??
-      idKeys.map((key) => record?.[key]).find(Boolean) ??
-      (collectionKey === "guardians"
-        ? record?.guardian_id
-        : record?.child_id)
-    if (id === undefined || id === null || id === "") {
-      throw new Error(
-        "La respuesta del servidor contiene una relación sin identificador.",
-      )
-    }
-    return id
-  })
+  return relationships.map(toChildGuardianModel)
 }
 
 export const childGuardianService = {
-  async getGuardianIdsForChild(childId) {
+  async getRelationshipsForChild(childId) {
     const response = await apiClient.get(
       `${CHILDREN_ENDPOINT}/${childId}/guardians`,
     )
-    return getIdList(response, "guardians", [
-      "id",
-      "guardianId",
-      "guardian_id",
-    ])
+    return getRelationshipList(response)
   },
 
-  async getChildIdsForGuardian(guardianId) {
+  async getRelationshipsForGuardian(guardianId) {
     const response = await apiClient.get(
       `${GUARDIANS_ENDPOINT}/${guardianId}/children`,
     )
-    return getIdList(response, "children", ["id", "childId", "child_id"])
+    return getRelationshipList(response)
   },
 
-  linkChildToGuardian,
-
-  async linkGuardianToChildren(guardianId, childrenIds) {
-    const linkedChildIds = []
-    for (const childId of childrenIds) {
-      try {
-        await linkChildToGuardian(childId, guardianId)
-        linkedChildIds.push(childId)
-      } catch (error) {
-        const rollbackErrors = []
-        for (const linkedChildId of linkedChildIds) {
-          try {
-            await unlinkChildFromGuardian(linkedChildId, guardianId)
-          } catch (rollbackError) {
-            rollbackErrors.push(rollbackError.message)
-          }
-        }
-        if (rollbackErrors.length > 0) {
-          throw new Error(
-            `${error.message} No se pudieron deshacer algunas relaciones: ${rollbackErrors.join("; ")}`,
-          )
-        }
-        throw error
-      }
-    }
+  async createRelationship(relationship) {
+    const response = await apiClient.post(
+      `${CHILDREN_ENDPOINT}/${relationship.childId}/guardians`,
+      toChildGuardianPayload(relationship),
+    )
+    const rawRelationship =
+      response?.children_guardian ?? response?.relationship ?? response
+    return toChildGuardianModel(rawRelationship)
   },
 
-  unlinkChildFromGuardian,
-}
-
-function linkChildToGuardian(childId, guardianId, { primary = false } = {}) {
-  return apiClient.post(`${CHILDREN_ENDPOINT}/${childId}/guardians`, {
-    guardianId,
-    isPrimary: primary,
-  })
-}
-
-function unlinkChildFromGuardian(childId, guardianId) {
-  return apiClient.delete(
-    `${CHILDREN_ENDPOINT}/${childId}/guardians/${guardianId}`,
-  )
+  async deleteRelationship(childId, guardianId) {
+    return apiClient.delete(
+      `${CHILDREN_ENDPOINT}/${childId}/guardians/${guardianId}`,
+    )
+  },
 }

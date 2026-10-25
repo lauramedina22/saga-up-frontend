@@ -6,11 +6,11 @@ const ENROLLMENTS_ENDPOINT = "/enrollments"
 function getEnrollmentList(response) {
   const enrollments = Array.isArray(response)
     ? response
-    : response?.enrollments
+    : response?.enrollments ?? response?.tuition ?? response?.payments
 
   if (!Array.isArray(enrollments)) {
     throw new Error(
-      "La respuesta del servidor no contiene una lista de enrollments.",
+      "La respuesta del servidor no contiene una lista de matrículas o tuition.",
     )
   }
 

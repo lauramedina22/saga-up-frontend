@@ -1,63 +1,115 @@
 import { useEffect, useState } from "react"
-import { guardianService } from "../services/guardianService"
-import { childService } from "../services/childService"
 import { childGuardianService } from "../services/childGuardianService"
+import { childInternalDescriptionService } from "../services/childInternalDescriptionService"
+import { childRecordService } from "../services/childRecordService"
+import { childService } from "../services/childService"
 import { enrollmentService } from "../services/enrollmentService"
+import { childrenAssistanceService } from "../services/childrenAssistanceService"
+import { guardianService } from "../services/guardianService"
 
 export function useChildren() {
   const [children, setChildren] = useState([])
+  const [relationships, setRelationships] = useState([])
   const [guardians, setGuardians] = useState([])
+  const [childRecords, setChildRecords] = useState([])
+  const [internalDescriptions, setInternalDescriptions] = useState([])
+  const [assistanceRecords, setAssistanceRecords] = useState([])
   const [enrollments, setEnrollments] = useState([])
-  const [payments, setPayments] = useState([])
-  const [sponsors, setSponsors] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-
-  const addGuardianRelationships = async (records, guardianRecords) =>
-    Promise.all(
-      records.map(async (child) => {
-        const guardianIds =
-          await childGuardianService.getGuardianIdsForChild(child.id)
-        const primaryGuardianId = guardianIds[0] ?? null
-
-        return {
-          ...child,
-          guardianId: primaryGuardianId,
-          guardianIds: guardianIds,
-          relatedGuardians: guardianRecords.filter((guardian) =>
-            guardianIds.includes(guardian.id),
-          ),
-        }
-      }),
-    )
+  const [childRecordsError, setChildRecordsError] = useState("")
+  const [internalDescriptionsError, setInternalDescriptionsError] = useState("")
+  const [assistanceError, setAssistanceError] = useState("")
+  const [enrollmentError, setEnrollmentError] = useState("")
 
   const loadChildren = async () => {
     setLoading(true)
     setError("")
+    setChildRecordsError("")
+    setInternalDescriptionsError("")
+    setAssistanceError("")
+    setEnrollmentError("")
 
     try {
-      const [data, guardianData] = await Promise.all([
-        childService.getChildrenData(),
-        guardianService.getGuardianData(),
-      ])
-      setChildren(
-        await addGuardianRelationships(data.children, guardianData.guardians),
+      const [{ children: childList }, { guardians: guardianRecords }] =
+        await Promise.all([
+          childService.getChildrenData(),
+          guardianService.getGuardianData(),
+        ])
+      const relationshipGroups = await Promise.all(
+        childList.map((child) =>
+          childGuardianService.getRelationshipsForChild(child.childId),
+        ),
       )
-      setGuardians(guardianData.guardians)
-      setPayments(data.payments)
-      setSponsors(data.sponsors)
-      try {
-        const enrollmentData = await enrollmentService.getEnrollmentData()
-        setEnrollments(enrollmentData.enrollments)
-      } catch (enrollmentError) {
+      setChildren(childList)
+      setGuardians(guardianRecords)
+      setRelationships(relationshipGroups.flat())
+
+      const [
+        recordResults,
+        internalDescriptionResults,
+        assistanceResults,
+        enrollmentResult,
+      ] = await Promise.allSettled([
+        Promise.all(
+          childList.map((child) =>
+            childRecordService.getRecordsForChild(child.childId),
+          ),
+        ),
+        Promise.all(
+          childList.map((child) =>
+            childInternalDescriptionService.getForChild(child.childId),
+          ),
+        ),
+        Promise.all(
+          childList.map((child) =>
+            childrenAssistanceService.getForChild(child.childId),
+          ),
+        ),
+        enrollmentService.getEnrollmentData(),
+      ])
+      if (recordResults.status === "fulfilled") {
+        setChildRecords(recordResults.value.flat())
+        setChildRecordsError("")
+      } else {
+        setChildRecords([])
+        setChildRecordsError(
+          recordResults.reason?.message ||
+            "No fue posible cargar las fichas de salud.",
+        )
+      }
+      if (internalDescriptionResults.status === "fulfilled") {
+        setInternalDescriptions(internalDescriptionResults.value.flat())
+      } else {
+        setInternalDescriptions([])
+        setInternalDescriptionsError(
+          internalDescriptionResults.reason?.message ||
+            "No fue posible cargar las descripciones internas.",
+        )
+      }
+      if (assistanceResults.status === "fulfilled") {
+        setAssistanceRecords(assistanceResults.value.flat())
+      } else {
+        setAssistanceRecords([])
+        setAssistanceError(
+          assistanceResults.reason?.message ||
+            "No fue posible cargar las asistencias.",
+        )
+      }
+      if (enrollmentResult.status === "fulfilled") {
+        setEnrollments(enrollmentResult.value.enrollments)
+        setEnrollmentError("")
+      } else {
         setEnrollments([])
-        setError(
-          enrollmentError.message ||
-            "No fue posible cargar las matrículas relacionadas.",
+        setEnrollmentError(
+          enrollmentResult.reason?.message ||
+            "No fue posible cargar los pagos relacionados.",
         )
       }
     } catch (requestError) {
-      setError(requestError.message || "No fue posible cargar los beneficiarios.")
+      setError(
+        requestError.message || "No fue posible cargar los beneficiarios.",
+      )
     } finally {
       setLoading(false)
     }
@@ -67,111 +119,166 @@ export function useChildren() {
     loadChildren()
   }, [])
 
-  const createChild = async (childData) => {
-    const child = await childService.createChild(childData)
+  const createChild = async ({ child, relationship }) => {
+    const createdChild = await childService.createChild(child)
+    let createdRelationship
+
     try {
-      if (childData.guardianId) {
-        await childGuardianService.linkChildToGuardian(
-          child.id,
-          childData.guardianId,
-          { primary: true },
-        )
+      if (relationship?.guardianId) {
+        createdRelationship = await childGuardianService.createRelationship({
+          ...relationship,
+          childId: createdChild.childId,
+        })
       }
-    } catch (error) {
+    } catch (requestError) {
       try {
-        await childService.deleteChild(child.id)
+        await childService.deleteChild(createdChild.childId)
       } catch (rollbackError) {
         throw new Error(
-          `${error.message} No fue posible deshacer la creación del beneficiario: ${rollbackError.message}`,
+          `${requestError.message} No fue posible deshacer la creación del beneficiario: ${rollbackError.message}`,
         )
       }
-      throw error
+      throw requestError
     }
-    const data = await childService.getChildrenData()
-    const guardianData = await guardianService.getGuardianData()
-    const hydratedChildren = await addGuardianRelationships(
-      data.children,
-      guardianData.guardians,
-    )
-    setChildren(hydratedChildren)
-    setGuardians(guardianData.guardians)
-    return hydratedChildren.find((item) => item.id === child.id)
+
+    setChildren((current) => [...current, createdChild])
+    if (createdRelationship) {
+      setRelationships((current) => [...current, createdRelationship])
+    }
+    return createdChild
   }
 
-  const createChildWithGuardian = async (childData, guardianData) => {
-    const guardian = await guardianService.createGuardian(guardianData)
-    let child
+  const updateChild = async (childId, changes) => {
     try {
-      child = await childService.createChild(childData)
-      await childGuardianService.linkChildToGuardian(
-        child.id,
-        guardian.id,
-        { primary: true },
-      )
-      const data = await childService.getChildrenData()
-      const guardianDataResult = await guardianService.getGuardianData()
-      const hydratedChildren = await addGuardianRelationships(
-        data.children,
-        guardianDataResult.guardians,
-      )
-      setChildren(hydratedChildren)
-      setGuardians(guardianDataResult.guardians)
-      return hydratedChildren.find((item) => item.id === child.id)
-    } catch (error) {
-      const rollbackErrors = []
-      if (child) {
-        try {
-          await childGuardianService.unlinkChildFromGuardian(
-            child.id,
-            guardian.id,
-          )
-        } catch (rollbackError) {
-          rollbackErrors.push(rollbackError.message)
-        }
-        try {
-          await childService.deleteChild(child.id)
-        } catch (rollbackError) {
-          rollbackErrors.push(rollbackError.message)
-        }
-      }
-      try {
-        await guardianService.deleteGuardian(guardian.id)
-      } catch (rollbackError) {
-        rollbackErrors.push(rollbackError.message)
-      }
-      if (rollbackErrors.length > 0) {
-        throw new Error(
-          `${error.message} No se pudo completar la limpieza de los registros: ${rollbackErrors.join("; ")}`,
-        )
-      }
-      throw error
-    }
-  }
-
-  const updateChild = async (id, changes) => {
-    try {
-      const updated = await childService.updateChild(id, changes)
+      const updatedChild = await childService.updateChild(childId, changes)
       setChildren((current) =>
-        current.map((child) => (child.id === id ? updated : child)),
+        current.map((child) =>
+          child.childId === childId ? updatedChild : child,
+        ),
       )
       return { ok: true, message: "Beneficiario actualizado correctamente." }
     } catch (requestError) {
       return {
         ok: false,
-        message: requestError.message || "No fue posible actualizar el registro.",
+        message:
+          requestError.message || "No fue posible actualizar el registro.",
       }
     }
   }
 
-  const deleteChild = async (id) => {
+  const createChildRecord = async (childId, record) => {
+    const createdRecord = await childRecordService.createRecord(childId, record)
+    setChildRecords((current) => [...current, createdRecord])
+    return createdRecord
+  }
+
+  const updateChildRecord = async (childId, recordId, changes) => {
+    const updatedRecord = await childRecordService.updateRecord(
+      childId,
+      recordId,
+      changes,
+    )
+    setChildRecords((current) =>
+      current.map((record) =>
+        record.recordId === recordId ? updatedRecord : record,
+      ),
+    )
+    return updatedRecord
+  }
+
+  const deleteChildRecord = async (childId, recordId) => {
+    await childRecordService.deleteRecord(childId, recordId)
+    setChildRecords((current) =>
+      current.filter((record) => record.recordId !== recordId),
+    )
+  }
+
+  const createInternalDescription = async (childId, description) => {
+    const created = await childInternalDescriptionService.create(
+      childId,
+      description,
+    )
+    setInternalDescriptions((current) => [...current, created])
+    return created
+  }
+
+  const updateInternalDescription = async (childId, descriptionId, changes) => {
+    const updated = await childInternalDescriptionService.update(
+      childId,
+      descriptionId,
+      changes,
+    )
+    setInternalDescriptions((current) =>
+      current.map((item) =>
+        item.childInternalDescriptionId === descriptionId ? updated : item,
+      ),
+    )
+    return updated
+  }
+
+  const deleteInternalDescription = async (childId, descriptionId) => {
+    await childInternalDescriptionService.delete(childId, descriptionId)
+    setInternalDescriptions((current) =>
+      current.filter(
+        (item) => item.childInternalDescriptionId !== descriptionId,
+      ),
+    )
+  }
+
+  const createAssistance = async (childId, assistance) => {
+    const created = await childrenAssistanceService.create(childId, assistance)
+    setAssistanceRecords((current) => [...current, created])
+    return created
+  }
+
+  const updateAssistance = async (childId, assistanceId, changes) => {
+    const updated = await childrenAssistanceService.update(
+      childId,
+      assistanceId,
+      changes,
+    )
+    setAssistanceRecords((current) =>
+      current.map((item) =>
+        item.childrenAssistanceId === assistanceId ? updated : item,
+      ),
+    )
+    return updated
+  }
+
+  const deleteAssistance = async (childId, assistanceId) => {
+    await childrenAssistanceService.delete(childId, assistanceId)
+    setAssistanceRecords((current) =>
+      current.filter((item) => item.childrenAssistanceId !== assistanceId),
+    )
+  }
+
+  const deleteChild = async (childId) => {
     try {
-      await childService.deleteChild(id)
-      setChildren((current) => current.filter((child) => child.id !== id))
+      await childService.deleteChild(childId)
+      setChildren((current) =>
+        current.filter((child) => child.childId !== childId),
+      )
+      setRelationships((current) =>
+        current.filter((relationship) => relationship.childId !== childId),
+      )
+      setChildRecords((current) =>
+        current.filter((record) => record.childId !== childId),
+      )
+      setInternalDescriptions((current) =>
+        current.filter((record) => record.childId !== childId),
+      )
+      setAssistanceRecords((current) =>
+        current.filter((record) => record.childId !== childId),
+      )
+      setEnrollments((current) =>
+        current.filter((enrollment) => enrollment.childId !== childId),
+      )
       return { ok: true, message: "Beneficiario eliminado correctamente." }
     } catch (requestError) {
       return {
         ok: false,
-        message: requestError.message || "No fue posible eliminar el registro.",
+        message:
+          requestError.message || "No fue posible eliminar el registro.",
       }
     }
   }
@@ -179,14 +286,28 @@ export function useChildren() {
   return {
     children,
     guardians,
+    relationships,
+    childRecords,
+    internalDescriptions,
+    assistanceRecords,
     enrollments,
-    payments,
-    sponsors,
     loading,
     error,
+    childRecordsError,
+    internalDescriptionsError,
+    assistanceError,
+    enrollmentError,
     loadChildren,
     createChild,
-    createChildWithGuardian,
+    createChildRecord,
+    updateChildRecord,
+    deleteChildRecord,
+    createInternalDescription,
+    updateInternalDescription,
+    deleteInternalDescription,
+    createAssistance,
+    updateAssistance,
+    deleteAssistance,
     updateChild,
     deleteChild,
   }

@@ -31,6 +31,11 @@ export function normalizeNumber(value) {
   return Number.isFinite(parsedValue) ? parsedValue : null
 }
 
+export function normalizeId(value) {
+  if (value === undefined || value === null || value === "") return null
+  return String(value)
+}
+
 export function normalizeBoolean(value) {
   if (typeof value === "boolean") return value
   if (typeof value === "number") return value !== 0

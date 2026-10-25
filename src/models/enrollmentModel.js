@@ -1,22 +1,16 @@
 import {
   normalizeDate,
+  normalizeId,
   normalizeNumber,
-  readValue,
 } from "./modelUtils.js"
 
 export function toEnrollmentModel(rawEnrollment = {}) {
   return {
-    id: readValue(rawEnrollment, "enrollment_id", "id"),
-    childId: readValue(rawEnrollment, "child_id", "childId", "ninoId"),
-    year: normalizeNumber(
-      readValue(rawEnrollment, "year", "anio", "enrollment_year"),
-    ),
-    startDate: normalizeDate(
-      readValue(rawEnrollment, "start_date", "startDate", "fechaInicio"),
-    ),
-    status: readValue(rawEnrollment, "status", "estado") ?? "",
-    amount: normalizeNumber(
-      readValue(rawEnrollment, "amount", "valor"),
-    ),
+    id: normalizeId(rawEnrollment.tuition_fee_id),
+    childId: normalizeId(rawEnrollment.child_id),
+    amount: normalizeNumber(rawEnrollment.amount),
+    paidDate: normalizeDate(rawEnrollment.paid_date),
+    paymentMethod: rawEnrollment.payment_method ?? "",
+    status: rawEnrollment.status ?? "",
   }
 }

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import { guardianService } from "../services/guardianService"
-import { childService } from "../services/childService"
 import { childGuardianService } from "../services/childGuardianService"
+import { childService } from "../services/childService"
+import { guardianService } from "../services/guardianService"
 
 export function useGuardians() {
   const [guardians, setGuardians] = useState([])
   const [children, setChildren] = useState([])
+  const [relationships, setRelationships] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
@@ -14,19 +15,21 @@ export function useGuardians() {
     setError("")
 
     try {
-      const [guardianData, childData] = await Promise.all([
-        guardianService.getGuardianData(),
-        childService.getChildrenData(),
-      ])
-      const linkedGuardians = await Promise.all(
-        guardianData.guardians.map(async (guardian) => {
-          const childrenIds =
-            await childGuardianService.getChildIdsForGuardian(guardian.id)
-          return { ...guardian, childrenIds }
-        }),
+      const [{ guardians: guardianRecords }, { children: childRecords }] =
+        await Promise.all([
+          guardianService.getGuardianData(),
+          childService.getChildrenData(),
+        ])
+      const relationshipGroups = await Promise.all(
+        guardianRecords.map((guardian) =>
+          childGuardianService.getRelationshipsForGuardian(
+            guardian.guardianId,
+          ),
+        ),
       )
-      setGuardians(linkedGuardians)
-      setChildren(childData.children)
+      setGuardians(guardianRecords)
+      setChildren(childRecords)
+      setRelationships(relationshipGroups.flat())
     } catch (requestError) {
       setError(
         requestError.message || "No fue posible cargar los acudientes.",
@@ -42,34 +45,20 @@ export function useGuardians() {
 
   const createGuardian = async (guardianData) => {
     const guardian = await guardianService.createGuardian(guardianData)
-    const childrenIds = guardianData.childrenIds ?? []
-    try {
-      await childGuardianService.linkGuardianToChildren(
-        guardian.id,
-        childrenIds,
-      )
-      setGuardians((current) => [
-        ...current,
-        { ...guardian, childrenIds },
-      ])
-      return guardian
-    } catch (error) {
-      try {
-        await guardianService.deleteGuardian(guardian.id)
-      } catch (rollbackError) {
-        throw new Error(
-          `${error.message} No fue posible deshacer la creación del acudiente: ${rollbackError.message}`,
-        )
-      }
-      throw error
-    }
+    setGuardians((current) => [...current, guardian])
+    return guardian
   }
 
-  const deleteGuardian = async (id) => {
+  const deleteGuardian = async (guardianId) => {
     try {
-      await guardianService.deleteGuardian(id)
+      await guardianService.deleteGuardian(guardianId)
       setGuardians((current) =>
-        current.filter((guardian) => guardian.id !== id),
+        current.filter((guardian) => guardian.guardianId !== guardianId),
+      )
+      setRelationships((current) =>
+        current.filter(
+          (relationship) => relationship.guardianId !== guardianId,
+        ),
       )
       return { ok: true, message: "Acudiente eliminado correctamente." }
     } catch (requestError) {
@@ -84,6 +73,7 @@ export function useGuardians() {
   return {
     guardians,
     children,
+    relationships,
     loading,
     error,
     loadGuardians,

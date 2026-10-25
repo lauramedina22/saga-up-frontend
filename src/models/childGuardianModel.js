@@ -1,26 +1,22 @@
-import {
-  normalizeBoolean,
-  normalizeDate,
-  readValue,
-} from "./modelUtils.js"
+import { normalizeDate, normalizeId } from "./modelUtils.js"
 
-export function toChildGuardianModel(rawRelationship = {}) {
+export function toChildGuardianModel(relationship = {}) {
   return {
-    id: readValue(rawRelationship, "child_guardian_id", "id"),
-    childId: readValue(rawRelationship, "child_id", "childId"),
-    guardianId: readValue(rawRelationship, "guardian_id", "guardianId"),
-    guardianshipType:
-      readValue(
-        rawRelationship,
-        "guardianship_type",
-        "guardianshipType",
-      ) ?? "",
-    startDate: normalizeDate(
-      readValue(rawRelationship, "start_date", "startDate"),
-    ),
-    endDate: normalizeDate(readValue(rawRelationship, "end_date", "endDate")),
-    isPrimary: normalizeBoolean(
-      readValue(rawRelationship, "is_primary", "isPrimary"),
-    ),
+    childGuardianId: normalizeId(relationship.child_guardian_id),
+    childId: normalizeId(relationship.child_id),
+    guardianId: normalizeId(relationship.guardian_id),
+    guardianshipType: relationship.guardianship_type ?? "",
+    startDate: normalizeDate(relationship.start_date),
+    endDate: normalizeDate(relationship.end_date),
+  }
+}
+
+export function toChildGuardianPayload(relationship = {}) {
+  return {
+    child_id: normalizeId(relationship.childId),
+    guardian_id: normalizeId(relationship.guardianId),
+    guardianship_type: relationship.guardianshipType,
+    start_date: normalizeDate(relationship.startDate),
+    end_date: normalizeDate(relationship.endDate),
   }
 }

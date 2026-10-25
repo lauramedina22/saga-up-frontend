@@ -60,6 +60,18 @@
       ]
     },
     {
+      "name": "child_internal_description",
+      "description": "Descripción interna del niño para el equipo: cómo se comunica, qué le gusta, cómo manejar sus crisis y su historial escolar y terapéutico.",
+      "columns": [
+        { "name": "child_internal_description_id", "type": "bigint", "key": "PK", "description": "Identificador único de la descripción" },
+        { "name": "child_id", "type": "bigint", "key": "FK", "references": "children", "description": "Niño al que describe" },
+        { "name": "communication_ways", "type": "text", "description": "Formas en que el niño se comunica" },
+        { "name": "daily_routine_help", "type": "text", "description": "Apoyos necesarios para su rutina diaria" },
+        { "name": "likings", "type": "text", "description": "Gustos e intereses" },
+        { "name": "crisis_management", "type": "text", "description": "Pautas para manejar crisis" }
+      ]
+    },
+    {
       "name": "staff",
       "description": "Personal que trabaja en la fundación.",
       "columns": [
@@ -90,6 +102,19 @@
       ]
     },
     {
+      "name": "children_assistance",
+      "description": "Registro de asistencia de cada niño a cada sesión programada de taller.",
+      "columns": [
+        { "name": "children_assistance_id", "type": "bigint", "key": "PK", "description": "Identificador único del registro" },
+        { "name": "child_id", "type": "bigint", "key": "FK", "references": "children", "description": "Niño al que corresponde" },
+        { "name": "professional_workshop_id", "type": "bigint", "key": "FK", "references": "professionals_workshops", "description": "Sesión de taller" },
+        { "name": "will_assist", "type": "boolean", "description": "Indica si el niño confirmó que asistirá" },
+        { "name": "asisted", "type": "boolean", "description": "Indica si el niño asistió" },
+        { "name": "complete_workshop", "type": "boolean", "description": "Indica si completó el taller" },
+        { "name": "behavior", "type": "text", "description": "Comportamiento durante la sesión" }
+      ]
+    },
+    {
       "name": "tuition",
       "description": "Pagos de cuota o pensión asociados a cada niño.",
       "columns": [
@@ -106,6 +131,9 @@
     { "from": "guardians", "to": "children_guardians", "type": "1:N", "description": "Un acudiente puede estar vinculado a varios niños" },
     { "from": "children", "to": "children_guardians", "type": "1:N", "description": "Un niño puede tener varios acudientes" },
     { "from": "children", "to": "child_records", "type": "1:N", "description": "Un niño puede tener varias fichas de salud" },
+    { "from": "children", "to": "child_internal_description", "type": "1:N", "description": "Un niño puede tener varias descripciones internas" },
+    { "from": "children", "to": "children_assistance", "type": "1:N", "description": "Un niño tiene registros de asistencia" },
+    { "from": "professionals_workshops", "to": "children_assistance", "type": "1:N", "description": "Una sesión tiene registros de asistencia de varios niños" },
     { "from": "staff", "to": "professionals", "type": "1:1", "description": "Un colaborador puede ser profesional" },
     { "from": "workshops", "to": "professionals_workshops", "type": "1:N", "description": "Un taller puede programarse varias veces" }
   ]
