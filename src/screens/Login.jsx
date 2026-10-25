@@ -33,10 +33,10 @@ export default function LoginScreen({ onLogin, loading, error }) {
 
         <div className="w-full">
           <h1 className="mb-1 text-center text-3xl font-extrabold">
-            Bienvenida a Gestión
+            Bienvenid@ a SAGA-UP
           </h1>
           <p className="mb-6 text-center text-sm text-muted">
-            Ingresa con tu cuenta de ASISCO UP
+            Ingresa con tu cuenta
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -67,12 +67,15 @@ export default function LoginScreen({ onLogin, loading, error }) {
               Entrar
             </Button>
           </form>
+          <div className="mt-5 text-center text-sm text-muted">
+            <span>¿Aún no tienes cuenta? </span>
+            <span className="font-bold text-info">
+              Regístrate
+            </span>
+          </div>
         </div>
       </section>
 
-      <p className="relative mt-7 text-center text-xs font-semibold text-muted">
-        Fundación ASISCO UP · Uso interno
-      </p>
     </main>
   )
 }
