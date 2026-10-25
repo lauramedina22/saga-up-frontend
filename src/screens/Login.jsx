@@ -78,11 +78,7 @@ export default function LoginScreen({
               </p>
             )}
 
-            <Button 
-              type="submit" 
-              loading={loading} 
-              className="mt-2 w-full rounded-xl bg-teal-600 py-3 font-bold text-white shadow-md transition-all hover:bg-teal-700"
-            >
+            <Button type="submit" loading={loading} className="mt-2 w-full">
               Entrar
             </Button>
           </form>
