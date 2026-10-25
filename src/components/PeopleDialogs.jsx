@@ -106,7 +106,7 @@ const emptyChild = {
   direccion: "",
   barrio: "",
   ciudad: "",
-  acudienteId: "",
+  guardianId: "",
   estadoMatricula: "pendiente",
   anioMatricula: String(new Date().getFullYear()),
   observaciones: "",
@@ -129,12 +129,12 @@ const emptyGuardian = {
   correo: "",
 }
 
-export function CreateStudentDialog({
+export function CreateChildDialog({
   onClose,
   onCreated,
-  acudientes,
-  onCreateStudent,
-  onCreateStudentWithAcudiente,
+  guardians,
+  onCreateChild,
+  onCreateChildWithGuardian,
 }) {
   const [form, setForm] = useState(emptyChild)
   const [guardian, setGuardian] = useState(emptyGuardian)
@@ -201,8 +201,8 @@ export function CreateStudentDialog({
         nextErrors.whatsapp = "Revisa el WhatsApp."
       if (!emailPattern.test(guardian.correo))
         nextErrors.correo = "Revisa el correo."
-    } else if (!form.acudienteId) {
-      nextErrors.acudienteId = "Selecciona un acudiente."
+    } else if (!form.guardianId) {
+      nextErrors.guardianId = "Selecciona un acudiente."
     }
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
@@ -233,12 +233,12 @@ export function CreateStudentDialog({
         foto: form.foto,
       }
       const record = await (newGuardian
-        ? onCreateStudentWithAcudiente(payload, {
+        ? onCreateChildWithGuardian(payload, {
             ...guardian,
             datosConfirmados: false,
             canalPreferido: "WhatsApp",
           })
-        : onCreateStudent({ ...payload, acudienteId: form.acudienteId }))
+        : onCreateChild({ ...payload, guardianId: form.guardianId }))
       onCreated(record)
     } catch (error) {
       if (error?.field) {
@@ -246,7 +246,9 @@ export function CreateStudentDialog({
       } else {
         setErrors((current) => ({
           ...current,
-          form: "No fue posible guardar el registro. Intenta nuevamente.",
+          form:
+            error.message ||
+            "No fue posible guardar el registro. Intenta nuevamente.",
         }))
       }
       savingRef.current = false
@@ -355,12 +357,12 @@ export function CreateStudentDialog({
                 <SelectField
                   id="child-guardian"
                   label="Acudiente principal *"
-                  value={form.acudienteId}
-                  onChange={(value) => update("acudienteId", value)}
-                  error={errors.acudienteId}
+                  value={form.guardianId}
+                  onChange={(value) => update("guardianId", value)}
+                  error={errors.guardianId}
                 >
                   <option value="">Selecciona un acudiente</option>
-                  {acudientes.map((item) => (
+                  {guardians.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.nombre} · {item.parentesco}
                     </option>
@@ -537,7 +539,7 @@ export function CreateStudentDialog({
   )
 }
 
-const emptyAcudiente = {
+const emptyGuardianForm = {
   nombres: "",
   apellidos: "",
   tipoDocumento: "",
@@ -551,16 +553,16 @@ const emptyAcudiente = {
   canalPreferido: "WhatsApp",
   contactoEmergencia: false,
   datosConfirmados: false,
-  ninosIds: [],
+  childrenIds: [],
 }
 
-export function CreateAcudienteDialog({
+export function CreateGuardianDialog({
   onClose,
   onCreated,
-  students,
-  onCreateAcudiente,
+  childrenRecords,
+  onCreateGuardian,
 }) {
-  const [form, setForm] = useState(emptyAcudiente)
+  const [form, setForm] = useState(emptyGuardianForm)
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
   const savingRef = useRef(false)
@@ -581,10 +583,10 @@ export function CreateAcudienteDialog({
   }
   const toggleChild = (id) => {
     update(
-      "ninosIds",
-      form.ninosIds.includes(id)
-        ? form.ninosIds.filter((item) => item !== id)
-        : [...form.ninosIds, id],
+      "childrenIds",
+      form.childrenIds.includes(id)
+        ? form.childrenIds.filter((item) => item !== id)
+        : [...form.childrenIds, id],
     )
   }
 
@@ -605,7 +607,7 @@ export function CreateAcudienteDialog({
     savingRef.current = true
     setSaving(true)
     try {
-      const record = await onCreateAcudiente({
+      const record = await onCreateGuardian({
         ...form,
         tipoDocumento: form.tipoDocumento || undefined,
         numeroDocumento: form.numeroDocumento || undefined,
@@ -619,7 +621,7 @@ export function CreateAcudienteDialog({
       } else {
         setErrors((current) => ({
           ...current,
-          form: "No fue posible guardar el registro.",
+          form: error.message || "No fue posible guardar el registro.",
         }))
       }
       savingRef.current = false
@@ -734,21 +736,21 @@ export function CreateAcudienteDialog({
             description="La vinculación usa los identificadores internos y no cambia al acudiente principal actual."
           >
             <div className="space-y-2 sm:col-span-2">
-              {students.map((student) => (
+              {childrenRecords.map((child) => (
                 <label
-                  key={student.id}
+                  key={child.id}
                   className="flex min-h-11 items-center gap-3 rounded-xl border border-border px-3 py-2"
                 >
                   <input
                     type="checkbox"
-                    checked={form.ninosIds.includes(student.id)}
-                    onChange={() => toggleChild(student.id)}
+                    checked={form.childrenIds.includes(child.id)}
+                    onChange={() => toggleChild(child.id)}
                     className="size-5 accent-primary"
                   />
-                  <span className="font-semibold">{student.nombre}</span>
+                  <span className="font-semibold">{child.nombre}</span>
                 </label>
               ))}
-              {students.length === 0 && (
+              {childrenRecords.length === 0 && (
                 <p className="text-sm text-muted">
                   No hay beneficiarios registrados todavía.
                 </p>
@@ -805,6 +807,7 @@ export function DeletePersonDialog({
   onConfirm,
 }) {
   const [error, setError] = useState("")
+  const kindLabel = kind === "guardian" ? "acudiente" : kind
   const confirm = async () => {
     try {
       const result = await onConfirm()
@@ -814,7 +817,7 @@ export function DeletePersonDialog({
     }
   }
   return (
-    <DialogShell title={`Eliminar ${kind}`} onClose={onClose} size="sm">
+    <DialogShell title={`Eliminar ${kindLabel}`} onClose={onClose} size="sm">
       <div className="p-5 sm:p-6">
         <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-danger-soft text-danger">
           <Icon

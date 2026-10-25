@@ -79,7 +79,8 @@ export default function Sidebar({
       <nav aria-label="Navegación principal" className="flex-1 overflow-y-auto px-2 py-3">
         {navItems.map((item) => {
           const active = currentScreen === item.screen
-          const available = item.screen === "beneficiarios"
+          const available =
+            item.screen === "beneficiarios" || item.screen === "acudientes"
 
           return (
             <button

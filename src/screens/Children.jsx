@@ -10,11 +10,11 @@ import {
   TextArea,
 } from "../components/ui"
 import {
-  CreateStudentDialog,
+  CreateChildDialog,
   DeletePersonDialog,
 } from "../components/PeopleDialogs" 
 
-import { useStudents } from "../hooks/useStudents"
+import { useChildren } from "../hooks/useChildren"
 
 const searchPath = "M21 21l-5.2-5.2m0 0A7.5 7.5 0 105.2 15.8a7.5 7.5 0 0010.6 0z"
 const backPath = "M15.75 19.5L8.25 12l7.5-7.5"
@@ -66,9 +66,9 @@ function SectionCard({ title, description, children }) {
   )
 }
 
-function EditableTab({ student, kind, onSave }) {
+function EditableTab({ child, kind, onSave }) {
   const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState({ ...student })
+  const [draft, setDraft] = useState({ ...child })
   
   const update = (key, value) => setDraft((current) => ({ ...current, [key]: value }))
   
@@ -112,12 +112,12 @@ function EditableTab({ student, kind, onSave }) {
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Info label="EPS" value={student.eps} />
-              <Info label="Estado de afiliación" value={student.estadoAfiliacion} />
+              <Info label="EPS" value={child.eps} />
+              <Info label="Estado de afiliación" value={child.estadoAfiliacion} />
               <div className="sm:col-span-2">
                 <Info
                   label="Condición médica / Diagnóstico"
-                  value={student.condicionesSalud}
+                  value={child.condicionesSalud}
                 />
               </div>
             </div>
@@ -153,13 +153,13 @@ function EditableTab({ student, kind, onSave }) {
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Info label="Alergias registradas" value={student.alergias} />
-              <Info label="Restricciones de alimentación" value={student.restriccionesAlimentarias} />
+              <Info label="Alergias registradas" value={child.alergias} />
+              <Info label="Restricciones de alimentación" value={child.restriccionesAlimentarias} />
               <div className="sm:col-span-2">
-                <Info label="Medicamentos e indicaciones" value={student.medicamentos} />
+                <Info label="Medicamentos e indicaciones" value={child.medicamentos} />
               </div>
               <div className="sm:col-span-2">
-                <Info label="Cuidados / Condiciones especiales" value={student.cuidadosEspeciales} />
+                <Info label="Cuidados / Condiciones especiales" value={child.cuidadosEspeciales} />
               </div>
             </div>
           )}
@@ -211,10 +211,10 @@ function EditableTab({ student, kind, onSave }) {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Info label="Formas de comunicación" value={student.formasComunicacion || student.apoyos} />
-            <Info label="Apoyos en la rutina diaria" value={student.apoyosRutina} />
-            <Info label="Qué le gusta" value={student.leGusta || student.observaciones} />
-            <Info label="Qué lo calma / Manejo de crisis" value={student.manejoCrisis} />
+            <Info label="Formas de comunicación" value={child.formasComunicacion || child.apoyos} />
+            <Info label="Apoyos en la rutina diaria" value={child.apoyosRutina} />
+            <Info label="Qué le gusta" value={child.leGusta || child.observaciones} />
+            <Info label="Qué lo calma / Manejo de crisis" value={child.manejoCrisis} />
           </div>
         )}
       </SectionCard>
@@ -244,10 +244,10 @@ function EditableTab({ student, kind, onSave }) {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Info label="Colegio / Institución" value={student.institucionEducativa} />
-            <Info label="Grado y jornada" value={[student.grado, student.jornada].filter(Boolean).join(" · ")} />
+            <Info label="Colegio / Institución" value={child.institucionEducativa} />
+            <Info label="Grado y jornada" value={[child.grado, child.jornada].filter(Boolean).join(" · ")} />
             <div className="sm:col-span-2">
-              <Info label="Terapias externas" value={student.terapiasExternas} />
+              <Info label="Terapias externas" value={child.terapiasExternas} />
             </div>
           </div>
         )}
@@ -267,7 +267,7 @@ const beneficiaryDocs = [
   { tipo: "discapacidad", label: "Certificado de Discapacidad (si aplica)" },
 ]
 
-function DocumentsTab({ student, onSave }) {
+function DocumentsTab({ child, onSave }) {
   const upload = (tipo, event) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -285,7 +285,7 @@ function DocumentsTab({ student, onSave }) {
         contenido: String(reader.result),
       }
       onSave([
-        ...(student.documentos ?? []).filter((item) => item.tipo !== tipo),
+        ...(child.documentos ?? []).filter((item) => item.tipo !== tipo),
         document,
       ])
     }
@@ -301,7 +301,7 @@ function DocumentsTab({ student, onSave }) {
         </p>
       </div>
       {beneficiaryDocs.map((item) => {
-        const document = student.documentos?.find((doc) => doc.tipo === item.tipo)
+        const document = child.documentos?.find((doc) => doc.tipo === item.tipo)
         return (
           <section key={item.tipo} className="flex flex-col gap-4 rounded-2xl border border-border p-4 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
@@ -341,30 +341,33 @@ function DocumentsTab({ student, onSave }) {
   )
 }
 
-function StudentDetail({
-  student,
-  acudientes,
-  matriculas,
-  pagos,
-  padrinos,
-  onUpdateStudent,
+function ChildDetail({
+  child,
+  guardians,
+  enrollments,
+  payments,
+  sponsors,
+  onUpdateChild,
   onBack,
   onDelete,
 }) {
   const [tab, setTab] = useState("datos")
   
-  const acudientesRelacionados = acudientes.filter(
-    (item) => item.id === student.acudienteId || (student.acudienteIds ?? []).includes(item.id) || item.studentsIds?.includes(student.id)
+  const relatedGuardians = guardians.filter(
+    (item) =>
+      item.id === child.guardianId ||
+      (child.guardianIds ?? []).includes(item.id) ||
+      item.childrenIds?.includes(child.id),
   )
   
-  const matrs = matriculas
-    .filter((item) => item.studentId === student.id)
+  const childEnrollments = enrollments
+    .filter((item) => item.childId === child.id)
     .sort((a, b) => b.anio - a.anio)
     
-  const studentPayments = pagos.filter((item) => item.studentId === student.id)
+  const childPayments = payments.filter((item) => item.childId === child.id)
   
-  const sponsors = padrinos.filter(
-    (item) => item.asignaciones.some((assignment) => assignment.destinoId === student.id) || item.studentId === student.id
+  const childSponsors = sponsors.filter(
+    (item) => item.asignaciones.some((assignment) => assignment.destinoId === child.id) || item.childId === child.id
   )
 
   const tabs = [
@@ -383,20 +386,20 @@ function StudentDetail({
         <Icon path={backPath} /> Volver a beneficiarios
       </Button>
       <Card className="mb-4 flex items-center gap-5 rounded-3xl p-6">
-        {student.foto ? (
-          <img src={student.foto} alt="" className="size-16 shrink-0 rounded-full object-cover" />
+        {child.foto ? (
+          <img src={child.foto} alt="" className="size-16 shrink-0 rounded-full object-cover" />
         ) : (
-          <Avatar name={student.nombre} size="lg" />
+          <Avatar name={child.nombre} size="lg" />
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-extrabold">{student.nombre}</h1>
+          <h1 className="truncate text-2xl font-extrabold">{child.nombre}</h1>
           <p className="mt-0.5 text-sm text-muted">
-            {student.edad} años · {student.ciudad}
+            {child.edad} años · {child.ciudad}
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <Badge tone={pagoTone[student.nivelPago]}>{pagoLabel[student.nivelPago]}</Badge>
-            <Badge tone={student.estadoMatricula === "activa" ? "success" : "warning"}>
-              {matriculaLabel[student.estadoMatricula]}
+            <Badge tone={pagoTone[child.nivelPago]}>{pagoLabel[child.nivelPago]}</Badge>
+            <Badge tone={child.estadoMatricula === "activa" ? "success" : "warning"}>
+              {matriculaLabel[child.estadoMatricula]}
             </Badge>
           </div>
         </div>
@@ -420,20 +423,20 @@ function StudentDetail({
       <Card className="rounded-3xl p-5">
         {tab === "datos" && (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Info label="Nombre completo" value={student.nombre} />
-            <Info label="Fecha de nacimiento" value={formatFecha(student.fechaNacimiento)} />
-            <Info label="Edad" value={`${student.edad} años`} />
-            <Info label="Ciudad" value={student.ciudad} />
-            <Info label="Dirección" value={student.direccion} />
-            <Info label="Barrio" value={student.barrio} />
+            <Info label="Nombre completo" value={child.nombre} />
+            <Info label="Fecha de nacimiento" value={formatFecha(child.fechaNacimiento)} />
+            <Info label="Edad" value={`${child.edad} años`} />
+            <Info label="Ciudad" value={child.ciudad} />
+            <Info label="Dirección" value={child.direccion} />
+            <Info label="Barrio" value={child.barrio} />
             <div className="sm:col-span-2">
-              <Info label="Observaciones" value={student.observaciones} />
+              <Info label="Observaciones" value={child.observaciones} />
             </div>
           </div>
         )}
         {tab === "acudientes" && (
           <div className="space-y-3">
-            {acudientesRelacionados.map((item) => (
+            {relatedGuardians.map((item) => (
               <SectionCard key={item.id} title={item.nombre}>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Info label="Parentesco" value={item.parentesco} />
@@ -446,16 +449,16 @@ function StudentDetail({
           </div>
         )}
         {tab === "salud" && (
-          <EditableTab student={student} kind="salud" onSave={(changes) => onUpdateStudent(student.id, changes)} />
+          <EditableTab child={child} kind="salud" onSave={(changes) => onUpdateChild(child.id, changes)} />
         )}
         {tab === "apoyos" && (
-          <EditableTab student={student} kind="apoyos" onSave={(changes) => onUpdateStudent(student.id, changes)} />
+          <EditableTab child={child} kind="apoyos" onSave={(changes) => onUpdateChild(child.id, changes)} />
         )}
         {tab === "matricula" && (
           <div className="space-y-5">
             <SectionCard title="Matrículas">
               <div className="space-y-2">
-                {matrs.map((item) => (
+                {childEnrollments.map((item) => (
                   <div key={item.id} className="flex justify-between rounded-xl bg-surface-muted p-3">
                     <span className="font-bold">Año {item.anio}</span>
                     <span className="text-sm text-muted">
@@ -467,7 +470,7 @@ function StudentDetail({
             </SectionCard>
             <SectionCard title="Pagos">
               <div className="space-y-2">
-                {studentPayments.map((item) => (
+                {childPayments.map((item) => (
                   <div key={item.id} className="flex items-center justify-between border-b border-border py-2 last:border-0">
                     <span className="font-semibold">{item.mes}</span>
                     <div className="flex items-center gap-2">
@@ -484,14 +487,14 @@ function StudentDetail({
         )}
         {tab === "padrino" && (
           <div className="space-y-3">
-            {sponsors.length ? (
-              sponsors.map((item) => (
+            {childSponsors.length ? (
+              childSponsors.map((item) => (
                 <SectionCard key={item.id} title={item.nombre}>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Info label="Contacto" value={item.contacto} />
                     <Info label="Correo" value={item.correo} />
                     {item.asignaciones
-                      .filter((assignment) => assignment.destinoId === student.id)
+                      .filter((assignment) => assignment.destinoId === child.id)
                       .map((assignment) => (
                         <div key={assignment.id} className="sm:col-span-2">
                           <Info label="Apadrinamiento" value={`${formatCOP(assignment.monto)} · ${assignment.periodicidad} · ${assignment.estado}`} />
@@ -508,7 +511,7 @@ function StudentDetail({
           </div>
         )}
         {tab === "documentos" && (
-          <DocumentsTab student={student} onSave={(documents) => onUpdateStudent(student.id, { documentos: documents })} />
+          <DocumentsTab child={child} onSave={(documents) => onUpdateChild(child.id, { documentos: documents })} />
         )}
       </Card>
       <Button variant="danger" onClick={onDelete} className="mt-4">
@@ -518,20 +521,20 @@ function StudentDetail({
   )
 }
 
-export default function StudentsScreen() {
+export default function ChildrenScreen() {
   const {
-    students,
-    acudientes,
-    matriculas,
-    pagos,
-    padrinos,
+    children,
+    guardians,
+    enrollments,
+    payments,
+    sponsors,
     loading,
     error,
-    createStudent,
-    createStudentWithAcudiente,
-    updateStudent,
-    deleteStudent,
-  } = useStudents()
+    createChild,
+    createChildWithGuardian,
+    updateChild,
+    deleteChild,
+  } = useChildren()
   const [filtro, setFiltro] = useState("todos")
   const [busqueda, setBusqueda] = useState("")
   const [selectedId, setSelectedId] = useState(null)
@@ -539,8 +542,8 @@ export default function StudentsScreen() {
   const [deleting, setDeleting] = useState(null)
   const [toast, setToast] = useState("")
   
-  const selected = students.find((item) => item.id === selectedId)
-  const filtered = students.filter(
+  const selected = children.find((item) => item.id === selectedId)
+  const filtered = children.filter(
     (item) =>
       (filtro === "todos" || item.nivelPago === filtro) &&
       item.nombre.toLocaleLowerCase("es-CO").includes(busqueda.toLocaleLowerCase("es-CO").trim())
@@ -559,13 +562,13 @@ export default function StudentsScreen() {
             {toast}
           </div>
         )}
-        <StudentDetail
-          student={selected}
-          acudientes={acudientes}
-          matriculas={matriculas}
-          pagos={pagos}
-          padrinos={padrinos}
-          onUpdateStudent={updateStudent}
+        <ChildDetail
+          child={selected}
+          guardians={guardians}
+          enrollments={enrollments}
+          payments={payments}
+          sponsors={sponsors}
+          onUpdateChild={updateChild}
           onBack={() => setSelectedId(null)}
           onDelete={() => setDeleting(selected)}
         />
@@ -575,7 +578,7 @@ export default function StudentsScreen() {
             name={deleting.nombre}
             onClose={() => setDeleting(null)}
             onConfirm={async () => {
-              const result = await deleteStudent(deleting.id)
+              const result = await deleteChild(deleting.id)
               if (result.ok) {
                 setDeleting(null)
                 setSelectedId(null)
@@ -597,10 +600,10 @@ export default function StudentsScreen() {
         </div>
       )}
       {creating && (
-        <CreateStudentDialog
-          acudientes={acudientes}
-          onCreateStudent={createStudent}
-          onCreateStudentWithAcudiente={createStudentWithAcudiente}
+        <CreateChildDialog
+          guardians={guardians}
+          onCreateChild={createChild}
+          onCreateChildWithGuardian={createChildWithGuardian}
           onClose={() => setCreating(false)}
           onCreated={(record) => {
             setCreating(false)
@@ -615,7 +618,7 @@ export default function StudentsScreen() {
           name={deleting.nombre}
           onClose={() => setDeleting(null)}
           onConfirm={async () => {
-            const result = await deleteStudent(deleting.id)
+            const result = await deleteChild(deleting.id)
             if (result.ok) {
               setDeleting(null)
               showToast(result.message)
@@ -627,9 +630,9 @@ export default function StudentsScreen() {
       <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-extrabold">Beneficiarios</h1>
-          <p className="text-sm font-semibold text-muted">
-            {students.length} registros
-          </p>
+          <span className="text-sm text-muted font-semibold">
+            {children.length} registros
+          </span>
         </div>
         {loading && (
           <p className="mb-4 text-sm font-semibold text-muted" role="status">
@@ -675,7 +678,7 @@ export default function StudentsScreen() {
 
       <div className="space-y-3">
         {filtered.map((item) => {
-          const acudiente = acudientes.find((person) => person.id === item.acudienteId)
+          const guardian = guardians.find((person) => person.id === item.guardianId)
           return (
             <Card key={item.id} className="flex items-center gap-2 rounded-3xl p-2">
               <button
@@ -687,7 +690,7 @@ export default function StudentsScreen() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-extrabold">{item.nombre}</p>
                   <p className="truncate text-sm text-muted">
-                    {item.edad} años · {acudiente?.nombre}
+                    {item.edad} años · {guardian?.nombre}
                   </p>
                 </div>
                 <Badge tone={pagoTone[item.nivelPago]} className="hidden sm:inline-flex">

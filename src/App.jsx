@@ -10,12 +10,18 @@ import Sidebar from "./components/Sidebar"
 import { useAuth } from "./hooks/useAuth"
 import Login from "./screens/Login"
 import Register from "./screens/Register"
-import StudentsScreen from "./screens/Students"
+import GuardiansScreen from "./screens/Guardians"
+import ChildrenScreen from "./screens/Children"
 
 function AppLayout({ session, onLogout }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const currentScreen = pathname === "/students" ? "ninos" : "dashboard"
+  const currentScreen =
+    pathname === "/children"
+      ? "beneficiarios"
+      : pathname === "/guardians"
+        ? "acudientes"
+        : "dashboard"
   const userName =
     session?.usuario?.username ||
     session?.usuario?.email ||
@@ -24,7 +30,11 @@ function AppLayout({ session, onLogout }) {
   const userRole = session?.roles?.join(", ") || ""
 
   const handleNavigate = (screen) => {
-    navigate(screen === "beneficiarios" ? "/students" : "/")
+    const routes = {
+      beneficiarios: "/children",
+      acudientes: "/guardians",
+    }
+    if (routes[screen]) navigate(routes[screen])
   }
 
   return (
@@ -110,7 +120,7 @@ const App = () => {
                   )}
                   <button
                     type="button"
-                    onClick={() => navigate("/students")}
+                    onClick={() => navigate("/children")}
                     className="mt-6 min-h-11 rounded-xl bg-primary px-4 py-2.5 font-extrabold text-foreground hover:bg-primary-hover hover:text-white"
                   >
                     Ver beneficiarios
@@ -122,7 +132,8 @@ const App = () => {
             )
           }
         />
-        <Route path="/students" element={<StudentsScreen />} />
+        <Route path="/children" element={<ChildrenScreen />} />
+        <Route path="/guardians" element={<GuardiansScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

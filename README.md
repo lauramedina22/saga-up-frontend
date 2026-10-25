@@ -25,7 +25,7 @@ saga-up-frontend/
 │   ├── imports/           # Imports y módulos auxiliares
 │   ├── screens/           # Pantallas principales del sistema
 │   ├── services/          # Comunicación con servicios externos y API
-│   ├── data.js            # Datos ficticios y utilidades de formato
+│   ├── data.js            # Utilidades de formato
 │   ├── App.jsx            # Componente principal de la app
 │   ├── main.jsx           # Punto de entrada de React
 │   └── App.css            # Estilos globales de la aplicación
@@ -44,16 +44,20 @@ saga-up-frontend/
 Contiene componentes reutilizables de la interfaz, como botones, tarjetas, barras de navegación, formularios y otros elementos que pueden reutilizarse en distintas pantallas.
 
 ### src/api
-Contiene el cliente HTTP usado para enviar solicitudes al backend. En esta rama se utiliza para el inicio de sesión.
+Contiene el cliente HTTP para las solicitudes al backend. Añade el token de sesión en el encabezado `Authorization: Bearer`.
 
 ### src/hooks
 Aquí se colocan hooks personalizados para manejar lógica reutilizable, estados y eventos, como autenticación, validación de formularios o consumo de APIs.
 
 ### src/services
-Contiene las operaciones de acceso a datos. `studentService.js` usa datos ficticios para permitir desarrollar la pantalla de beneficiarios mientras el backend correspondiente no está disponible; cuando esté listo, se puede reemplazar esa implementación por llamadas al API sin trasladar esa lógica a la vista.
+Cada servicio gestiona su propio dominio y se conecta directamente al backend, sin datos simulados:
+
+- `childService.js`: `GET/POST /children`, `PUT/DELETE /children/:id`.
+- `guardianService.js`: `GET/POST /guardians`, `DELETE /guardians/:id`.
+- `childGuardianService.js`: rutas anidadas para consultar, crear y eliminar relaciones entre children y guardians. Estas rutas se asumieron provisionalmente y deben ajustarse al contrato que confirme el backend.
 
 ### src/data.js
-Contiene datos sintéticos para probar la pantalla de beneficiarios y funciones de formato. No se deben usar datos personales reales en estos fixtures.
+Contiene funciones de formato y plantillas de mensajes; no contiene registros de prueba.
 
 ### src/imports
 Se usan para centralizar importaciones o archivos auxiliares necesarios en varias partes del proyecto.
@@ -65,9 +69,10 @@ Contiene las pantallas principales de la aplicación, como login, dashboard, per
 
 - `/login`: inicio de sesión.
 - `/register`: registro público.
-- `/students`: pantalla de beneficiarios con datos ficticios.
+- `/children`: pantalla de beneficiarios, cargada desde el backend.
+- `/guardians`: pantalla de acudientes, cargada desde el backend.
 
-La ruta `/students` está disponible directamente para facilitar la revisión de la pantalla mientras se desarrolla. Aún no tiene protección por roles; antes de producción, la autorización debe implementarse en el frontend y validarse también en el backend.
+Las rutas `/children` y `/guardians` están disponibles directamente para facilitar la revisión de las pantallas. Aún no tienen protección por roles; antes de producción, la autorización debe implementarse en el frontend y validarse también en el backend.
 
 ## Requisitos previos
 
