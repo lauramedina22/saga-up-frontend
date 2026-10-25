@@ -25,6 +25,7 @@ saga-up-frontend/
 │   ├── imports/           # Imports y módulos auxiliares
 │   ├── screens/           # Pantallas principales del sistema
 │   ├── services/          # Comunicación con servicios externos y API
+│   ├── data.js            # Datos ficticios y utilidades de formato
 │   ├── App.jsx            # Componente principal de la app
 │   ├── main.jsx           # Punto de entrada de React
 │   └── App.css            # Estilos globales de la aplicación
@@ -49,13 +50,24 @@ Contiene el cliente HTTP usado para enviar solicitudes al backend. En esta rama 
 Aquí se colocan hooks personalizados para manejar lógica reutilizable, estados y eventos, como autenticación, validación de formularios o consumo de APIs.
 
 ### src/services
-Contiene las funciones que se comunican con el backend. Actualmente, esta rama incluye el servicio de inicio de sesión; registro, perfil y otras operaciones se añadirán cuando estén dentro del alcance de su respectivo trabajo.
+Contiene las operaciones de acceso a datos. `studentService.js` usa datos ficticios para permitir desarrollar la pantalla de beneficiarios mientras el backend correspondiente no está disponible; cuando esté listo, se puede reemplazar esa implementación por llamadas al API sin trasladar esa lógica a la vista.
+
+### src/data.js
+Contiene datos sintéticos para probar la pantalla de beneficiarios y funciones de formato. No se deben usar datos personales reales en estos fixtures.
 
 ### src/imports
 Se usan para centralizar importaciones o archivos auxiliares necesarios en varias partes del proyecto.
 
 ### src/screens
 Contiene las pantallas principales de la aplicación, como login, dashboard, perfil de usuario, administración, entre otras.
+
+## Rutas de la aplicación
+
+- `/login`: inicio de sesión.
+- `/register`: registro público.
+- `/students`: pantalla de beneficiarios con datos ficticios.
+
+La ruta `/students` está disponible directamente para facilitar la revisión de la pantalla mientras se desarrolla. Aún no tiene protección por roles; antes de producción, la autorización debe implementarse en el frontend y validarse también en el backend.
 
 ## Requisitos previos
 
