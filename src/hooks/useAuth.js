@@ -1,6 +1,6 @@
 // Un Hook es la herramienta que permite a la pantalla recordar cosas y reaccionar cuando algo cambia
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { authService } from "../services/authService"
 
 const SESSION_KEY = "saga-up-session"
@@ -40,6 +40,42 @@ export function useAuth() {
   const [registerLoading, setRegisterLoading] = useState(false)
   const [registerError, setRegisterError] = useState("")
   const [registerSuccess, setRegisterSuccess] = useState("")
+
+  useEffect(() => {
+    if (!session) return undefined
+
+    let reloadStarted = false
+    const reloadIfSessionWasRemoved = () => {
+      if (reloadStarted) return
+
+      const savedSession = sessionStorage.getItem(SESSION_KEY)
+      let hasToken = false
+
+      if (savedSession) {
+        try {
+          const parsedSession = JSON.parse(savedSession)
+          hasToken =
+            typeof parsedSession?.token === "string" &&
+            parsedSession.token.length > 0
+        } catch {
+          hasToken = false
+        }
+      }
+
+      if (!hasToken) {
+        reloadStarted = true
+        window.location.reload()
+      }
+    }
+
+    window.addEventListener("storage", reloadIfSessionWasRemoved)
+    const intervalId = window.setInterval(reloadIfSessionWasRemoved, 250)
+
+    return () => {
+      window.removeEventListener("storage", reloadIfSessionWasRemoved)
+      window.clearInterval(intervalId)
+    }
+  }, [session])
 
   const login = async (email, password) => {
     setLoginError("")
