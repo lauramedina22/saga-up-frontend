@@ -18,40 +18,41 @@ export default function LoginScreen({
   }
 
   return (
-    <main className="flex min-h-screen w-full flex-col md:flex-row bg-white overflow-hidden">
+    <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-white md:flex-row">
+      {/* Fondo base para escritorio (mantiene tu diseño original) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-0 hidden w-[74%] bg-[linear-gradient(to_right,#02bdb1_0%,#b9e9e6_30%,#e8f7f6_60%,#ffffff_100%)] md:block"
+      />
       
-      {/* COLUMNA IZQUIERDA: Gradiente, Logo centrado y Manos abajo con difuminado */}
-      <div className="relative flex w-full flex-col justify-between bg-linear-to-br from-amber-100 via-teal-50 to-teal-100 p-8 md:w-1/2 md:p-16 overflow-hidden">
+      {/* COLUMNA IZQUIERDA: Gradiente, Logo centrado y Manos */}
+      <div className="relative flex min-h-[25vh] w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-[#02bdb1] via-teal-50 to-teal-100 p-8 md:min-h-0 md:w-1/2 md:bg-none md:p-16">
         
-        {/* Logo SAGA UP (Imagen) Centrado Arriba */}
-        <div className="flex flex-col items-center text-center mt-6 z-10">
+        {/* Logo SAGA UP (Imagen) Centrado */}
+        <div className="z-10 mt-4 flex flex-col items-center text-center md:mt-20">
           <img
             src={logoSaga}
             alt="SAGA UP - Sistema de Administración y Gestión de Asisco Up"
-            className="w-full max-w-md object-contain"
+            className="w-full max-w-[260px] md:max-w-md object-contain"
           />
         </div>
 
-        {/* Espaciador flexible para empujar las manos hacia abajo */}
-        <div className="flex-grow"></div>
+        {/* Espaciador flexible para empujar las manos hacia abajo solo en escritorio */}
+        <div className="hidden flex-grow md:block"></div>
 
-        {/* Contenedor de las manos con el difuminado superior aplicado en CSS */}
-        <div className="absolute bottom-0 left-0 right-0 w-full pointer-events-none">
+        {/* Contenedor de las manos */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex w-full justify-center md:block">
           <img
             src={manos}
             alt="Manos colaborativas"
-            className="w-full object-cover object-bottom opacity-95"
-            style={{
-              maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%)',
-              WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%)'
-            }}
+            className="h-[10vh] w-[55%] object-contain object-bottom opacity-65 md:h-auto md:w-full md:object-cover md:[mask-image:linear-gradient(to_top,rgba(0,0,0,1)_60%,rgba(0,0,0,0)_100%)] md:[-webkit-mask-image:linear-gradient(to_top,rgba(0,0,0,1)_60%,rgba(0,0,0,0)_100%)]"
           />
         </div>
       </div>
 
       {/* COLUMNA DERECHA: Formulario de Login */}
-      <div className="flex w-full flex-col justify-center p-8 md:w-1/2 md:p-20 lg:p-24 bg-white z-10">
-        <div className="w-full max-w-md mx-auto">
+      <div className="z-10 flex w-full flex-col justify-center bg-white p-8 md:w-1/2 md:bg-transparent md:p-20 lg:p-24">
+        <div className="mx-auto w-full max-w-md">
           
           <div className="mb-8">
             <h1 className="mb-1 text-2xl font-extrabold text-gray-900 sm:text-3xl">
@@ -96,7 +97,7 @@ export default function LoginScreen({
             <Button 
               type="submit" 
               loading={loading} 
-              className="mt-2 w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl transition-all shadow-md"
+              className="mt-2 w-full rounded-xl bg-teal-600 py-3 font-bold text-white shadow-md transition-all hover:bg-teal-700"
             >
               Entrar
             </Button>
