@@ -20,9 +20,11 @@ saga-up-frontend/
 ├── node_modules/          # Dependencias instaladas del proyecto
 ├── src/                   # Código principal de la aplicación
 │   ├── components/        # Componentes reutilizables
+│   ├── api/               # Cliente HTTP y configuración de llamadas al backend
 │   ├── hooks/             # Hooks personalizados
 │   ├── imports/           # Imports y módulos auxiliares
 │   ├── screens/           # Pantallas principales del sistema
+│   ├── services/          # Comunicación con servicios externos y API
 │   ├── App.jsx            # Componente principal de la app
 │   ├── main.jsx           # Punto de entrada de React
 │   └── App.css            # Estilos globales de la aplicación
@@ -40,8 +42,14 @@ saga-up-frontend/
 ### src/components
 Contiene componentes reutilizables de la interfaz, como botones, tarjetas, barras de navegación, formularios y otros elementos que pueden reutilizarse en distintas pantallas.
 
+### src/api
+Contiene el cliente HTTP usado para enviar solicitudes al backend. En esta rama se utiliza para el inicio de sesión.
+
 ### src/hooks
 Aquí se colocan hooks personalizados para manejar lógica reutilizable, estados y eventos, como autenticación, validación de formularios o consumo de APIs.
+
+### src/services
+Contiene las funciones que se comunican con el backend. Actualmente, esta rama incluye el servicio de inicio de sesión; registro, perfil y otras operaciones se añadirán cuando estén dentro del alcance de su respectivo trabajo.
 
 ### src/imports
 Se usan para centralizar importaciones o archivos auxiliares necesarios en varias partes del proyecto.

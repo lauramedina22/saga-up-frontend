@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #F39200;
+  --color-primary-hover: #C96F00;
+  --color-primary-soft: #FFF4E3;
+  --color-info: #0B7F78;
+  --color-info-hover: #086B65;
+  --color-info-soft: #E7F7F5;
+  --color-success: #287D25;
+  --color-success-hover: #21691F;
+  --color-success-soft: #EAF6E9;
+  --color-warning: #8A5A00;
+  --color-warning-hover: #714A00;
+  --color-warning-soft: #FFF6D9;
+  --color-danger: #C7353B;
+  --color-danger-hover: #A92B31;
+  --color-danger-soft: #FDEBEC;
+  --color-background: #F7F7F5;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F1F2EF;
+  --color-foreground: #292929;
+  --color-muted: #667085;
+  --color-subtle: #8A9099;
+  --color-border: #E4E6E1;
+  --color-disabled: #D5D8D2;
+  --font-heading: 'Baloo 2', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+  --shadow-card: 0 1px 2px rgba(32, 36, 32, 0.04), 0 8px 24px rgba(32, 36, 32, 0.05);
+  --shadow-dialog: 0 24px 64px rgba(32, 36, 32, 0.18);
+}
+
+:root {
+  color: var(--color-foreground);
+  background: var(--color-background);
+  font-family: var(--font-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-disabled) transparent;
+}
+
+html {
+  min-width: 320px;
+  background: var(--color-background);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  color: var(--color-foreground);
+  background: var(--color-background);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: var(--font-heading);
+  line-height: 1.15;
+}
+
+::selection {
+  color: var(--color-foreground);
+  background: var(--color-primary-soft);
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
+  outline-offset: 3px;
+}
+
+::placeholder {
+  color: var(--color-subtle);
+  opacity: 1;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--color-disabled);
+}
+
+.safe-area-pb {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-enter {
+  animation: enter 180ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
