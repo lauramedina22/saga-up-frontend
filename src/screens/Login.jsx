@@ -1,6 +1,5 @@
 import { useState } from "react"
-import logoSaga from "../imports/texto.png" // Ajusta la ruta a tu imagen de SAGA UP
-import manos from "../imports/manos.png"        // Tu imagen de las manitos
+import logoSaga from "../imports/texto.png"
 import { Button, Field, PasswordField } from "../components/ui"
 
 export default function LoginScreen({
@@ -25,27 +24,12 @@ export default function LoginScreen({
         className="pointer-events-none absolute inset-y-0 left-0 hidden w-[74%] bg-[linear-gradient(to_right,#02bdb1_0%,#b9e9e6_30%,#e8f7f6_60%,#ffffff_100%)] md:block"
       />
       
-      {/* COLUMNA IZQUIERDA: Gradiente, Logo centrado y Manos */}
-      <div className="relative flex min-h-[25vh] w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-[#02bdb1] via-teal-50 to-teal-100 p-8 md:min-h-0 md:w-1/2 md:bg-none md:p-16">
-        
-        {/* Logo SAGA UP (Imagen) Centrado */}
-        <div className="z-10 mt-4 flex flex-col items-center text-center md:mt-20">
+      <div className="relative flex min-h-[25vh] w-full items-center justify-center overflow-hidden bg-linear-to-br from-[#02bdb1] via-teal-50 to-teal-100 p-8 md:min-h-0 md:w-1/2 md:bg-none md:p-16">
+        <div className="z-10 flex flex-col items-center text-center">
           <img
             src={logoSaga}
             alt="SAGA UP - Sistema de Administración y Gestión de Asisco Up"
-            className="w-full max-w-[260px] md:max-w-md object-contain"
-          />
-        </div>
-
-        {/* Espaciador flexible para empujar las manos hacia abajo solo en escritorio */}
-        <div className="hidden flex-grow md:block"></div>
-
-        {/* Contenedor de las manos */}
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex w-full justify-center md:block">
-          <img
-            src={manos}
-            alt="Manos colaborativas"
-            className="h-[10vh] w-[55%] object-contain object-bottom opacity-65 md:h-auto md:w-full md:object-cover md:[mask-image:linear-gradient(to_top,rgba(0,0,0,1)_60%,rgba(0,0,0,0)_100%)] md:[-webkit-mask-image:linear-gradient(to_top,rgba(0,0,0,1)_60%,rgba(0,0,0,0)_100%)]"
+            className="w-full max-w-75 object-contain md:max-w-lg"
           />
         </div>
       </div>
