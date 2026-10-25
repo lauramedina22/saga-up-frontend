@@ -37,6 +37,9 @@ export function useAuth() {
   const [session, setSession] = useState(getSavedSession)
   const [loginLoading, setLoginLoading] = useState(false) // Indica si la petición HTTP hacia el backend en Render está en proceso
   const [loginError, setLoginError] = useState("") // Almacena el mensaje de error en texto plano para mostrárselo al usuario si algo sale mal
+  const [registerLoading, setRegisterLoading] = useState(false)
+  const [registerError, setRegisterError] = useState("")
+  const [registerSuccess, setRegisterSuccess] = useState("")
 
   const login = async (email, password) => {
     setLoginError("")
@@ -63,10 +66,32 @@ export function useAuth() {
     }
   }
 
+  const register = async (userData) => {
+    setRegisterError("")
+    setRegisterSuccess("")
+    setRegisterLoading(true)
+
+    try {
+      await authService.register(userData)
+
+      
+      // Como la API solo confirma el registro, seteamos el mensaje directamente
+      setRegisterSuccess("Tu cuenta fue creada. Ya puedes iniciar sesión.")
+    } catch (error) {
+      setRegisterError(getErrorMessage(error))
+    } finally {
+      setRegisterLoading(false)
+    }
+  }
+
   return {
     session,
     login,
     loginLoading,
     loginError,
+    register,
+    registerLoading,
+    registerError,
+    registerSuccess,
   }
 }

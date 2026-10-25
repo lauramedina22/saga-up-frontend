@@ -1,5 +1,7 @@
+import { useState } from "react"
 import { useAuth } from "./hooks/useAuth"
 import Login from "./screens/Login"
+import Register from "./screens/Register"
 
 const App = () => {
   const {
@@ -7,7 +9,12 @@ const App = () => {
     login,
     loginLoading,
     loginError,
+    register,
+    registerLoading,
+    registerError,
+    registerSuccess,
   } = useAuth()
+  const [currentScreen, setCurrentScreen] = useState("login")
 
   if (session) {
     return (
@@ -25,7 +32,26 @@ const App = () => {
     )
   }
 
-  return <Login onLogin={login} loading={loginLoading} error={loginError} />
+  if (currentScreen === "register") {
+    return (
+      <Register
+        onRegister={register}
+        onBackToLogin={() => setCurrentScreen("login")}
+        loading={registerLoading}
+        error={registerError}
+        success={registerSuccess}
+      />
+    )
+  }
+
+  return (
+    <Login
+      onLogin={login}
+      onGoToRegister={() => setCurrentScreen("register")}
+      loading={loginLoading}
+      error={loginError}
+    />
+  )
 }
 
 export default App

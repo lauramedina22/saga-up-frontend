@@ -13,4 +13,8 @@ export const authService = {
       roles: Array.isArray(data.usuario.roles) ? data.usuario.roles : [],
     }
   },
+
+  register(userData) {
+    return apiClient.post("/auth/registro", userData)
+  },
 }

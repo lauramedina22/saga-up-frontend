@@ -1,8 +1,13 @@
 import { useState } from "react"
 import logo from "../imports/logo.png"
-import { Button, Field } from "../components/ui"
+import { Button, Field, PasswordField } from "../components/ui"
 
-export default function LoginScreen({ onLogin, loading, error }) {
+export default function LoginScreen({
+  onLogin,
+  onGoToRegister,
+  loading,
+  error,
+}) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
@@ -21,16 +26,14 @@ export default function LoginScreen({ onLogin, loading, error }) {
         aria-hidden="true"
         className="absolute -right-24 bottom-12 size-72 rounded-full bg-primary-soft blur-3xl"
       />
-      <section className="animate-enter relative flex w-full max-w-md flex-col items-center gap-6 rounded-3xl border border-border bg-surface p-6 shadow-dialog sm:p-9">
-        <div className="flex flex-col items-center gap-2">
-          <img src={logo} alt="ASISCO UP" className="w-48 object-contain" />
-          <p className="text-center font-heading text-sm font-bold text-info">
-            ¡No somos Down, somos UP!
-          </p>
+      <section className="animate-enter relative flex w-full max-w-md flex-col items-center gap-5 rounded-3xl border border-border bg-surface p-6 shadow-dialog sm:p-9">
+        <div className="flex h-32 w-48 items-center justify-center">
+          <img
+            src={logo}
+            alt="ASISCO UP"
+            className="h-full w-full object-contain mix-blend-multiply"
+          />
         </div>
-
-        <div className="h-px w-full bg-border" />
-
         <div className="w-full">
           <h1 className="mb-1 text-center text-3xl font-extrabold">
             Bienvenid@ a SAGA-UP
@@ -49,9 +52,8 @@ export default function LoginScreen({ onLogin, loading, error }) {
               required
               placeholder="correo@asiscoup.org"
             />
-            <Field
+            <PasswordField
               label="Contraseña"
-              type="password"
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -69,9 +71,13 @@ export default function LoginScreen({ onLogin, loading, error }) {
           </form>
           <div className="mt-5 text-center text-sm text-muted">
             <span>¿Aún no tienes cuenta? </span>
-            <span className="font-bold text-info">
+            <button
+              type="button"
+              onClick={onGoToRegister}
+              className="font-bold text-info underline-offset-4 hover:underline"
+            >
               Regístrate
-            </span>
+            </button>
           </div>
         </div>
       </section>
