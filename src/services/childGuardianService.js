@@ -1,4 +1,5 @@
 import apiClient from "../api/apiClient"
+import { toChildGuardianModel } from "../models/childGuardianModel"
 
 const CHILDREN_ENDPOINT = "/children"
 const GUARDIANS_ENDPOINT = "/guardians"
@@ -17,8 +18,16 @@ function getIdList(response, collectionKey, idKeys) {
   return records.map((record) => {
     if (typeof record === "string") return record
 
-    const id = idKeys.map((key) => record?.[key]).find(Boolean)
-    if (!id) {
+    const relationship = toChildGuardianModel(record)
+    const id =
+      (collectionKey === "guardians"
+        ? relationship.guardianId
+        : relationship.childId) ??
+      idKeys.map((key) => record?.[key]).find(Boolean) ??
+      (collectionKey === "guardians"
+        ? record?.guardian_id
+        : record?.child_id)
+    if (id === undefined || id === null || id === "") {
       throw new Error(
         "La respuesta del servidor contiene una relación sin identificador.",
       )
@@ -32,14 +41,18 @@ export const childGuardianService = {
     const response = await apiClient.get(
       `${CHILDREN_ENDPOINT}/${childId}/guardians`,
     )
-    return getIdList(response, "guardians", ["id", "guardianId"])
+    return getIdList(response, "guardians", [
+      "id",
+      "guardianId",
+      "guardian_id",
+    ])
   },
 
   async getChildIdsForGuardian(guardianId) {
     const response = await apiClient.get(
       `${GUARDIANS_ENDPOINT}/${guardianId}/children`,
     )
-    return getIdList(response, "children", ["id", "childId"])
+    return getIdList(response, "children", ["id", "childId", "child_id"])
   },
 
   linkChildToGuardian,

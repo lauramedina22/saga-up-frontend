@@ -24,14 +24,14 @@ function GuardianWhatsAppModal({ guardian, onClose }) {
   const plantilla = plantillas.find((p) => p.tipo === "confirmacion_datos")
   const [mensaje, setMensaje] = useState(
     (plantilla?.contenido || "")
-      .replace("{{acudiente}}", guardian.nombre)
-      .replace("{{telefono}}", guardian.telefono)
-      .replace("{{correo}}", guardian.correo)
+      .replace("{{acudiente}}", guardian.fullName)
+      .replace("{{telefono}}", guardian.phone)
+      .replace("{{correo}}", guardian.email)
       .replace("{{direccion}}", "la registrada en nuestro sistema"),
   )
 
   const enviar = () => {
-    const url = `https://wa.me/${guardian.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(mensaje)}`
+    const url = `https://wa.me/${(guardian.whatsapp || guardian.phone).replace(/\D/g, "")}?text=${encodeURIComponent(mensaje)}`
     window.open(url, "_blank")
     onClose()
   }
@@ -50,7 +50,7 @@ function GuardianWhatsAppModal({ guardian, onClose }) {
             <p className="font-bold text-foreground">
               Pedir confirmación de datos
             </p>
-            <p className="text-xs text-muted">{guardian.nombre}</p>
+            <p className="text-xs text-muted">{guardian.fullName}</p>
           </div>
           <button
             onClick={onClose}
@@ -70,7 +70,7 @@ function GuardianWhatsAppModal({ guardian, onClose }) {
             className="w-full border border-border rounded-2xl p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-info/30 resize-none"
           />
           <p className="text-xs text-muted mt-1">
-            Se enviará al: {guardian.whatsapp}
+            Se enviará al: {guardian.whatsapp || guardian.phone}
           </p>
         </div>
         <div className="px-5 pb-5 flex gap-3">
@@ -121,49 +121,49 @@ function GuardianDetail({
 
       <div className="bg-surface rounded-3xl p-6 mb-4 shadow-sm border border-border">
         <div className="flex items-center gap-4 mb-5">
-          <Avatar name={guardian.nombre} />
+          <Avatar name={guardian.fullName} />
           <div>
             <h1 className="text-xl font-extrabold text-foreground">
-              {guardian.nombre}
+              {guardian.fullName}
             </h1>
-            <p className="text-muted text-sm">{guardian.parentesco}</p>
+            <p className="text-muted text-sm">{guardian.relationship}</p>
           </div>
           <span
             className={`ml-auto text-xs font-bold px-3 py-1.5 rounded-full ${
-              guardian.datosConfirmados
+              guardian.dataConfirmed
                 ? "bg-success-soft text-success"
                 : "bg-warning-soft text-warning"
             }`}
           >
-            {guardian.datosConfirmados
+            {guardian.dataConfirmed
               ? "✓ Datos confirmados"
               : "⚠ Por confirmar"}
           </span>
         </div>
 
         <div className="space-y-4">
-          <Campo label="Teléfono" valor={guardian.telefono} />
-          <Campo label="WhatsApp" valor={guardian.whatsapp} />
-          <Campo label="Correo" valor={guardian.correo} />
-          {guardian.direccion && (
-            <Campo label="Dirección" valor={guardian.direccion} />
+          <Campo label="Teléfono" valor={guardian.phone} />
+          <Campo label="WhatsApp" valor={guardian.whatsapp || guardian.phone} />
+          <Campo label="Correo" valor={guardian.email} />
+          {guardian.address.street && (
+            <Campo label="Dirección" valor={guardian.address.street} />
           )}
-          {guardian.barrio && (
-            <Campo label="Barrio" valor={guardian.barrio} />
+          {guardian.address.neighborhood && (
+            <Campo label="Barrio" valor={guardian.address.neighborhood} />
           )}
-          {guardian.canalPreferido && (
-            <Campo label="Canal preferido" valor={guardian.canalPreferido} />
+          {guardian.preferredChannel && (
+            <Campo label="Canal preferido" valor={guardian.preferredChannel} />
           )}
-          {guardian.numeroDocumento && (
+          {guardian.document.number && (
             <Campo
-              label={guardian.tipoDocumento || "Documento"}
-              valor={`•••• ${guardian.numeroDocumento.slice(-4)}`}
+              label={guardian.document.type || "Documento"}
+              valor={`•••• ${guardian.document.number.slice(-4)}`}
             />
           )}
-          {guardian.ultimaConfirmacion && (
+          {guardian.lastConfirmation && (
             <Campo
               label="Última confirmación"
-              valor={formatFecha(guardian.ultimaConfirmacion)}
+              valor={formatFecha(guardian.lastConfirmation)}
             />
           )}
         </div>
@@ -180,9 +180,9 @@ function GuardianDetail({
           >
             <div className="w-2 h-2 rounded-full bg-primary" />
             <span className="font-semibold text-foreground text-sm">
-              {child.nombre}
+              {child.fullName}
             </span>
-            <span className="text-xs text-muted ml-auto">{child.edad} años</span>
+            <span className="text-xs text-muted ml-auto">{child.age} años</span>
           </div>
         ))}
         {linkedChildren.length === 0 && (
@@ -266,7 +266,7 @@ export default function GuardiansScreen() {
         {deleting && (
           <DeletePersonDialog
             kind="guardian"
-            name={deleting.nombre}
+            name={deleting.fullName}
             onClose={() => setDeleting(null)}
             onConfirm={async () => {
               const result = await deleteGuardian(deleting.id)
@@ -285,12 +285,12 @@ export default function GuardiansScreen() {
   const filteredGuardians = guardians.filter((guardian) => {
     const term = busqueda.trim().toLowerCase()
     const matchBusqueda =
-      guardian.nombre.toLowerCase().includes(term) ||
-      (guardian.numeroDocumento ?? "").toLowerCase().includes(term)
+      guardian.fullName.toLowerCase().includes(term) ||
+      (guardian.document.number ?? "").toLowerCase().includes(term)
     const matchFiltro =
       filtro === "todos" ||
-      (filtro === "confirmados" && guardian.datosConfirmados) ||
-      (filtro === "pendientes" && !guardian.datosConfirmados)
+      (filtro === "confirmados" && guardian.dataConfirmed) ||
+      (filtro === "pendientes" && !guardian.dataConfirmed)
     return matchBusqueda && matchFiltro
   })
 
@@ -319,7 +319,7 @@ export default function GuardiansScreen() {
       {deleting && (
         <DeletePersonDialog
           kind="guardian"
-          name={deleting.nombre}
+          name={deleting.fullName}
           onClose={() => setDeleting(null)}
           onConfirm={async () => {
             const result = await deleteGuardian(deleting.id)
@@ -410,33 +410,33 @@ export default function GuardiansScreen() {
                 onClick={() => setSelectedId(guardian.id)}
                 className="flex min-w-0 flex-1 items-center gap-4 rounded-2xl p-2 text-left hover:bg-background"
               >
-                <Avatar name={guardian.nombre} />
+                <Avatar name={guardian.fullName} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-extrabold text-foreground">
-                    {guardian.nombre}
+                    {guardian.fullName}
                   </p>
                   <p className="truncate text-sm text-muted">
-                    {guardian.parentesco}
+                    {guardian.relationship}
                     {linkedChildren.length > 0
-                      ? ` · ${linkedChildren.map((child) => child.nombre.split(" ")[0]).join(", ")}`
+                      ? ` · ${linkedChildren.map((child) => child.firstName).join(", ")}`
                       : " · Sin beneficiarios vinculados"}
                   </p>
-                  <p className="mt-0.5 text-xs text-subtle">{guardian.telefono}</p>
+                  <p className="mt-0.5 text-xs text-subtle">{guardian.phone}</p>
                 </div>
                 <span
                   className={`hidden shrink-0 rounded-full px-2.5 py-1 text-xs font-bold sm:inline-flex ${
-                    guardian.datosConfirmados
+                    guardian.dataConfirmed
                       ? "bg-success-soft text-success"
                       : "bg-warning-soft text-warning"
                   }`}
                 >
-                  {guardian.datosConfirmados ? "Datos confirmados" : "Por confirmar"}
+                  {guardian.dataConfirmed ? "Datos confirmados" : "Por confirmar"}
                 </span>
               </button>
               <button
                 type="button"
                 onClick={() => setDeleting(guardian)}
-                aria-label={`Eliminar a ${guardian.nombre}`}
+                aria-label={`Eliminar a ${guardian.fullName}`}
                 className="min-h-11 shrink-0 rounded-xl px-3 text-sm font-bold text-danger hover:bg-danger-soft"
               >
                 Eliminar

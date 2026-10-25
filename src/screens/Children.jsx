@@ -93,31 +93,31 @@ function EditableTab({ child, kind, onSave }) {
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
                 label="EPS"
-                value={draft.eps ?? ""}
-                onChange={(e) => update("eps", e.target.value)}
+                value={draft.health.eps ?? ""}
+                onChange={(e) => update("health", { ...draft.health, eps: e.target.value })}
               />
               <Field
                 label="Estado de afiliación"
-                value={draft.estadoAfiliacion ?? ""}
-                onChange={(e) => update("estadoAfiliacion", e.target.value)}
+                value={draft.health.affiliationState ?? ""}
+                onChange={(e) => update("health", { ...draft.health, affiliationState: e.target.value })}
               />
               <div className="sm:col-span-2">
                 <TextArea
                   label="Condición médica / Diagnóstico"
                   rows={3}
-                  value={draft.condicionesSalud ?? ""}
-                  onChange={(e) => update("condicionesSalud", e.target.value)}
+                  value={draft.health.specialConditions ?? ""}
+                  onChange={(e) => update("health", { ...draft.health, specialConditions: e.target.value })}
                 />
               </div>
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Info label="EPS" value={child.eps} />
-              <Info label="Estado de afiliación" value={child.estadoAfiliacion} />
+              <Info label="EPS" value={child.health.eps} />
+              <Info label="Estado de afiliación" value={child.health.affiliationState} />
               <div className="sm:col-span-2">
                 <Info
                   label="Condición médica / Diagnóstico"
-                  value={child.condicionesSalud}
+                  value={child.health.specialConditions}
                 />
               </div>
             </div>
@@ -129,37 +129,37 @@ function EditableTab({ child, kind, onSave }) {
               <TextArea
                 label="Alergias registradas"
                 rows={2}
-                value={draft.alergias ?? ""}
-                onChange={(e) => update("alergias", e.target.value)}
+                value={draft.health.allergies ?? ""}
+                onChange={(e) => update("health", { ...draft.health, allergies: e.target.value })}
               />
               <TextArea
                 label="Medicamentos: nombre, dosis, horario e indicaciones"
                 rows={3}
-                value={draft.medicamentos ?? ""}
-                onChange={(e) => update("medicamentos", e.target.value)}
+                value={draft.health.medicines ?? ""}
+                onChange={(e) => update("health", { ...draft.health, medicines: e.target.value })}
               />
               <TextArea
                 label="Restricciones de alimentación"
                 rows={2}
-                value={draft.restriccionesAlimentarias ?? ""}
-                onChange={(e) => update("restriccionesAlimentarias", e.target.value)}
+                value={draft.health.mealRestrictions ?? ""}
+                onChange={(e) => update("health", { ...draft.health, mealRestrictions: e.target.value })}
               />
               <TextArea
                 label="Cuidados / Condiciones especiales"
                 rows={3}
-                value={draft.cuidadosEspeciales ?? ""}
-                onChange={(e) => update("cuidadosEspeciales", e.target.value)}
+                value={draft.health.careNotes ?? ""}
+                onChange={(e) => update("health", { ...draft.health, careNotes: e.target.value })}
               />
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Info label="Alergias registradas" value={child.alergias} />
-              <Info label="Restricciones de alimentación" value={child.restriccionesAlimentarias} />
+              <Info label="Alergias registradas" value={child.health.allergies} />
+              <Info label="Restricciones de alimentación" value={child.health.mealRestrictions} />
               <div className="sm:col-span-2">
-                <Info label="Medicamentos e indicaciones" value={child.medicamentos} />
+                <Info label="Medicamentos e indicaciones" value={child.health.medicines} />
               </div>
               <div className="sm:col-span-2">
-                <Info label="Cuidados / Condiciones especiales" value={child.cuidadosEspeciales} />
+                <Info label="Cuidados / Condiciones especiales" value={child.health.careNotes} />
               </div>
             </div>
           )}
@@ -188,33 +188,33 @@ function EditableTab({ child, kind, onSave }) {
           <div className="grid gap-4">
             <Field
               label="Formas de comunicación"
-              value={draft.formasComunicacion ?? ""}
-              onChange={(e) => update("formasComunicacion", e.target.value)}
+              value={draft.support.formsOfCommunication ?? ""}
+              onChange={(e) => update("support", { ...draft.support, formsOfCommunication: e.target.value })}
             />
             <TextArea
               label="Apoyos requeridos en la rutina diaria"
               rows={2}
-              value={draft.apoyosRutina ?? ""}
-              onChange={(e) => update("apoyosRutina", e.target.value)}
+              value={draft.support.dailyRoutine ?? ""}
+              onChange={(e) => update("support", { ...draft.support, dailyRoutine: e.target.value })}
             />
             <Field
               label="Qué le gusta"
-              value={draft.leGusta ?? ""}
-              onChange={(e) => update("leGusta", e.target.value)}
+              value={draft.support.likes ?? ""}
+              onChange={(e) => update("support", { ...draft.support, likes: e.target.value })}
             />
             <TextArea
               label="Qué lo calma / Manejo de crisis"
               rows={3}
-              value={draft.manejoCrisis ?? ""}
-              onChange={(e) => update("manejoCrisis", e.target.value)}
+              value={draft.support.crisisManagement ?? ""}
+              onChange={(e) => update("support", { ...draft.support, crisisManagement: e.target.value })}
             />
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Info label="Formas de comunicación" value={child.formasComunicacion || child.apoyos} />
-            <Info label="Apoyos en la rutina diaria" value={child.apoyosRutina} />
-            <Info label="Qué le gusta" value={child.leGusta || child.observaciones} />
-            <Info label="Qué lo calma / Manejo de crisis" value={child.manejoCrisis} />
+            <Info label="Formas de comunicación" value={child.support.formsOfCommunication || child.support.required} />
+            <Info label="Apoyos en la rutina diaria" value={child.support.dailyRoutine} />
+            <Info label="Qué le gusta" value={child.support.likes || child.notes} />
+            <Info label="Qué lo calma / Manejo de crisis" value={child.support.crisisManagement} />
           </div>
         )}
       </SectionCard>
@@ -223,31 +223,31 @@ function EditableTab({ child, kind, onSave }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
               label="Colegio / Institución"
-              value={draft.institucionEducativa ?? ""}
-              onChange={(e) => update("institucionEducativa", e.target.value)}
+              value={draft.support.school ?? ""}
+              onChange={(e) => update("support", { ...draft.support, school: e.target.value })}
             />
             <Field
               label="Grado"
-              value={draft.grado ?? ""}
-              onChange={(e) => update("grado", e.target.value)}
+              value={draft.support.grade ?? ""}
+              onChange={(e) => update("support", { ...draft.support, grade: e.target.value })}
             />
             <Field
               label="Jornada"
-              value={draft.jornada ?? ""}
-              onChange={(e) => update("jornada", e.target.value)}
+              value={draft.support.schedule ?? ""}
+              onChange={(e) => update("support", { ...draft.support, schedule: e.target.value })}
             />
             <Field
               label="Terapias externas: tipo, centro, días y horarios"
-              value={draft.terapiasExternas ?? ""}
-              onChange={(e) => update("terapiasExternas", e.target.value)}
+              value={draft.support.externalTherapies ?? ""}
+              onChange={(e) => update("support", { ...draft.support, externalTherapies: e.target.value })}
             />
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Info label="Colegio / Institución" value={child.institucionEducativa} />
-            <Info label="Grado y jornada" value={[child.grado, child.jornada].filter(Boolean).join(" · ")} />
+            <Info label="Colegio / Institución" value={child.support.school} />
+            <Info label="Grado y jornada" value={[child.support.grade, child.support.schedule].filter(Boolean).join(" · ")} />
             <div className="sm:col-span-2">
-              <Info label="Terapias externas" value={child.terapiasExternas} />
+              <Info label="Terapias externas" value={child.support.externalTherapies} />
             </div>
           </div>
         )}
@@ -285,7 +285,7 @@ function DocumentsTab({ child, onSave }) {
         contenido: String(reader.result),
       }
       onSave([
-        ...(child.documentos ?? []).filter((item) => item.tipo !== tipo),
+        ...(child.documents ?? []).filter((item) => item.tipo !== tipo),
         document,
       ])
     }
@@ -301,7 +301,7 @@ function DocumentsTab({ child, onSave }) {
         </p>
       </div>
       {beneficiaryDocs.map((item) => {
-        const document = child.documentos?.find((doc) => doc.tipo === item.tipo)
+        const document = child.documents?.find((doc) => doc.tipo === item.tipo)
         return (
           <section key={item.tipo} className="flex flex-col gap-4 rounded-2xl border border-border p-4 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
@@ -362,7 +362,7 @@ function ChildDetail({
   
   const childEnrollments = enrollments
     .filter((item) => item.childId === child.id)
-    .sort((a, b) => b.anio - a.anio)
+    .sort((a, b) => b.year - a.year)
     
   const childPayments = payments.filter((item) => item.childId === child.id)
   
@@ -386,20 +386,22 @@ function ChildDetail({
         <Icon path={backPath} /> Volver a beneficiarios
       </Button>
       <Card className="mb-4 flex items-center gap-5 rounded-3xl p-6">
-        {child.foto ? (
-          <img src={child.foto} alt="" className="size-16 shrink-0 rounded-full object-cover" />
+        {child.photo ? (
+          <img src={child.photo} alt="" className="size-16 shrink-0 rounded-full object-cover" />
         ) : (
-          <Avatar name={child.nombre} size="lg" />
+          <Avatar name={child.fullName} size="lg" />
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-extrabold">{child.nombre}</h1>
+          <h1 className="truncate text-2xl font-extrabold">{child.fullName}</h1>
           <p className="mt-0.5 text-sm text-muted">
-            {child.edad} años · {child.ciudad}
+            {child.age} años · {child.address.city}
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <Badge tone={pagoTone[child.nivelPago]}>{pagoLabel[child.nivelPago]}</Badge>
-            <Badge tone={child.estadoMatricula === "activa" ? "success" : "warning"}>
-              {matriculaLabel[child.estadoMatricula]}
+            <Badge tone={pagoTone[child.enrollment.paymentLevel] ?? "warning"}>
+              {pagoLabel[child.enrollment.paymentLevel] ?? "Sin dato"}
+            </Badge>
+            <Badge tone={child.enrollment.status === "activa" ? "success" : "warning"}>
+              {matriculaLabel[child.enrollment.status] ?? "Estado sin definir"}
             </Badge>
           </div>
         </div>
@@ -423,26 +425,26 @@ function ChildDetail({
       <Card className="rounded-3xl p-5">
         {tab === "datos" && (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Info label="Nombre completo" value={child.nombre} />
-            <Info label="Fecha de nacimiento" value={formatFecha(child.fechaNacimiento)} />
-            <Info label="Edad" value={`${child.edad} años`} />
-            <Info label="Ciudad" value={child.ciudad} />
-            <Info label="Dirección" value={child.direccion} />
-            <Info label="Barrio" value={child.barrio} />
+            <Info label="Nombre completo" value={child.fullName} />
+            <Info label="Fecha de nacimiento" value={formatFecha(child.birthDate)} />
+            <Info label="Edad" value={`${child.age} años`} />
+            <Info label="Ciudad" value={child.address.city} />
+            <Info label="Dirección" value={child.address.street} />
+            <Info label="Barrio" value={child.address.neighborhood} />
             <div className="sm:col-span-2">
-              <Info label="Observaciones" value={child.observaciones} />
+              <Info label="Observaciones" value={child.notes} />
             </div>
           </div>
         )}
         {tab === "acudientes" && (
           <div className="space-y-3">
             {relatedGuardians.map((item) => (
-              <SectionCard key={item.id} title={item.nombre}>
+              <SectionCard key={item.id} title={item.fullName}>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Info label="Parentesco" value={item.parentesco} />
-                  <Info label="Teléfono" value={item.telefono} />
+                  <Info label="Parentesco" value={item.relationship} />
+                  <Info label="Teléfono" value={item.phone} />
                   <Info label="WhatsApp" value={item.whatsapp} />
-                  <Info label="Correo" value={item.correo} />
+                  <Info label="Correo" value={item.email} />
                 </div>
               </SectionCard>
             ))}
@@ -460,9 +462,9 @@ function ChildDetail({
               <div className="space-y-2">
                 {childEnrollments.map((item) => (
                   <div key={item.id} className="flex justify-between rounded-xl bg-surface-muted p-3">
-                    <span className="font-bold">Año {item.anio}</span>
+                    <span className="font-bold">Año {item.year}</span>
                     <span className="text-sm text-muted">
-                      {formatCOP(item.valor)} · {formatFecha(item.fechaInicio)}
+                      {formatCOP(item.amount)} · {formatFecha(item.startDate)}
                     </span>
                   </div>
                 ))}
@@ -545,8 +547,8 @@ export default function ChildrenScreen() {
   const selected = children.find((item) => item.id === selectedId)
   const filtered = children.filter(
     (item) =>
-      (filtro === "todos" || item.nivelPago === filtro) &&
-      item.nombre.toLocaleLowerCase("es-CO").includes(busqueda.toLocaleLowerCase("es-CO").trim())
+      (filtro === "todos" || item.enrollment.paymentLevel === filtro) &&
+      item.fullName.toLocaleLowerCase("es-CO").includes(busqueda.toLocaleLowerCase("es-CO").trim())
   )
 
   const showToast = (message) => {
@@ -575,7 +577,7 @@ export default function ChildrenScreen() {
         {deleting && (
           <DeletePersonDialog
             kind="beneficiario"
-            name={deleting.nombre}
+            name={deleting.fullName}
             onClose={() => setDeleting(null)}
             onConfirm={async () => {
               const result = await deleteChild(deleting.id)
@@ -615,7 +617,7 @@ export default function ChildrenScreen() {
       {deleting && (
         <DeletePersonDialog
           kind="beneficiario"
-          name={deleting.nombre}
+          name={deleting.fullName}
           onClose={() => setDeleting(null)}
           onConfirm={async () => {
             const result = await deleteChild(deleting.id)
@@ -686,15 +688,15 @@ export default function ChildrenScreen() {
                 onClick={() => setSelectedId(item.id)}
                 className="flex min-w-0 flex-1 items-center gap-4 rounded-2xl p-2 text-left hover:bg-surface-muted"
               >
-                <Avatar name={item.nombre} />
+                <Avatar name={item.fullName} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-extrabold">{item.nombre}</p>
+                  <p className="truncate font-extrabold">{item.fullName}</p>
                   <p className="truncate text-sm text-muted">
-                    {item.edad} años · {guardian?.nombre}
+                    {item.age} años · {guardian?.fullName}
                   </p>
                 </div>
-                <Badge tone={pagoTone[item.nivelPago]} className="hidden sm:inline-flex">
-                  {pagoLabel[item.nivelPago]}
+                <Badge tone={pagoTone[item.enrollment.paymentLevel] ?? "warning"} className="hidden sm:inline-flex">
+                  {pagoLabel[item.enrollment.paymentLevel] ?? "Sin dato"}
                 </Badge>
               </button>
               <Button

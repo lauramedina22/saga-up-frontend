@@ -1,4 +1,5 @@
 import apiClient from "../api/apiClient"
+import { toGuardianModel, toGuardianPayload } from "../models/guardianModel"
 
 const GUARDIANS_ENDPOINT = "/guardians"
 
@@ -9,16 +10,20 @@ function getGuardianList(response) {
     throw new Error("La respuesta del servidor no contiene una lista de guardians.")
   }
 
-  return guardians
+  return guardians.map(toGuardianModel)
 }
 
 function getGuardianRecord(response) {
-  const guardian = response?.guardian ?? response
+  const rawGuardian = response?.guardian ?? response
 
-  if (!guardian || typeof guardian !== "object" || !guardian.id) {
+  if (!rawGuardian || typeof rawGuardian !== "object") {
     throw new Error("La respuesta del servidor no contiene un guardian válido.")
   }
 
+  const guardian = toGuardianModel(rawGuardian)
+  if (!guardian.id) {
+    throw new Error("La respuesta del servidor no contiene un guardian válido.")
+  }
   return guardian
 }
 
@@ -31,7 +36,10 @@ export const guardianService = {
   async createGuardian(data) {
     const { childrenIds, ...guardianData } = data
     return getGuardianRecord(
-      await apiClient.post(GUARDIANS_ENDPOINT, guardianData),
+      await apiClient.post(
+        GUARDIANS_ENDPOINT,
+        toGuardianPayload(guardianData),
+      ),
     )
   },
 

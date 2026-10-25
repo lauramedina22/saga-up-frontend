@@ -1,4 +1,5 @@
 import apiClient from "../api/apiClient"
+import { toChildModel, toChildPayload } from "../models/childModel"
 
 const CHILDREN_ENDPOINT = "/children"
 
@@ -11,16 +12,20 @@ function getChildList(response) {
     throw new Error("La respuesta del servidor no contiene una lista de children.")
   }
 
-  return children
+  return children.map(toChildModel)
 }
 
 function getChildRecord(response) {
-  const child = response?.child ?? response
+  const rawChild = response?.child ?? response
 
-  if (!child || typeof child !== "object" || !child.id) {
+  if (!rawChild || typeof rawChild !== "object") {
     throw new Error("La respuesta del servidor no contiene un beneficiario válido.")
   }
 
+  const child = toChildModel(rawChild)
+  if (!child.id) {
+    throw new Error("La respuesta del servidor no contiene un beneficiario válido.")
+  }
   return child
 }
 
@@ -31,7 +36,7 @@ export const childService = {
 
     return {
       children,
-      payments: response?.payments ?? [],
+      payments: response?.payments ?? response?.tuition ?? [],
       sponsors: response?.sponsors ?? [],
     }
   },
@@ -39,13 +44,16 @@ export const childService = {
   async createChild(data) {
     const { guardianId, guardianIds, ...childData } = data
     return getChildRecord(
-      await apiClient.post(CHILDREN_ENDPOINT, childData),
+      await apiClient.post(CHILDREN_ENDPOINT, toChildPayload(childData)),
     )
   },
 
   async updateChild(id, changes) {
     return getChildRecord(
-      await apiClient.put(`${CHILDREN_ENDPOINT}/${id}`, changes),
+      await apiClient.put(
+        `${CHILDREN_ENDPOINT}/${id}`,
+        toChildPayload(changes),
+      ),
     )
   },
 

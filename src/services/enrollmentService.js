@@ -1,4 +1,5 @@
 import apiClient from "../api/apiClient"
+import { toEnrollmentModel } from "../models/enrollmentModel"
 
 const ENROLLMENTS_ENDPOINT = "/enrollments"
 
@@ -13,7 +14,7 @@ function getEnrollmentList(response) {
     )
   }
 
-  return enrollments
+  return enrollments.map(toEnrollmentModel)
 }
 
 export const enrollmentService = {

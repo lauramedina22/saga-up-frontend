@@ -364,7 +364,7 @@ export function CreateChildDialog({
                   <option value="">Selecciona un acudiente</option>
                   {guardians.map((item) => (
                     <option key={item.id} value={item.id}>
-                      {item.nombre} · {item.parentesco}
+                      {item.fullName} · {item.relationship}
                     </option>
                   ))}
                 </SelectField>
@@ -747,7 +747,7 @@ export function CreateGuardianDialog({
                     onChange={() => toggleChild(child.id)}
                     className="size-5 accent-primary"
                   />
-                  <span className="font-semibold">{child.nombre}</span>
+                  <span className="font-semibold">{child.fullName}</span>
                 </label>
               ))}
               {childrenRecords.length === 0 && (

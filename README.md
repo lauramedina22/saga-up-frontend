@@ -22,6 +22,7 @@ saga-up-frontend/
 │   ├── components/        # Componentes reutilizables
 │   ├── api/               # Cliente HTTP y configuración de llamadas al backend
 │   ├── hooks/             # Hooks personalizados
+│   ├── models/            # Adaptadores de datos entre API y frontend
 │   ├── imports/           # Imports y módulos auxiliares
 │   ├── screens/           # Pantallas principales del sistema
 │   ├── services/          # Comunicación con servicios externos y API
@@ -48,6 +49,9 @@ Contiene el cliente HTTP para las solicitudes al backend. Añade el token de ses
 
 ### src/hooks
 Aquí se colocan hooks personalizados para manejar lógica reutilizable, estados y eventos, como autenticación, validación de formularios o consumo de APIs.
+
+### src/models
+Adapta las respuestas y solicitudes de children, guardians y enrollments al modelo camelCase utilizado por los hooks y pantallas.
 
 ### src/services
 Cada servicio gestiona su propio dominio y se conecta directamente al backend, sin datos simulados:

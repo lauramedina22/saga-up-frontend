@@ -21,13 +21,13 @@ export default function EnrollmentsScreen() {
   const [filter, setFilter] = useState("todos")
 
   const filteredEnrollments = enrollments.filter(
-    (enrollment) => filter === "todos" || enrollment.estado === filter,
+    (enrollment) => filter === "todos" || enrollment.status === filter,
   )
   const activeEnrollments = enrollments.filter(
-    (enrollment) => enrollment.estado === "activa",
+    (enrollment) => enrollment.status === "activa",
   )
   const activeTotal = activeEnrollments.reduce(
-    (total, enrollment) => total + (Number(enrollment.valor) || 0),
+    (total, enrollment) => total + (Number(enrollment.amount) || 0),
     0,
   )
 
@@ -96,8 +96,8 @@ export default function EnrollmentsScreen() {
           )
           if (!child) return null
 
-          const status = STATUS[enrollment.estado] ?? {
-            label: enrollment.estado || "Sin estado",
+          const status = STATUS[enrollment.status] ?? {
+            label: enrollment.status || "Sin estado",
             className: "bg-surface-muted text-muted",
           }
 
@@ -106,12 +106,12 @@ export default function EnrollmentsScreen() {
               key={enrollment.id}
               className="flex items-center gap-4 rounded-3xl border border-border bg-surface p-4 shadow-sm"
             >
-              <Avatar name={child.nombre} size="sm" />
+              <Avatar name={child.fullName} size="sm" />
               <div className="min-w-0 flex-1">
-                <p className="font-extrabold text-foreground">{child.nombre}</p>
+                <p className="font-extrabold text-foreground">{child.fullName}</p>
                 <p className="text-sm text-muted">
-                  Año {enrollment.anio} · Inicio:{" "}
-                  {formatFecha(enrollment.fechaInicio)}
+                  Año {enrollment.year} · Inicio:{" "}
+                  {formatFecha(enrollment.startDate)}
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1.5">
@@ -121,7 +121,7 @@ export default function EnrollmentsScreen() {
                   {status.label}
                 </span>
                 <span className="text-sm font-bold text-foreground">
-                  {formatCOP(Number(enrollment.valor) || 0)}
+                  {formatCOP(Number(enrollment.amount) || 0)}
                 </span>
               </div>
             </article>
