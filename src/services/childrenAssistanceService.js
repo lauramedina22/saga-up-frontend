@@ -1,15 +1,14 @@
 import apiClient from "../api/apiClient"
+import { readList, readRecord } from "../models/modelUtils.js"
 import {
   toChildrenAssistanceModel,
   toChildrenAssistancePayload,
 } from "../models/childrenAssistanceModel.js"
 
-const ASSISTANCE_PATH = (childId) => `/children/${childId}/assistance`
+const ASSISTANCE_ENDPOINT = "/children-assistance"
 
 function getAssistanceList(response) {
-  const records = Array.isArray(response)
-    ? response
-    : response?.children_assistance ?? response?.assistance
+  const records = readList(response, "children_assistance", "assistance")
 
   if (!Array.isArray(records)) {
     throw new Error(
@@ -22,7 +21,7 @@ function getAssistanceList(response) {
 
 function getAssistance(response, childId) {
   const record = toChildrenAssistanceModel(
-    response?.children_assistance ?? response?.assistance ?? response,
+    readRecord(response, "children_assistance", "assistance"),
   )
   if (!record.childrenAssistanceId) {
     throw new Error(
@@ -33,33 +32,43 @@ function getAssistance(response, childId) {
 }
 
 export const childrenAssistanceService = {
-  async getForChild(childId) {
-    return getAssistanceList(await apiClient.get(ASSISTANCE_PATH(childId)))
+  // GET /children-assistance
+  async getAll() {
+    return getAssistanceList(await apiClient.get(ASSISTANCE_ENDPOINT))
   },
 
+  // GET /children-assistance?child_id=
+  async getForChild(childId) {
+    const query = new URLSearchParams({ child_id: String(childId) })
+    return getAssistanceList(
+      await apiClient.get(`${ASSISTANCE_ENDPOINT}?${query}`),
+    )
+  },
+
+  // POST /children-assistance
   async create(childId, assistance) {
     return getAssistance(
       await apiClient.post(
-        ASSISTANCE_PATH(childId),
+        ASSISTANCE_ENDPOINT,
         toChildrenAssistancePayload({ ...assistance, childId }),
       ),
       childId,
     )
   },
 
+  // PUT /children-assistance/:id
   async update(childId, assistanceId, changes) {
     return getAssistance(
       await apiClient.put(
-        `${ASSISTANCE_PATH(childId)}/${assistanceId}`,
+        `${ASSISTANCE_ENDPOINT}/${assistanceId}`,
         toChildrenAssistancePayload({ ...changes, childId }),
       ),
       childId,
     )
   },
 
+  // DELETE /children-assistance/:id
   async delete(childId, assistanceId) {
-    return apiClient.delete(
-      `${ASSISTANCE_PATH(childId)}/${assistanceId}`,
-    )
+    return apiClient.delete(`${ASSISTANCE_ENDPOINT}/${assistanceId}`)
   },
 }

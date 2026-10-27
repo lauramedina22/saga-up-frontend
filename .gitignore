@@ -1,5 +1,8 @@
-# Created by https://www.toptal.com/developers/gitignore/api/windows,linux,macos,react
-# Edit at https://www.toptal.com/developers/gitignore?templates=windows,linux,macos,react
+# Environment variables
+.env
+.env.local
+.env.*
+*.env
 
 ### Linux ###
 *~

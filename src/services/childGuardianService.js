@@ -1,16 +1,19 @@
 import apiClient from "../api/apiClient"
+import { readList, readRecord } from "../models/modelUtils.js"
 import {
   toChildGuardianModel,
   toChildGuardianPayload,
 } from "../models/childGuardianModel.js"
 
-const CHILDREN_ENDPOINT = "/children"
-const GUARDIANS_ENDPOINT = "/guardians"
+// API.md: los vínculos se manejan en /children-guardians (sin filtros por query)
+const CHILDREN_GUARDIANS_ENDPOINT = "/children-guardians"
 
 function getRelationshipList(response) {
-  const relationships = Array.isArray(response)
-    ? response
-    : response?.children_guardians ?? response?.relationships
+  const relationships = readList(
+    response,
+    "children_guardians",
+    "relationships",
+  )
 
   if (!Array.isArray(relationships)) {
     throw new Error(
@@ -22,33 +25,28 @@ function getRelationshipList(response) {
 }
 
 export const childGuardianService = {
-  async getRelationshipsForChild(childId) {
-    const response = await apiClient.get(
-      `${CHILDREN_ENDPOINT}/${childId}/guardians`,
+  // GET /children-guardians
+  async getRelationships() {
+    return getRelationshipList(
+      await apiClient.get(CHILDREN_GUARDIANS_ENDPOINT),
     )
-    return getRelationshipList(response)
   },
 
-  async getRelationshipsForGuardian(guardianId) {
-    const response = await apiClient.get(
-      `${GUARDIANS_ENDPOINT}/${guardianId}/children`,
-    )
-    return getRelationshipList(response)
-  },
-
+  // POST /children-guardians
   async createRelationship(relationship) {
     const response = await apiClient.post(
-      `${CHILDREN_ENDPOINT}/${relationship.childId}/guardians`,
+      CHILDREN_GUARDIANS_ENDPOINT,
       toChildGuardianPayload(relationship),
     )
-    const rawRelationship =
-      response?.children_guardian ?? response?.relationship ?? response
-    return toChildGuardianModel(rawRelationship)
+    return toChildGuardianModel(
+      readRecord(response, "children_guardian", "relationship"),
+    )
   },
 
-  async deleteRelationship(childId, guardianId) {
+  // DELETE /children-guardians/:id
+  async deleteRelationship(childGuardianId) {
     return apiClient.delete(
-      `${CHILDREN_ENDPOINT}/${childId}/guardians/${guardianId}`,
+      `${CHILDREN_GUARDIANS_ENDPOINT}/${childGuardianId}`,
     )
   },
 }

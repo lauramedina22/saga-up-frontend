@@ -1,6 +1,6 @@
 {
   "database_name": "SAGA-UP",
-  "description": "Diccionario de datos del modelo SAGA-UP",
+  "description": "Diccionario de datos del modelo SAGA-UP sincronizado con el backend y API.md",
   "tables": [
     {
       "name": "children",
@@ -10,12 +10,12 @@
         { "name": "first_name", "type": "text", "description": "Nombres" },
         { "name": "last_name", "type": "text", "description": "Apellidos" },
         { "name": "birth_date", "type": "date", "description": "Fecha de nacimiento" },
-        { "name": "sex", "type": "smallint", "description": "Sexo del niño" },
-        { "name": "document_type", "type": "smallint", "description": "Tipo de documento de identidad" },
+        { "name": "sex_id", "type": "bigint", "key": "FK", "references": "sexes", "description": "Sexo del niño (FK a sexes)" },
+        { "name": "document_type_id", "type": "bigint", "key": "FK", "references": "document_types", "description": "Tipo de documento de identidad (FK a document_types)" },
         { "name": "document_number", "type": "text", "description": "Número de documento de identidad" },
         { "name": "admission_date", "type": "date", "description": "Fecha de ingreso a la fundación" },
-        { "name": "exit_date", "type": "date", "description": "Fecha de retiro de la fundación" },
-        { "name": "status_id", "type": "smallint", "description": "Estado del niño dentro de la fundación" },
+        { "name": "exit_date", "type": "date", "description": "Fecha de retiro de la fundación (solo en PUT/PATCH)" },
+        { "name": "child_status_id", "type": "bigint", "key": "FK", "references": "child_statuses", "description": "Estado del niño dentro de la fundación (FK a child_statuses)" },
         { "name": "notes", "type": "text", "description": "Observaciones generales" }
       ]
     },
@@ -25,11 +25,11 @@
       "columns": [
         { "name": "guardian_id", "type": "bigint", "key": "PK", "description": "Identificador único del acudiente" },
         { "name": "full_name", "type": "text", "description": "Nombre completo" },
-        { "name": "document_type", "type": "text", "description": "Tipo de documento de identidad" },
+        { "name": "document_type_id", "type": "bigint", "key": "FK", "references": "document_types", "description": "Tipo de documento de identidad (FK a document_types)" },
         { "name": "document_number", "type": "text", "description": "Número de documento de identidad" },
         { "name": "phone", "type": "text", "description": "Teléfono de contacto" },
         { "name": "address", "type": "text", "description": "Dirección de residencia" },
-        { "name": "legal_status", "type": "text", "description": "Situación jurídica del acudiente frente al niño" }
+        { "name": "legal_status_id", "type": "bigint", "key": "FK", "references": "legal_statuses", "description": "Situación jurídica del acudiente frente al niño (FK a legal_statuses)" }
       ]
     },
     {
@@ -39,7 +39,7 @@
         { "name": "child_guardian_id", "type": "bigint", "key": "PK", "description": "Identificador único de la relación" },
         { "name": "child_id", "type": "bigint", "key": "FK", "references": "children", "description": "Niño de la relación" },
         { "name": "guardian_id", "type": "bigint", "key": "FK", "references": "guardians", "description": "Acudiente de la relación" },
-        { "name": "guardianship_type", "type": "text", "description": "Tipo de custodia o vínculo legal" },
+        { "name": "guardianship_type_id", "type": "bigint", "key": "FK", "references": "guardianship_types", "description": "Tipo de custodia o vínculo legal (FK a guardianship_types)" },
         { "name": "start_date", "type": "date", "description": "Fecha de inicio de la relación" },
         { "name": "end_date", "type": "date", "description": "Fecha de fin de la relación" }
       ]
@@ -49,7 +49,8 @@
       "description": "Ficha de salud y atención médica del niño.",
       "columns": [
         { "name": "record_id", "type": "bigint", "key": "PK", "description": "Identificador único de la ficha" },
-        { "name": "child_id", "type": "bigint", "key": "FK", "references": "children", "description": "Niño al que pertenece la ficha" },
+        { "name": "child_id", "type": "bigint", "key": "FK", "references": "children", "description": "Niño al que pertenece la ficha (no editable en update)" },
+        { "name": "recorded_by", "type": "bigint", "key": "FK", "references": "staff", "description": "Colaborador que registró la ficha (no editable en update)" },
         { "name": "eps", "type": "text", "description": "EPS a la que está afiliado" },
         { "name": "state", "type": "text", "description": "Estado de la afiliación" },
         { "name": "ips_assigned", "type": "text", "description": "IPS asignada" },
@@ -64,11 +65,14 @@
       "description": "Descripción interna del niño para el equipo: cómo se comunica, qué le gusta, cómo manejar sus crisis y su historial escolar y terapéutico.",
       "columns": [
         { "name": "child_internal_description_id", "type": "bigint", "key": "PK", "description": "Identificador único de la descripción" },
-        { "name": "child_id", "type": "bigint", "key": "FK", "references": "children", "description": "Niño al que describe" },
+        { "name": "child_id", "type": "bigint", "key": "FK", "references": "children", "description": "Niño al que describe (no editable en update)" },
         { "name": "communication_ways", "type": "text", "description": "Formas en que el niño se comunica" },
         { "name": "daily_routine_help", "type": "text", "description": "Apoyos necesarios para su rutina diaria" },
         { "name": "likings", "type": "text", "description": "Gustos e intereses" },
-        { "name": "crisis_management", "type": "text", "description": "Pautas para manejar crisis" }
+        { "name": "crisis_management", "type": "text", "description": "Pautas para manejar crisis" },
+        { "name": "previous_institution", "type": "text", "description": "Institución escolar previa" },
+        { "name": "grade", "type": "text", "description": "Grado escolar" },
+        { "name": "therapies", "type": "text", "description": "Terapias que recibe" }
       ]
     },
     {
@@ -77,17 +81,29 @@
       "columns": [
         { "name": "staff_id", "type": "bigint", "key": "PK", "description": "Identificador único del colaborador" },
         { "name": "full_name", "type": "text", "description": "Nombre completo" },
-        { "name": "document_type_id", "type": "smallint", "description": "Tipo de documento de identidad" },
+        { "name": "document_type_id", "type": "bigint", "key": "FK", "references": "document_types", "description": "Tipo de documento de identidad (FK a document_types)" },
         { "name": "document_number", "type": "text", "description": "Número de documento de identidad" },
-        { "name": "role_id", "type": "smallint", "description": "Cargo o rol dentro de la fundación" },
+        { "name": "staff_role_id", "type": "bigint", "key": "FK", "references": "staff_roles", "description": "Cargo o rol dentro de la fundación (FK a staff_roles)" },
         { "name": "hire_date", "type": "date", "description": "Fecha de vinculación" },
-        { "name": "exit_date", "type": "date", "description": "Fecha de desvinculación" },
-        { "name": "contract_type_id", "type": "smallint", "description": "Tipo de contrato" },
-        { "name": "status_id", "type": "smallint", "description": "Estado laboral actual" },
+        { "name": "exit_date", "type": "date", "description": "Fecha de desvinculación (solo en PUT/PATCH o soft-delete)" },
+        { "name": "contract_type_id", "type": "bigint", "key": "FK", "references": "contract_types", "description": "Tipo de contrato (FK a contract_types)" },
+        { "name": "staff_status_id", "type": "bigint", "key": "FK", "references": "staff_statuses", "description": "Estado laboral actual (FK a staff_statuses)" },
         { "name": "phone", "type": "text", "description": "Teléfono de contacto" },
         { "name": "email", "type": "text", "description": "Correo electrónico" },
-        { "name": "hours_worked", "type": "numeric", "description": "Horas trabajadas" },
-        { "name": "hours_payed", "type": "numeric", "description": "Horas pagadas totales" }
+        { "name": "hours_worked", "type": "numeric", "description": "Horas trabajadas (solo lectura en servidor)" },
+        { "name": "hours_payed", "type": "numeric", "description": "Horas pagadas totales (solo lectura en servidor)" }
+      ]
+    },
+    {
+      "name": "professionals",
+      "description": "Talleristas y profesionales vinculados a los programas de la fundación.",
+      "columns": [
+        { "name": "professional_id", "type": "bigint", "key": "PK", "description": "Identificador único del profesional" },
+        { "name": "staff_id", "type": "bigint", "key": "FK", "references": "staff", "description": "Colaborador vinculado (opcional)" },
+        { "name": "titles", "type": "text", "description": "Títulos académicos o profesionales" },
+        { "name": "institutions", "type": "text", "description": "Instituciones de procedencia" },
+        { "name": "observations", "type": "text", "description": "Observaciones generales" },
+        { "name": "time_donor", "type": "boolean", "description": "Indica si es donante de tiempo (voluntario)" }
       ]
     },
     {
@@ -102,6 +118,20 @@
       ]
     },
     {
+      "name": "professionals_workshops",
+      "description": "Asignación de talleres programados impartidos por profesionales.",
+      "columns": [
+        { "name": "professional_workshop_id", "type": "bigint", "key": "PK", "description": "Identificador único de la sesión del taller" },
+        { "name": "professional_id", "type": "bigint", "key": "FK", "references": "professionals", "description": "Profesional encargado (FK a professionals)" },
+        { "name": "workshop_id", "type": "bigint", "key": "FK", "references": "workshops", "description": "Taller impartido (FK a workshops)" },
+        { "name": "day_week", "type": "text", "description": "Día de la semana de la sesión" },
+        { "name": "ends_on", "type": "date", "description": "Fecha de finalización de la programación" },
+        { "name": "time_starts", "type": "text", "description": "Hora de inicio (HH:MM)" },
+        { "name": "time_ends", "type": "text", "description": "Hora de fin (HH:MM)" },
+        { "name": "observations", "type": "text", "description": "Observaciones sobre la programación" }
+      ]
+    },
+    {
       "name": "children_assistance",
       "description": "Registro de asistencia de cada niño a cada sesión programada de taller.",
       "columns": [
@@ -109,9 +139,20 @@
         { "name": "child_id", "type": "bigint", "key": "FK", "references": "children", "description": "Niño al que corresponde" },
         { "name": "professional_workshop_id", "type": "bigint", "key": "FK", "references": "professionals_workshops", "description": "Sesión de taller" },
         { "name": "will_assist", "type": "boolean", "description": "Indica si el niño confirmó que asistirá" },
-        { "name": "asisted", "type": "boolean", "description": "Indica si el niño asistió" },
+        { "name": "attended", "type": "boolean", "description": "Indica si el niño asistió a la sesión" },
         { "name": "complete_workshop", "type": "boolean", "description": "Indica si completó el taller" },
         { "name": "behavior", "type": "text", "description": "Comportamiento durante la sesión" }
+      ]
+    },
+    {
+      "name": "staff_assistance",
+      "description": "Registro diario de entrada y salida del personal.",
+      "columns": [
+        { "name": "staff_assistance_id", "type": "bigint", "key": "PK", "description": "Identificador único de la asistencia del personal" },
+        { "name": "staff_id", "type": "bigint", "key": "FK", "references": "staff", "description": "Colaborador (FK a staff)" },
+        { "name": "date_working", "type": "date", "description": "Fecha de la jornada" },
+        { "name": "time_in", "type": "numeric", "description": "Hora o valor decimal de ingreso" },
+        { "name": "time_out", "type": "numeric", "description": "Hora o valor decimal de salida" }
       ]
     },
     {
@@ -120,10 +161,10 @@
       "columns": [
         { "name": "tuition_fee_id", "type": "bigint", "key": "PK", "description": "Identificador único del pago" },
         { "name": "child_id", "type": "bigint", "key": "FK", "references": "children", "description": "Niño al que corresponde el pago" },
-        { "name": "amount", "type": "bigint", "description": "Valor del pago" },
+        { "name": "amount", "type": "bigint", "description": "Valor del pago (en COP)" },
         { "name": "paid_date", "type": "date", "description": "Fecha de pago" },
-        { "name": "payment_method", "type": "text", "description": "Medio de pago utilizado" },
-        { "name": "status", "type": "text", "description": "Estado del pago" }
+        { "name": "payment_method_id", "type": "bigint", "key": "FK", "references": "payment_methods", "description": "Medio de pago utilizado (FK a payment_methods)" },
+        { "name": "tuition_status_id", "type": "bigint", "key": "FK", "references": "tuition_statuses", "description": "Estado del pago (FK a tuition_statuses)" }
       ]
     }
   ],
@@ -132,9 +173,13 @@
     { "from": "children", "to": "children_guardians", "type": "1:N", "description": "Un niño puede tener varios acudientes" },
     { "from": "children", "to": "child_records", "type": "1:N", "description": "Un niño puede tener varias fichas de salud" },
     { "from": "children", "to": "child_internal_description", "type": "1:N", "description": "Un niño puede tener varias descripciones internas" },
-    { "from": "children", "to": "children_assistance", "type": "1:N", "description": "Un niño tiene registros de asistencia" },
-    { "from": "professionals_workshops", "to": "children_assistance", "type": "1:N", "description": "Una sesión tiene registros de asistencia de varios niños" },
-    { "from": "staff", "to": "professionals", "type": "1:1", "description": "Un colaborador puede ser profesional" },
-    { "from": "workshops", "to": "professionals_workshops", "type": "1:N", "description": "Un taller puede programarse varias veces" }
+    { "from": "children", "to": "children_assistance", "type": "1:N", "description": "Un niño tiene registros de asistencia a talleres" },
+    { "from": "children", "to": "tuition", "type": "1:N", "description": "Un niño tiene registros de cuotas y matrículas" },
+    { "from": "staff", "to": "child_records", "type": "1:N", "description": "Un colaborador puede registrar fichas de salud" },
+    { "from": "staff", "to": "staff_assistance", "type": "1:N", "description": "Un colaborador registra su asistencia diaria" },
+    { "from": "staff", "to": "professionals", "type": "1:1", "description": "Un colaborador puede ser profesional/tallerista" },
+    { "from": "professionals", "to": "professionals_workshops", "type": "1:N", "description": "Un profesional puede impartir varias programaciones de talleres" },
+    { "from": "workshops", "to": "professionals_workshops", "type": "1:N", "description": "Un taller puede programarse varias veces" },
+    { "from": "professionals_workshops", "to": "children_assistance", "type": "1:N", "description": "Una sesión tiene registros de asistencia de varios niños" }
   ]
 }

@@ -1,15 +1,14 @@
 import apiClient from "../api/apiClient"
+import { readList, readRecord } from "../models/modelUtils.js"
 import {
   toChildRecordModel,
   toChildRecordPayload,
 } from "../models/childRecordModel.js"
 
-const CHILD_RECORDS_PATH = (childId) => `/children/${childId}/records`
+const CHILD_RECORDS_ENDPOINT = "/child-records"
 
 function getRecordList(response) {
-  const records = Array.isArray(response)
-    ? response
-    : response?.child_records ?? response?.records
+  const records = readList(response, "child_records", "records")
 
   if (!Array.isArray(records)) {
     throw new Error(
@@ -22,7 +21,7 @@ function getRecordList(response) {
 
 function getRecord(response) {
   const record = toChildRecordModel(
-    response?.child_record ?? response?.record ?? response,
+    readRecord(response, "child_record", "record"),
   )
 
   if (!record.recordId) {
@@ -33,36 +32,49 @@ function getRecord(response) {
 }
 
 export const childRecordService = {
-  async getRecordsForChild(childId) {
-    const response = await apiClient.get(CHILD_RECORDS_PATH(childId))
-    return getRecordList(response)
+  // GET /child-records
+  async getRecords() {
+    return getRecordList(await apiClient.get(CHILD_RECORDS_ENDPOINT))
   },
 
+  // GET /child-records?child_id=
+  async getRecordsForChild(childId) {
+    const query = new URLSearchParams({ child_id: String(childId) })
+    return getRecordList(
+      await apiClient.get(`${CHILD_RECORDS_ENDPOINT}?${query}`),
+    )
+  },
+
+  // POST /child-records
   async createRecord(childId, record) {
     return {
       ...getRecord(
         await apiClient.post(
-          CHILD_RECORDS_PATH(childId),
-          toChildRecordPayload({ ...record, childId }),
+          CHILD_RECORDS_ENDPOINT,
+          toChildRecordPayload({ ...record, childId }, { includeChildId: true }),
         ),
       ),
       childId: String(childId),
     }
   },
 
+  // PUT /child-records/:id (child_id no es editable)
   async updateRecord(childId, recordId, changes) {
     return {
       ...getRecord(
         await apiClient.put(
-          `${CHILD_RECORDS_PATH(childId)}/${recordId}`,
-          toChildRecordPayload({ ...changes, childId }),
+          `${CHILD_RECORDS_ENDPOINT}/${recordId}`,
+          toChildRecordPayload(changes),
         ),
       ),
       childId: String(childId),
     }
   },
 
-  async deleteRecord(childId, recordId) {
-    return apiClient.delete(`${CHILD_RECORDS_PATH(childId)}/${recordId}`)
+  // API.md: /child-records NO tiene DELETE (el historial debe conservarse)
+  async deleteRecord() {
+    throw new Error(
+      "El backend no permite eliminar fichas de salud: el historial debe conservarse.",
+    )
   },
 }

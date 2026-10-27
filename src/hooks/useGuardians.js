@@ -15,21 +15,18 @@ export function useGuardians() {
     setError("")
 
     try {
-      const [{ guardians: guardianRecords }, { children: childRecords }] =
-        await Promise.all([
-          guardianService.getGuardianData(),
-          childService.getChildrenData(),
-        ])
-      const relationshipGroups = await Promise.all(
-        guardianRecords.map((guardian) =>
-          childGuardianService.getRelationshipsForGuardian(
-            guardian.guardianId,
-          ),
-        ),
-      )
+      const [
+        { guardians: guardianRecords },
+        { children: childRecords },
+        relationshipList,
+      ] = await Promise.all([
+        guardianService.getGuardianData(),
+        childService.getChildrenData(),
+        childGuardianService.getRelationships(),
+      ])
       setGuardians(guardianRecords)
       setChildren(childRecords)
-      setRelationships(relationshipGroups.flat())
+      setRelationships(relationshipList)
     } catch (requestError) {
       setError(
         requestError.message || "No fue posible cargar los acudientes.",

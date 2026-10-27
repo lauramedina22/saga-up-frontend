@@ -1,12 +1,17 @@
 import apiClient from "../api/apiClient"
+import { readList } from "../models/modelUtils.js"
 import { toEnrollmentModel } from "../models/enrollmentModel"
 
-const ENROLLMENTS_ENDPOINT = "/enrollments"
+// API.md: las matrículas/pagos se exponen en /tuition
+const TUITION_ENDPOINT = "/tuition"
 
 function getEnrollmentList(response) {
-  const enrollments = Array.isArray(response)
-    ? response
-    : response?.enrollments ?? response?.tuition ?? response?.payments
+  const enrollments = readList(
+    response,
+    "tuition",
+    "enrollments",
+    "payments",
+  )
 
   if (!Array.isArray(enrollments)) {
     throw new Error(
@@ -18,8 +23,9 @@ function getEnrollmentList(response) {
 }
 
 export const enrollmentService = {
+  // GET /tuition
   async getEnrollmentData() {
-    const response = await apiClient.get(ENROLLMENTS_ENDPOINT)
+    const response = await apiClient.get(TUITION_ENDPOINT)
     return { enrollments: getEnrollmentList(response) }
   },
 }

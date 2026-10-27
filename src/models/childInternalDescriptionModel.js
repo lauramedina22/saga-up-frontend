@@ -1,5 +1,6 @@
-import { normalizeId } from "./modelUtils.js"
+import { normalizeId, normalizeText, toForeignKey } from "./modelUtils.js"
 
+// Campos según API.md (/child-internal-descriptions)
 export function toChildInternalDescriptionModel(description = {}) {
   return {
     childInternalDescriptionId: normalizeId(
@@ -13,12 +14,19 @@ export function toChildInternalDescriptionModel(description = {}) {
   }
 }
 
-export function toChildInternalDescriptionPayload(description = {}) {
-  return {
-    child_id: normalizeId(description.childId),
-    communication_ways: description.communicationWays ?? "",
-    daily_routine_help: description.dailyRoutineHelp ?? "",
-    likings: description.likings ?? "",
-    crisis_management: description.crisisManagement ?? "",
+// child_id solo se envía al crear: no es editable en PUT/PATCH
+export function toChildInternalDescriptionPayload(
+  description = {},
+  { includeChildId = false } = {},
+) {
+  const payload = {
+    communication_ways: normalizeText(description.communicationWays),
+    daily_routine_help: normalizeText(description.dailyRoutineHelp),
+    likings: normalizeText(description.likings),
+    crisis_management: normalizeText(description.crisisManagement),
   }
+  if (includeChildId) {
+    payload.child_id = toForeignKey(description.childId, "Beneficiario")
+  }
+  return payload
 }

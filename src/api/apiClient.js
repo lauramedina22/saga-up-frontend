@@ -1,9 +1,15 @@
 const SESSION_KEY = "saga-up-session"
 
-function getApiUrl() {
-  const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/+$/, "")
+// Backend de negocio (localhost:3000) y servicio de autenticación (emite el token)
+const BASE_URLS = {
+  VITE_API_URL: import.meta.env.VITE_API_URL,
+  VITE_AUTH_API_URL: import.meta.env.VITE_AUTH_API_URL,
+}
+
+function getApiUrl(envKey = "VITE_API_URL") {
+  const apiUrl = BASE_URLS[envKey]?.replace(/\/+$/, "")
   if (!apiUrl) {
-    throw new Error("Falta configurar VITE_API_URL en el archivo .env.")
+    throw new Error(`Falta configurar ${envKey} en el archivo .env.`)
   }
   return apiUrl
 }
@@ -23,7 +29,7 @@ function getAuthorizationHeader() {
   }
 }
 
-async function request(method, path, body = null) {
+async function request(envKey, method, path, body = null) {
   const headers = {
     Accept: "application/json",
     "Content-Type": "application/json",
@@ -34,13 +40,14 @@ async function request(method, path, body = null) {
   const options = { method, headers }
   if (body !== null) options.body = JSON.stringify(body)
 
-  const response = await fetch(`${getApiUrl()}${path}`, options)
+  const response = await fetch(`${getApiUrl(envKey)}${path}`, options)
   const responseBody = await response.json().catch(() => null)
 
   if (!response.ok) {
     const message =
       (typeof responseBody?.message === "string" && responseBody.message) ||
       (typeof responseBody?.mensaje === "string" && responseBody.mensaje) ||
+      (typeof responseBody?.error === "string" && responseBody.error) ||
       (response.status === 401
         ? "Acceso denegado o credenciales incorrectas."
         : `La solicitud falló (error ${response.status}).`)
@@ -54,20 +61,17 @@ async function request(method, path, body = null) {
   return responseBody
 }
 
-async function get(path) {
-  return request("GET", path)
+function createClient(envKey) {
+  return {
+    get: (path) => request(envKey, "GET", path),
+    post: (path, body) => request(envKey, "POST", path, body),
+    put: (path, body) => request(envKey, "PUT", path, body),
+    delete: (path) => request(envKey, "DELETE", path),
+  }
 }
 
-async function post(path, body) {
-  return request("POST", path, body)
-}
+// Cliente para el servicio de autenticación (login / registro)
+export const authApiClient = createClient("VITE_AUTH_API_URL")
 
-async function put(path, body) {
-  return request("PUT", path, body)
-}
-
-async function del(path) {
-  return request("DELETE", path)
-}
-
-export default { get, post, put, delete: del }
+// Cliente para el backend de negocio
+export default createClient("VITE_API_URL")

@@ -1,16 +1,18 @@
 import apiClient from "../api/apiClient"
+import { readList, readRecord } from "../models/modelUtils.js"
 import {
   toChildInternalDescriptionModel,
   toChildInternalDescriptionPayload,
 } from "../models/childInternalDescriptionModel.js"
 
-const DESCRIPTION_PATH = (childId) =>
-  `/children/${childId}/internal-descriptions`
+const DESCRIPTIONS_ENDPOINT = "/child-internal-descriptions"
 
 function getDescriptionList(response) {
-  const descriptions = Array.isArray(response)
-    ? response
-    : response?.child_internal_descriptions ?? response?.descriptions
+  const descriptions = readList(
+    response,
+    "child_internal_descriptions",
+    "descriptions",
+  )
 
   if (!Array.isArray(descriptions)) {
     throw new Error(
@@ -23,7 +25,7 @@ function getDescriptionList(response) {
 
 function getDescription(response, childId) {
   const description = toChildInternalDescriptionModel(
-    response?.child_internal_description ?? response?.description ?? response,
+    readRecord(response, "child_internal_description", "description"),
   )
   if (!description.childInternalDescriptionId) {
     throw new Error(
@@ -34,35 +36,48 @@ function getDescription(response, childId) {
 }
 
 export const childInternalDescriptionService = {
+  // GET /child-internal-descriptions
+  async getAll() {
+    return getDescriptionList(await apiClient.get(DESCRIPTIONS_ENDPOINT))
+  },
+
+  // GET /child-internal-descriptions?child_id=
   async getForChild(childId) {
+    const query = new URLSearchParams({ child_id: String(childId) })
     return getDescriptionList(
-      await apiClient.get(DESCRIPTION_PATH(childId)),
+      await apiClient.get(`${DESCRIPTIONS_ENDPOINT}?${query}`),
     )
   },
 
+  // POST /child-internal-descriptions
   async create(childId, description) {
     return getDescription(
       await apiClient.post(
-        DESCRIPTION_PATH(childId),
-        toChildInternalDescriptionPayload({ ...description, childId }),
+        DESCRIPTIONS_ENDPOINT,
+        toChildInternalDescriptionPayload(
+          { ...description, childId },
+          { includeChildId: true },
+        ),
       ),
       childId,
     )
   },
 
+  // PUT /child-internal-descriptions/:id (child_id no es editable)
   async update(childId, descriptionId, changes) {
     return getDescription(
       await apiClient.put(
-        `${DESCRIPTION_PATH(childId)}/${descriptionId}`,
-        toChildInternalDescriptionPayload({ ...changes, childId }),
+        `${DESCRIPTIONS_ENDPOINT}/${descriptionId}`,
+        toChildInternalDescriptionPayload(changes),
       ),
       childId,
     )
   },
 
-  async delete(childId, descriptionId) {
-    return apiClient.delete(
-      `${DESCRIPTION_PATH(childId)}/${descriptionId}`,
+  // API.md: /child-internal-descriptions NO tiene DELETE
+  async delete() {
+    throw new Error(
+      "El backend no permite eliminar descripciones internas: el historial debe conservarse.",
     )
   },
 }

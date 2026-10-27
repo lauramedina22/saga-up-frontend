@@ -6,6 +6,7 @@ import { childService } from "../services/childService"
 import { enrollmentService } from "../services/enrollmentService"
 import { childrenAssistanceService } from "../services/childrenAssistanceService"
 import { guardianService } from "../services/guardianService"
+import { toForeignKey } from "../models/modelUtils"
 
 export function useChildren() {
   const [children, setChildren] = useState([])
@@ -31,45 +32,33 @@ export function useChildren() {
     setEnrollmentError("")
 
     try {
-      const [{ children: childList }, { guardians: guardianRecords }] =
-        await Promise.all([
-          childService.getChildrenData(),
-          guardianService.getGuardianData(),
-        ])
-      const relationshipGroups = await Promise.all(
-        childList.map((child) =>
-          childGuardianService.getRelationshipsForChild(child.childId),
-        ),
-      )
+      const [
+        { children: childList },
+        { guardians: guardianRecords },
+        relationshipList,
+      ] = await Promise.all([
+        childService.getChildrenData(),
+        guardianService.getGuardianData(),
+        childGuardianService.getRelationships(),
+      ])
       setChildren(childList)
       setGuardians(guardianRecords)
-      setRelationships(relationshipGroups.flat())
+      setRelationships(relationshipList)
 
+      // Cada colección se consulta una sola vez y la vista filtra por childId
       const [
         recordResults,
         internalDescriptionResults,
         assistanceResults,
         enrollmentResult,
       ] = await Promise.allSettled([
-        Promise.all(
-          childList.map((child) =>
-            childRecordService.getRecordsForChild(child.childId),
-          ),
-        ),
-        Promise.all(
-          childList.map((child) =>
-            childInternalDescriptionService.getForChild(child.childId),
-          ),
-        ),
-        Promise.all(
-          childList.map((child) =>
-            childrenAssistanceService.getForChild(child.childId),
-          ),
-        ),
+        childRecordService.getRecords(),
+        childInternalDescriptionService.getAll(),
+        childrenAssistanceService.getAll(),
         enrollmentService.getEnrollmentData(),
       ])
       if (recordResults.status === "fulfilled") {
-        setChildRecords(recordResults.value.flat())
+        setChildRecords(recordResults.value)
         setChildRecordsError("")
       } else {
         setChildRecords([])
@@ -79,7 +68,7 @@ export function useChildren() {
         )
       }
       if (internalDescriptionResults.status === "fulfilled") {
-        setInternalDescriptions(internalDescriptionResults.value.flat())
+        setInternalDescriptions(internalDescriptionResults.value)
       } else {
         setInternalDescriptions([])
         setInternalDescriptionsError(
@@ -88,7 +77,7 @@ export function useChildren() {
         )
       }
       if (assistanceResults.status === "fulfilled") {
-        setAssistanceRecords(assistanceResults.value.flat())
+        setAssistanceRecords(assistanceResults.value)
       } else {
         setAssistanceRecords([])
         setAssistanceError(
@@ -120,6 +109,12 @@ export function useChildren() {
   }, [])
 
   const createChild = async ({ child, relationship }) => {
+    // Se valida el vínculo antes de crear el beneficiario: DELETE /children es
+    // un borrado lógico, por lo que no es posible deshacer la creación.
+    if (relationship?.guardianId) {
+      toForeignKey(relationship.guardianId, "Acudiente")
+      toForeignKey(relationship.guardianshipType, "Tipo de vínculo")
+    }
     const createdChild = await childService.createChild(child)
     let createdRelationship
 
