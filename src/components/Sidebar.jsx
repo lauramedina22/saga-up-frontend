@@ -85,6 +85,7 @@ export default function Sidebar({
         {navItems.map((item) => {
           const active = currentScreen === item.screen
           const available =
+            item.screen === "dashboard" ||
             item.screen === "beneficiarios" ||
             item.screen === "acudientes" ||
             item.screen === "matriculas" ||
