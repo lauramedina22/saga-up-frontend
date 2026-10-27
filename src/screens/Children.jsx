@@ -83,554 +83,544 @@ function ChildDetails({
 
   return (
     <>
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
-      <Button variant="tertiary" onClick={onBack} className="mb-5 px-0">
-        Volver a beneficiarios
-      </Button>
-      <Card className="mb-4 rounded-3xl p-6">
-        <div className="flex items-center gap-4">
-          <Avatar name={`${child.firstName} ${child.lastName}`} size="lg" />
-          <div className="min-w-0">
-            <h1 className="truncate text-2xl font-extrabold">
-              {child.firstName} {child.lastName}
-            </h1>
-            <p className="text-sm text-muted">
-              ID de registro: {display(child.childId)}
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="rounded-3xl p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-extrabold">Datos de children</h2>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setEditingChild(true)}
-          >
-            Editar beneficiario
-          </Button>
-        </div>
-        <dl className="grid gap-3 sm:grid-cols-2">
-          {[
-            ["Nombres", child.firstName],
-            ["Apellidos", child.lastName],
-            ["Fecha de nacimiento", child.birthDate],
-            ["Sexo", sexLabel],
-            ["Tipo de documento", documentTypeLabel],
-            ["Número de documento", child.documentNumber],
-            ["Fecha de ingreso", child.admissionDate],
-            ["Fecha de retiro", child.exitDate],
-            ["Estado del beneficiario", statusLabel],
-            ["Observaciones", child.notes],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-xl bg-surface-muted p-3">
-              <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                {label}
-              </dt>
-              <dd className="mt-1 font-semibold">{display(value)}</dd>
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+        <Button variant="tertiary" onClick={onBack} className="mb-5 px-0">
+          Volver a beneficiarios
+        </Button>
+        <Card className="mb-4 rounded-3xl p-6">
+          <div className="flex items-center gap-4">
+            <Avatar name={`${child.firstName} ${child.lastName}`} size="lg" />
+            <div className="min-w-0">
+              <h1 className="truncate text-2xl font-extrabold">
+                {child.firstName} {child.lastName}
+              </h1>
+              <p className="text-sm text-muted">
+                ID de registro: {display(child.childId)}
+              </p>
             </div>
-          ))}
-        </dl>
-      </Card>
-
-      <Card className="mt-4 rounded-3xl p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-extrabold">
-              Relaciones childGuardian
-            </h2>
-            <p className="text-sm text-muted">
-              Acudientes vinculados (un beneficiario puede tener múltiples acudientes).
-            </p>
           </div>
-          <Button
-            type="button"
-            onClick={() => setRelationshipDialog(true)}
-          >
-            + Vincular acudiente
-          </Button>
-        </div>
-        {childRelationships.length > 0 ? (
-          <div className="space-y-3">
-            {childRelationships.map((relationship) => {
-              const guardian = guardians.find(
-                (item) => String(item.guardianId) === String(relationship.guardianId),
-              )
-              const guardianshipTypeLabel =
-                catalogService.findLabel(
-                  "guardianship_types",
-                  relationship.guardianshipTypeId ?? relationship.guardianshipType,
-                ) || relationship.guardianshipType
+        </Card>
 
-              return (
+        <Card className="rounded-3xl p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-extrabold">Datos del beneficiario</h2>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setEditingChild(true)}
+            >
+              Editar beneficiario
+            </Button>
+          </div>
+          <dl className="grid gap-3 sm:grid-cols-2">
+            {[
+              ["Nombres", child.firstName],
+              ["Apellidos", child.lastName],
+              ["Fecha de nacimiento", child.birthDate],
+              ["Sexo", sexLabel],
+              ["Tipo de documento", documentTypeLabel],
+              ["Número de documento", child.documentNumber],
+              ["Fecha de ingreso", child.admissionDate],
+              ["Fecha de retiro", child.exitDate],
+              ["Estado del beneficiario", statusLabel],
+              ["Observaciones", child.notes],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-xl bg-surface-muted p-3">
+                <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                  {label}
+                </dt>
+                <dd className="mt-1 font-semibold">{display(value)}</dd>
+              </div>
+            ))}
+          </dl>
+        </Card>
+
+        <Card className="mt-4 rounded-3xl p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold">
+                Acudientes vinculados
+              </h2>
+            </div>
+            <Button
+              type="button"
+              onClick={() => setRelationshipDialog(true)}
+            >
+              + Vincular acudiente
+            </Button>
+          </div>
+          {childRelationships.length > 0 ? (
+            <div className="space-y-3">
+              {childRelationships.map((relationship) => {
+                const guardian = guardians.find(
+                  (item) => String(item.guardianId) === String(relationship.guardianId),
+                )
+                const guardianshipTypeLabel =
+                  catalogService.findLabel(
+                    "guardianship_types",
+                    relationship.guardianshipTypeId ?? relationship.guardianshipType,
+                  ) || relationship.guardianshipType
+
+                return (
+                  <article
+                    key={relationship.childGuardianId}
+                    className="rounded-xl bg-surface-muted p-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-bold">
+                          Acudiente: {guardian?.fullName || "Sin registro"}
+                        </p>
+                        {guardian?.documentNumber && (
+                          <p className="text-xs text-muted">
+                            Documento: {guardian.documentNumber}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => setDeletingRelationship(relationship)}
+                      >
+                        Desvincular
+                      </Button>
+                    </div>
+                    <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+                      <div>
+                        <dt className="text-muted">Tipo de vínculo</dt>
+                        <dd className="font-semibold">
+                          {display(guardianshipTypeLabel)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted">Inicio</dt>
+                        <dd className="font-semibold">
+                          {display(relationship.startDate)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted">Fin</dt>
+                        <dd className="font-semibold">
+                          {display(relationship.endDate)}
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted">
+              Este beneficiario no tiene acudientes vinculados actualmente. Puedes vincular uno con el botón superior.
+            </p>
+          )}
+        </Card>
+        <Card className="mt-4 rounded-3xl p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold">Descripción interna</h2>
+              <p className="text-sm text-muted">
+                Comunicación, rutina, gustos e indicaciones de manejo de crisis.
+              </p>
+            </div>
+            <Button type="button" onClick={() => setDescriptionDialog({})}>
+              Agregar descripción
+            </Button>
+          </div>
+          {internalDescriptionsError && (
+            <p
+              role="alert"
+              className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+            >
+              {internalDescriptionsError}
+            </p>
+          )}
+          {descriptionsForChild.length ? (
+            <div className="space-y-3">
+              {descriptionsForChild.map((description) => (
                 <article
-                  key={relationship.childGuardianId}
+                  key={description.childInternalDescriptionId}
                   className="rounded-xl bg-surface-muted p-4"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm font-bold text-muted">
+                      Descripción #{description.childInternalDescriptionId}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setDescriptionDialog(description)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => setDeletingDescription(description)}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  </div>
+                  <dl className="grid gap-3 sm:grid-cols-2">
+                    {[
+                      ["Formas de comunicación", description.communicationWays],
+                      ["Apoyos para la rutina diaria", description.dailyRoutineHelp],
+                      ["Gustos e intereses", description.likings],
+                      ["Manejo de crisis", description.crisisManagement],
+                    ].map(([label, value]) => (
+                      <div key={label} className="rounded-lg bg-surface p-3">
+                        <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                          {label}
+                        </dt>
+                        <dd className="mt-1 whitespace-pre-wrap font-semibold">
+                          {display(value)}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted">
+              No hay descripciones internas registradas.
+            </p>
+          )}
+        </Card>
+        <Card className="mt-4 rounded-3xl p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold">Asistencia a talleres</h2>
+            </div>
+            <Button type="button" onClick={() => setAssistanceDialog({})}>
+              Agregar asistencia
+            </Button>
+          </div>
+          {assistanceError && (
+            <p
+              role="alert"
+              className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+            >
+              {assistanceError}
+            </p>
+          )}
+          {assistanceForChild.length ? (
+            <div className="space-y-3">
+              {assistanceForChild.map((assistance) => (
+                <article
+                  key={assistance.childrenAssistanceId}
+                  className="rounded-xl bg-surface-muted p-4"
+                >
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-bold">
-                        Acudiente: {guardian?.fullName || "Sin registro"}
+                        Sesión de taller #{assistance.professionalWorkshopId}
                       </p>
-                      {guardian?.documentNumber && (
-                        <p className="text-xs text-muted">
-                          Documento: {guardian.documentNumber}
-                        </p>
-                      )}
+                      <p className="text-xs text-muted">
+                        Registro #{assistance.childrenAssistanceId}
+                      </p>
                     </div>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      onClick={() => setDeletingRelationship(relationship)}
-                    >
-                      Desvincular
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setAssistanceDialog(assistance)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => setDeletingAssistance(assistance)}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
                   </div>
-                  <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-                    <div>
-                      <dt className="text-muted">Tipo de vínculo</dt>
-                      <dd className="font-semibold">
-                        {display(guardianshipTypeLabel)}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted">Inicio</dt>
-                      <dd className="font-semibold">
-                        {display(relationship.startDate)}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted">Fin</dt>
-                      <dd className="font-semibold">
-                        {display(relationship.endDate)}
+                  <dl className="grid gap-3 sm:grid-cols-3">
+                    {[
+                      ["Confirmó asistencia", assistance.willAssist],
+                      ["Asistió", assistance.asisted],
+                      ["Completó el taller", assistance.completeWorkshop],
+                    ].map(([label, value]) => (
+                      <div key={label} className="rounded-lg bg-surface p-3">
+                        <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                          {label}
+                        </dt>
+                        <dd className="mt-1 font-semibold">
+                          {value ? "Sí" : "No"}
+                        </dd>
+                      </div>
+                    ))}
+                    <div className="rounded-lg bg-surface p-3 sm:col-span-3">
+                      <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                        Comportamiento
+                      </dt>
+                      <dd className="mt-1 whitespace-pre-wrap font-semibold">
+                        {display(assistance.behavior)}
                       </dd>
                     </div>
                   </dl>
                 </article>
-              )
-            })}
-          </div>
-        ) : (
-          <p className="text-sm text-muted">
-            Este beneficiario no tiene acudientes vinculados actualmente. Puedes vincular uno con el botón superior.
-          </p>
-        )}
-      </Card>
-      <Card className="mt-4 rounded-3xl p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-extrabold">Descripción interna</h2>
+              ))}
+            </div>
+          ) : (
             <p className="text-sm text-muted">
-              Comunicación, rutina, gustos e indicaciones de manejo de crisis.
+              No hay registros de asistencia para este beneficiario.
             </p>
+          )}
+        </Card>
+        <Card className="mt-4 rounded-3xl p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold">Ficha de salud</h2>
+            </div>
+            <Button type="button" onClick={() => setRecordDialog({})}>
+              Agregar ficha
+            </Button>
           </div>
-          <Button type="button" onClick={() => setDescriptionDialog({})}>
-            Agregar descripción
-          </Button>
-        </div>
-        {internalDescriptionsError && (
-          <p
-            role="alert"
-            className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
-          >
-            {internalDescriptionsError}
-          </p>
-        )}
-        {descriptionsForChild.length ? (
-          <div className="space-y-3">
-            {descriptionsForChild.map((description) => (
-              <article
-                key={description.childInternalDescriptionId}
-                className="rounded-xl bg-surface-muted p-4"
-              >
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm font-bold text-muted">
-                    Descripción #{description.childInternalDescriptionId}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => setDescriptionDialog(description)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      onClick={() => setDeletingDescription(description)}
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
-                </div>
-                <dl className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    ["Formas de comunicación", description.communicationWays],
-                    ["Apoyos para la rutina diaria", description.dailyRoutineHelp],
-                    ["Gustos e intereses", description.likings],
-                    ["Manejo de crisis", description.crisisManagement],
-                  ].map(([label, value]) => (
-                    <div key={label} className="rounded-lg bg-surface p-3">
-                      <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                        {label}
-                      </dt>
-                      <dd className="mt-1 whitespace-pre-wrap font-semibold">
-                        {display(value)}
-                      </dd>
+          {childRecordsError && (
+            <p
+              role="alert"
+              className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+            >
+              {childRecordsError}
+            </p>
+          )}
+          {recordsForChild.length ? (
+            <div className="space-y-3">
+              {recordsForChild.map((record) => (
+                <article
+                  key={record.recordId}
+                  className="rounded-xl bg-surface-muted p-4"
+                >
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm font-bold text-muted">
+                      Ficha #{record.recordId}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setRecordDialog(record)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => setDeletingRecord(record)}
+                      >
+                        Eliminar
+                      </Button>
                     </div>
-                  ))}
-                </dl>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted">
-            No hay descripciones internas registradas.
-          </p>
-        )}
-      </Card>
-      <Card className="mt-4 rounded-3xl p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-extrabold">Asistencia a talleres</h2>
+                  </div>
+                  <dl className="grid gap-3 sm:grid-cols-2">
+                    {[
+                      ["EPS", record.eps],
+                      ["Estado de afiliación", record.state],
+                      ["IPS asignada", record.ipsAssigned],
+                      ["Alergias", record.allergies],
+                      ["Restricciones alimentarias", record.mealRestrictions],
+                      ["Medicamentos", record.medicines],
+                      ["Condiciones especiales", record.specialConditions],
+                    ].map(([label, value]) => (
+                      <div key={label} className="rounded-lg bg-surface p-3">
+                        <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                          {label}
+                        </dt>
+                        <dd className="mt-1 font-semibold">{display(value)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </article>
+              ))}
+            </div>
+          ) : (
             <p className="text-sm text-muted">
-              Registros de la tabla children_assistance.
+              No hay fichas de salud registradas para este beneficiario.
             </p>
-          </div>
-          <Button type="button" onClick={() => setAssistanceDialog({})}>
-            Agregar asistencia
-          </Button>
-        </div>
-        {assistanceError && (
-          <p
-            role="alert"
-            className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
-          >
-            {assistanceError}
-          </p>
-        )}
-        {assistanceForChild.length ? (
-          <div className="space-y-3">
-            {assistanceForChild.map((assistance) => (
-              <article
-                key={assistance.childrenAssistanceId}
-                className="rounded-xl bg-surface-muted p-4"
-              >
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          )}
+        </Card>
+        <Card className="mt-4 rounded-3xl p-5">
+          <h2 className="mb-4 text-xl font-extrabold">
+            Pagos asociados
+          </h2>
+          {enrollmentError && (
+            <p
+              role="alert"
+              className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+            >
+              {enrollmentError}
+            </p>
+          )}
+          {enrollmentsForChild.length ? (
+            <div className="space-y-2">
+              {enrollmentsForChild.map((enrollment) => (
+                <article
+                  key={enrollment.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-muted p-3"
+                >
                   <div>
                     <p className="font-bold">
-                      Sesión de taller #{assistance.professionalWorkshopId}
+                      {enrollment.status || "Sin estado"}
                     </p>
-                    <p className="text-xs text-muted">
-                      Registro #{assistance.childrenAssistanceId}
+                    <p className="text-sm text-muted">
+                      {enrollment.paymentMethod || "Medio sin registrar"} ·{" "}
+                      {formatFecha(enrollment.paidDate)}
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => setAssistanceDialog(assistance)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      onClick={() => setDeletingAssistance(assistance)}
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
-                </div>
-                <dl className="grid gap-3 sm:grid-cols-3">
-                  {[
-                    ["Confirmó asistencia", assistance.willAssist],
-                    ["Asistió", assistance.asisted],
-                    ["Completó el taller", assistance.completeWorkshop],
-                  ].map(([label, value]) => (
-                    <div key={label} className="rounded-lg bg-surface p-3">
-                      <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                        {label}
-                      </dt>
-                      <dd className="mt-1 font-semibold">
-                        {value ? "Sí" : "No"}
-                      </dd>
-                    </div>
-                  ))}
-                  <div className="rounded-lg bg-surface p-3 sm:col-span-3">
-                    <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                      Comportamiento
-                    </dt>
-                    <dd className="mt-1 whitespace-pre-wrap font-semibold">
-                      {display(assistance.behavior)}
-                    </dd>
-                  </div>
-                </dl>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted">
-            No hay registros de asistencia para este beneficiario.
-          </p>
-        )}
-      </Card>
-      <Card className="mt-4 rounded-3xl p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-extrabold">Ficha de salud</h2>
+                  <p className="font-extrabold">
+                    {formatCOP(Number(enrollment.amount) || 0)}
+                  </p>
+                </article>
+              ))}
+            </div>
+          ) : (
             <p className="text-sm text-muted">
-              Datos de la tabla child_records
+              No hay pagos registrados para este beneficiario.
             </p>
-          </div>
-          <Button type="button" onClick={() => setRecordDialog({})}>
-            Agregar ficha
-          </Button>
-        </div>
-        {childRecordsError && (
-          <p
-            role="alert"
-            className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
-          >
-            {childRecordsError}
-          </p>
-        )}
-        {recordsForChild.length ? (
-          <div className="space-y-3">
-            {recordsForChild.map((record) => (
-              <article
-                key={record.recordId}
-                className="rounded-xl bg-surface-muted p-4"
-              >
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm font-bold text-muted">
-                    Ficha #{record.recordId}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => setRecordDialog(record)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      onClick={() => setDeletingRecord(record)}
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
-                </div>
-                <dl className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    ["EPS", record.eps],
-                    ["Estado de afiliación", record.state],
-                    ["IPS asignada", record.ipsAssigned],
-                    ["Alergias", record.allergies],
-                    ["Restricciones alimentarias", record.mealRestrictions],
-                    ["Medicamentos", record.medicines],
-                    ["Condiciones especiales", record.specialConditions],
-                  ].map(([label, value]) => (
-                    <div key={label} className="rounded-lg bg-surface p-3">
-                      <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                        {label}
-                      </dt>
-                      <dd className="mt-1 font-semibold">{display(value)}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted">
-            No hay fichas de salud registradas para este beneficiario.
-          </p>
-        )}
-      </Card>
-      <Card className="mt-4 rounded-3xl p-5">
-        <h2 className="mb-4 text-xl font-extrabold">
-          Pagos asociados (tuition)
-        </h2>
-        {enrollmentError && (
-          <p
-            role="alert"
-            className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
-          >
-            {enrollmentError}
-          </p>
-        )}
-        {enrollmentsForChild.length ? (
-          <div className="space-y-2">
-            {enrollmentsForChild.map((enrollment) => (
-              <article
-                key={enrollment.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-muted p-3"
-              >
-                <div>
-                  <p className="font-bold">
-                    {enrollment.status || "Sin estado"}
-                  </p>
-                  <p className="text-sm text-muted">
-                    {enrollment.paymentMethod || "Medio sin registrar"} ·{" "}
-                    {formatFecha(enrollment.paidDate)}
-                  </p>
-                </div>
-                <p className="font-extrabold">
-                  {formatCOP(Number(enrollment.amount) || 0)}
-                </p>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted">
-            No hay pagos registrados para este beneficiario.
-          </p>
-        )}
-      </Card>
-      <Button
-        variant="danger"
-        onClick={onDelete}
-        className="mt-4"
-        type="button"
-      >
-        Eliminar beneficiario
-      </Button>
-    </div>
-    {recordDialog && (
-      <ChildRecordDialog
-        record={recordDialog.recordId ? recordDialog : null}
-        onClose={() => setRecordDialog(null)}
-        onSave={(changes) =>
-          recordDialog.recordId
-            ? onUpdateChildRecord(child.childId, recordDialog.recordId, changes)
-            : onCreateChildRecord(child.childId, changes)
-        }
-      />
-    )}
-    {deletingRecord && (
-      <DeletePersonDialog
-        kind="record"
-        name={`#${deletingRecord.recordId}`}
-        onClose={() => setDeletingRecord(null)}
-        onConfirm={async () => {
-          await onDeleteChildRecord(child.childId, deletingRecord.recordId)
-          setDeletingRecord(null)
-          return { ok: true }
-        }}
-      />
-    )}
-    {descriptionDialog && (
-      <ChildInternalDescriptionDialog
-        description={
-          descriptionDialog.childInternalDescriptionId
-            ? descriptionDialog
-            : null
-        }
-        onClose={() => setDescriptionDialog(null)}
-        onSave={(changes) =>
-          descriptionDialog.childInternalDescriptionId
-            ? onUpdateInternalDescription(
+          )}
+        </Card>
+        <Button
+          variant="danger"
+          onClick={onDelete}
+          className="mt-4"
+          type="button"
+        >
+          Eliminar beneficiario
+        </Button>
+      </div>
+      {recordDialog && (
+        <ChildRecordDialog
+          record={recordDialog.recordId ? recordDialog : null}
+          onClose={() => setRecordDialog(null)}
+          onSave={(changes) =>
+            recordDialog.recordId
+              ? onUpdateChildRecord(child.childId, recordDialog.recordId, changes)
+              : onCreateChildRecord(child.childId, changes)
+          }
+        />
+      )}
+      {deletingRecord && (
+        <DeletePersonDialog
+          kind="record"
+          name={`#${deletingRecord.recordId}`}
+          onClose={() => setDeletingRecord(null)}
+          onConfirm={async () => {
+            await onDeleteChildRecord(child.childId, deletingRecord.recordId)
+            setDeletingRecord(null)
+            return { ok: true }
+          }}
+        />
+      )}
+      {descriptionDialog && (
+        <ChildInternalDescriptionDialog
+          description={
+            descriptionDialog.childInternalDescriptionId
+              ? descriptionDialog
+              : null
+          }
+          onClose={() => setDescriptionDialog(null)}
+          onSave={(changes) =>
+            descriptionDialog.childInternalDescriptionId
+              ? onUpdateInternalDescription(
                 child.childId,
                 descriptionDialog.childInternalDescriptionId,
                 changes,
               )
-            : onCreateInternalDescription(child.childId, changes)
-        }
-      />
-    )}
-    {deletingDescription && (
-      <DeletePersonDialog
-        kind="description"
-        name={`#${deletingDescription.childInternalDescriptionId}`}
-        onClose={() => setDeletingDescription(null)}
-        onConfirm={async () => {
-          await onDeleteInternalDescription(
-            child.childId,
-            deletingDescription.childInternalDescriptionId,
-          )
-          setDeletingDescription(null)
-          return { ok: true }
-        }}
-      />
-    )}
-    {assistanceDialog && (
-      <ChildrenAssistanceDialog
-        assistance={
-          assistanceDialog.childrenAssistanceId ? assistanceDialog : null
-        }
-        onClose={() => setAssistanceDialog(null)}
-        onSave={(changes) =>
-          assistanceDialog.childrenAssistanceId
-            ? onUpdateAssistance(
+              : onCreateInternalDescription(child.childId, changes)
+          }
+        />
+      )}
+      {deletingDescription && (
+        <DeletePersonDialog
+          kind="description"
+          name={`#${deletingDescription.childInternalDescriptionId}`}
+          onClose={() => setDeletingDescription(null)}
+          onConfirm={async () => {
+            await onDeleteInternalDescription(
+              child.childId,
+              deletingDescription.childInternalDescriptionId,
+            )
+            setDeletingDescription(null)
+            return { ok: true }
+          }}
+        />
+      )}
+      {assistanceDialog && (
+        <ChildrenAssistanceDialog
+          assistance={
+            assistanceDialog.childrenAssistanceId ? assistanceDialog : null
+          }
+          onClose={() => setAssistanceDialog(null)}
+          onSave={(changes) =>
+            assistanceDialog.childrenAssistanceId
+              ? onUpdateAssistance(
                 child.childId,
                 assistanceDialog.childrenAssistanceId,
                 changes,
               )
-            : onCreateAssistance(child.childId, changes)
-        }
-      />
-    )}
-    {deletingAssistance && (
-      <DeletePersonDialog
-        kind="assistance"
-        name={`#${deletingAssistance.childrenAssistanceId}`}
-        onClose={() => setDeletingAssistance(null)}
-        onConfirm={async () => {
-          await onDeleteAssistance(
-            child.childId,
-            deletingAssistance.childrenAssistanceId,
-          )
-          setDeletingAssistance(null)
-          return { ok: true }
-        }}
-      />
-    )}
-    {relationshipDialog && (
-      <ChildGuardianDialog
-        child={child}
-        guardians={guardians}
-        onClose={() => setRelationshipDialog(false)}
-        onSave={async (data) => {
-          await onCreateRelationship(data)
-          setRelationshipDialog(false)
-        }}
-        onCreateGuardian={onCreateGuardian}
-      />
-    )}
-    {deletingRelationship && (
-      <DeletePersonDialog
-        kind="relationship"
-        name={`vínculo con ${
-          guardians.find(
+              : onCreateAssistance(child.childId, changes)
+          }
+        />
+      )}
+      {deletingAssistance && (
+        <DeletePersonDialog
+          kind="assistance"
+          name={`#${deletingAssistance.childrenAssistanceId}`}
+          onClose={() => setDeletingAssistance(null)}
+          onConfirm={async () => {
+            await onDeleteAssistance(
+              child.childId,
+              deletingAssistance.childrenAssistanceId,
+            )
+            setDeletingAssistance(null)
+            return { ok: true }
+          }}
+        />
+      )}
+      {relationshipDialog && (
+        <ChildGuardianDialog
+          child={child}
+          guardians={guardians}
+          onClose={() => setRelationshipDialog(false)}
+          onSave={async (data) => {
+            await onCreateRelationship(data)
+            setRelationshipDialog(false)
+          }}
+          onCreateGuardian={onCreateGuardian}
+        />
+      )}
+      {deletingRelationship && (
+        <DeletePersonDialog
+          kind="relationship"
+          name={`vínculo con ${guardians.find(
             (item) =>
               String(item.guardianId) ===
               String(deletingRelationship.guardianId),
           )?.fullName || "el acudiente"
-        }`}
-        onClose={() => setDeletingRelationship(null)}
-        onConfirm={async () => {
-          const result = await onDeleteRelationship(
-            deletingRelationship.childGuardianId,
-          )
-          if (result && !result.ok) return result
-          setDeletingRelationship(null)
-          return { ok: true }
-        }}
-      />
-    )}
-    {editingChild && (
-      <EditChildDialog
-        child={child}
-        onClose={() => setEditingChild(false)}
-        onSave={(changes) => onUpdateChild(child.childId, changes)}
-      />
-    )}
+            }`}
+          onClose={() => setDeletingRelationship(null)}
+          onConfirm={async () => {
+            const result = await onDeleteRelationship(
+              deletingRelationship.childGuardianId,
+            )
+            if (result && !result.ok) return result
+            setDeletingRelationship(null)
+            return { ok: true }
+          }}
+        />
+      )}
+      {editingChild && (
+        <EditChildDialog
+          child={child}
+          onClose={() => setEditingChild(false)}
+          onSave={(changes) => onUpdateChild(child.childId, changes)}
+        />
+      )}
     </>
   )
 }

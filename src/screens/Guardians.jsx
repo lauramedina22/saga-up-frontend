@@ -47,200 +47,194 @@ function GuardianDetails({
   return (
     <>
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
-      <Button variant="tertiary" onClick={onBack} className="mb-5 px-0">
-        Volver a acudientes
-      </Button>
-      <Card className="mb-4 rounded-3xl p-6">
-        <div className="flex items-center gap-4">
-          <Avatar name={guardian.fullName} size="lg" />
-          <div>
-            <h1 className="text-2xl font-extrabold">{guardian.fullName}</h1>
-            <p className="text-sm text-muted">
-              ID de registro: {display(guardian.guardianId)}
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      <Card className="rounded-3xl p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-extrabold">Datos de guardians</h2>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setEditingGuardian(true)}
-          >
-            Editar acudiente
-          </Button>
-        </div>
-        <dl className="grid gap-3 sm:grid-cols-2">
-          {[
-            ["Nombre completo", guardian.fullName],
-            ["Tipo de documento", documentTypeLabel],
-            ["Número de documento", guardian.documentNumber],
-            ["Teléfono", guardian.phone],
-            ["Dirección", guardian.address],
-            ["Situación jurídica", legalStatusLabel],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-xl bg-surface-muted p-3">
-              <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                {label}
-              </dt>
-              <dd className="mt-1 font-semibold">{display(value)}</dd>
+        <Button variant="tertiary" onClick={onBack} className="mb-5 px-0">
+          Volver a acudientes
+        </Button>
+        <Card className="mb-4 rounded-3xl p-6">
+          <div className="flex items-center gap-4">
+            <Avatar name={guardian.fullName} size="lg" />
+            <div>
+              <h1 className="text-2xl font-extrabold">{guardian.fullName}</h1>
+              <p className="text-sm text-muted">
+                ID de registro: {display(guardian.guardianId)}
+              </p>
             </div>
-          ))}
-        </dl>
-      </Card>
-
-      <Card className="mt-4 rounded-3xl p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-extrabold">
-              Relaciones childGuardian
-            </h2>
-            <p className="text-sm text-muted">
-              Beneficiarios a cargo (un acudiente puede tener múltiples beneficiarios a su cargo).
-            </p>
           </div>
-          <Button
-            type="button"
-            onClick={() => setRelationshipDialog(true)}
-          >
-            + Vincular beneficiario
-          </Button>
-        </div>
-        {guardianRelationships.length > 0 ? (
-          <div className="space-y-3">
-            {guardianRelationships.map((relationship) => {
-              const child = children.find(
-                (item) => String(item.childId) === String(relationship.childId),
-              )
-              const guardianshipTypeLabel =
-                catalogService.findLabel(
-                  "guardianship_types",
-                  relationship.guardianshipTypeId ?? relationship.guardianshipType,
-                ) || relationship.guardianshipType
+        </Card>
 
-              return (
-                <article
-                  key={relationship.childGuardianId}
-                  className="rounded-xl bg-surface-muted p-4"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-bold">
-                        Beneficiario:{" "}
-                        {child
-                          ? `${child.firstName} ${child.lastName}`
-                          : "Sin registro"}
-                      </p>
-                      {child?.documentNumber && (
-                        <p className="text-xs text-muted">
-                          Documento: {child.documentNumber}
+        <Card className="rounded-3xl p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-extrabold">Datos de guardians</h2>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setEditingGuardian(true)}
+            >
+              Editar acudiente
+            </Button>
+          </div>
+          <dl className="grid gap-3 sm:grid-cols-2">
+            {[
+              ["Nombre completo", guardian.fullName],
+              ["Tipo de documento", documentTypeLabel],
+              ["Número de documento", guardian.documentNumber],
+              ["Teléfono", guardian.phone],
+              ["Dirección", guardian.address],
+              ["Situación jurídica", legalStatusLabel],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-xl bg-surface-muted p-3">
+                <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                  {label}
+                </dt>
+                <dd className="mt-1 font-semibold">{display(value)}</dd>
+              </div>
+            ))}
+          </dl>
+        </Card>
+
+        <Card className="mt-4 rounded-3xl p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold">
+                Beneficiarios Vinculados
+              </h2>
+            </div>
+            <Button
+              type="button"
+              onClick={() => setRelationshipDialog(true)}
+            >
+              + Vincular beneficiario
+            </Button>
+          </div>
+          {guardianRelationships.length > 0 ? (
+            <div className="space-y-3">
+              {guardianRelationships.map((relationship) => {
+                const child = children.find(
+                  (item) => String(item.childId) === String(relationship.childId),
+                )
+                const guardianshipTypeLabel =
+                  catalogService.findLabel(
+                    "guardianship_types",
+                    relationship.guardianshipTypeId ?? relationship.guardianshipType,
+                  ) || relationship.guardianshipType
+
+                return (
+                  <article
+                    key={relationship.childGuardianId}
+                    className="rounded-xl bg-surface-muted p-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-bold">
+                          Beneficiario:{" "}
+                          {child
+                            ? `${child.firstName} ${child.lastName}`
+                            : "Sin registro"}
                         </p>
-                      )}
+                        {child?.documentNumber && (
+                          <p className="text-xs text-muted">
+                            Documento: {child.documentNumber}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => setDeletingRelationship(relationship)}
+                      >
+                        Desvincular
+                      </Button>
                     </div>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      onClick={() => setDeletingRelationship(relationship)}
-                    >
-                      Desvincular
-                    </Button>
-                  </div>
-                  <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-                    <div>
-                      <dt className="text-muted">Tipo de vínculo</dt>
-                      <dd className="font-semibold">
-                        {display(guardianshipTypeLabel)}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted">Inicio</dt>
-                      <dd className="font-semibold">
-                        {display(relationship.startDate)}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted">Fin</dt>
-                      <dd className="font-semibold">
-                        {display(relationship.endDate)}
-                      </dd>
-                    </div>
-                  </dl>
-                </article>
-              )
-            })}
-          </div>
-        ) : (
-          <p className="text-sm text-muted">
-            Este acudiente no tiene beneficiarios vinculados actualmente. Puedes vincular uno con el botón superior.
-          </p>
-        )}
-      </Card>
-      <Button
-        variant="danger"
-        onClick={onDelete}
-        className="mt-4"
-        type="button"
-      >
-        Eliminar acudiente
-      </Button>
-    </div>
-    {relationshipDialog && (
-      <GuardianChildDialog
-        guardian={guardian}
-        children={children}
-        onClose={() => setRelationshipDialog(false)}
-        onSave={async (data) => {
-          await onCreateRelationship(data)
-          setRelationshipDialog(false)
-        }}
-        onCreateChild={onCreateChild}
-      />
-    )}
-    {deletingRelationship && (
-      <DeletePersonDialog
-        kind="relationship"
-        name={`vínculo con ${
-          children.find(
+                    <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+                      <div>
+                        <dt className="text-muted">Tipo de vínculo</dt>
+                        <dd className="font-semibold">
+                          {display(guardianshipTypeLabel)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted">Inicio</dt>
+                        <dd className="font-semibold">
+                          {display(relationship.startDate)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted">Fin</dt>
+                        <dd className="font-semibold">
+                          {display(relationship.endDate)}
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted">
+              Este acudiente no tiene beneficiarios vinculados actualmente. Puedes vincular uno con el botón superior.
+            </p>
+          )}
+        </Card>
+        <Button
+          variant="danger"
+          onClick={onDelete}
+          className="mt-4"
+          type="button"
+        >
+          Eliminar acudiente
+        </Button>
+      </div>
+      {relationshipDialog && (
+        <GuardianChildDialog
+          guardian={guardian}
+          children={children}
+          onClose={() => setRelationshipDialog(false)}
+          onSave={async (data) => {
+            await onCreateRelationship(data)
+            setRelationshipDialog(false)
+          }}
+          onCreateChild={onCreateChild}
+        />
+      )}
+      {deletingRelationship && (
+        <DeletePersonDialog
+          kind="relationship"
+          name={`vínculo con ${children.find(
             (item) =>
               String(item.childId) ===
               String(deletingRelationship.childId),
           )
-            ? `${
-                children.find(
-                  (item) =>
-                    String(item.childId) ===
-                    String(deletingRelationship.childId),
-                ).firstName
-              } ${
-                children.find(
-                  (item) =>
-                    String(item.childId) ===
-                    String(deletingRelationship.childId),
-                ).lastName
-              }`
+            ? `${children.find(
+              (item) =>
+                String(item.childId) ===
+                String(deletingRelationship.childId),
+            ).firstName
+            } ${children.find(
+              (item) =>
+                String(item.childId) ===
+                String(deletingRelationship.childId),
+            ).lastName
+            }`
             : "el beneficiario"
-        }`}
-        onClose={() => setDeletingRelationship(null)}
-        onConfirm={async () => {
-          const result = await onDeleteRelationship(
-            deletingRelationship.childGuardianId,
-          )
-          if (result && !result.ok) return result
-          setDeletingRelationship(null)
-          return { ok: true }
-        }}
-      />
-    )}
-    {editingGuardian && (
-      <EditGuardianDialog
-        guardian={guardian}
-        onClose={() => setEditingGuardian(false)}
-        onSave={(changes) => onUpdateGuardian(guardian.guardianId, changes)}
-      />
-    )}
+            }`}
+          onClose={() => setDeletingRelationship(null)}
+          onConfirm={async () => {
+            const result = await onDeleteRelationship(
+              deletingRelationship.childGuardianId,
+            )
+            if (result && !result.ok) return result
+            setDeletingRelationship(null)
+            return { ok: true }
+          }}
+        />
+      )}
+      {editingGuardian && (
+        <EditGuardianDialog
+          guardian={guardian}
+          onClose={() => setEditingGuardian(false)}
+          onSave={(changes) => onUpdateGuardian(guardian.guardianId, changes)}
+        />
+      )}
     </>
   )
 }
