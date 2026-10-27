@@ -46,6 +46,16 @@ export const guardianService = {
     )
   },
 
+  // PUT /guardians/:id
+  async updateGuardian(guardianId, changes) {
+    return getGuardianRecord(
+      await apiClient.put(
+        `${GUARDIANS_ENDPOINT}/${guardianId}`,
+        toGuardianPayload(changes),
+      ),
+    )
+  },
+
   // DELETE /guardians/:id (borrado definitivo)
   async deleteGuardian(guardianId) {
     return apiClient.delete(`${GUARDIANS_ENDPOINT}/${guardianId}`)

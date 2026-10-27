@@ -43,6 +43,17 @@ export const childGuardianService = {
     )
   },
 
+  // PUT /children-guardians/:id
+  async updateRelationship(childGuardianId, changes) {
+    const response = await apiClient.put(
+      `${CHILDREN_GUARDIANS_ENDPOINT}/${childGuardianId}`,
+      toChildGuardianPayload(changes),
+    )
+    return toChildGuardianModel(
+      readRecord(response, "children_guardian", "relationship"),
+    )
+  },
+
   // DELETE /children-guardians/:id
   async deleteRelationship(childGuardianId) {
     return apiClient.delete(

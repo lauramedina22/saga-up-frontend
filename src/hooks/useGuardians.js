@@ -67,6 +67,69 @@ export function useGuardians() {
     }
   }
 
+  const updateGuardian = async (guardianId, changes) => {
+    try {
+      const updated = await guardianService.updateGuardian(guardianId, changes)
+      setGuardians((current) =>
+        current.map((guardian) =>
+          guardian.guardianId === guardianId ? updated : guardian,
+        ),
+      )
+      return {
+        ok: true,
+        message: "Acudiente actualizado correctamente.",
+        guardian: updated,
+      }
+    } catch (requestError) {
+      return {
+        ok: false,
+        message:
+          requestError.message || "No fue posible actualizar el acudiente.",
+      }
+    }
+  }
+
+  const createRelationship = async (relationship) => {
+    const created = await childGuardianService.createRelationship(relationship)
+    setRelationships((current) => [...current, created])
+    return created
+  }
+
+  const deleteRelationship = async (childGuardianId) => {
+    try {
+      await childGuardianService.deleteRelationship(childGuardianId)
+      setRelationships((current) =>
+        current.filter(
+          (relationship) =>
+            String(relationship.childGuardianId) !== String(childGuardianId),
+        ),
+      )
+      return { ok: true, message: "Vínculo eliminado correctamente." }
+    } catch (requestError) {
+      return {
+        ok: false,
+        message:
+          requestError.message || "No fue posible eliminar el vínculo.",
+      }
+    }
+  }
+
+  const createChild = async ({ child, relationship }) => {
+    const createdChild = await childService.createChild(child)
+    let createdRelationship
+    if (relationship?.guardianId) {
+      createdRelationship = await childGuardianService.createRelationship({
+        ...relationship,
+        childId: createdChild.childId,
+      })
+    }
+    setChildren((current) => [...current, createdChild])
+    if (createdRelationship) {
+      setRelationships((current) => [...current, createdRelationship])
+    }
+    return createdChild
+  }
+
   return {
     guardians,
     children,
@@ -75,6 +138,10 @@ export function useGuardians() {
     error,
     loadGuardians,
     createGuardian,
+    updateGuardian,
     deleteGuardian,
+    createRelationship,
+    deleteRelationship,
+    createChild,
   }
 }

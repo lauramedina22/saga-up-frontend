@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { formatCOP, formatFecha } from "../data"
-import { Avatar } from "../components/ui"
+import { Avatar, Button } from "../components/ui"
+import { CreateTuitionDialog } from "../components/EntityDialogs"
 import { useEnrollments } from "../hooks/useEnrollments"
 
 const STATUS = {
@@ -17,8 +18,11 @@ const FILTERS = [
 ]
 
 export default function EnrollmentsScreen() {
-  const { enrollments, children, loading, error } = useEnrollments()
+  const { enrollments, children, loading, error, createTuition } =
+    useEnrollments()
   const [filter, setFilter] = useState("todos")
+  const [creating, setCreating] = useState(false)
+  const [toast, setToast] = useState("")
 
   const filteredEnrollments = enrollments.filter(
     (enrollment) => filter === "todos" || enrollment.status === filter,
@@ -28,13 +32,44 @@ export default function EnrollmentsScreen() {
     0,
   )
 
+  const showToast = (message) => {
+    setToast(message)
+    window.setTimeout(() => setToast(""), 3000)
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-extrabold text-foreground">Matrículas</h1>
-        <span className="text-sm font-semibold text-muted">
-          {enrollments.length} registros
-        </span>
+      {toast && (
+        <p
+          role="status"
+          className="fixed right-4 top-4 z-50 rounded-xl bg-success px-4 py-3 text-sm font-bold text-white shadow-dialog"
+        >
+          {toast}
+        </p>
+      )}
+
+      {creating && (
+        <CreateTuitionDialog
+          children={children}
+          onClose={() => setCreating(false)}
+          onCreateTuition={createTuition}
+          onCreated={() => {
+            setCreating(false)
+            showToast("Pago de matrícula registrado correctamente.")
+          }}
+        />
+      )}
+
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-3xl font-extrabold text-foreground">Matrículas</h1>
+          <p className="text-sm font-semibold text-muted">
+            {enrollments.length} registros
+          </p>
+        </div>
+        <Button type="button" onClick={() => setCreating(true)}>
+          + Registrar pago
+        </Button>
       </div>
 
       {loading && (

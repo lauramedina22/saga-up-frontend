@@ -3,8 +3,11 @@ import { Avatar, Button, Card, Field } from "../components/ui"
 import {
   CreateGuardianDialog,
   DeletePersonDialog,
+  EditGuardianDialog,
+  GuardianChildDialog,
 } from "../components/EntityDialogs"
 import { useGuardians } from "../hooks/useGuardians"
+import { catalogService } from "../services/catalogService"
 
 function display(value) {
   return value === null || value === undefined || value === ""
@@ -16,15 +19,34 @@ function GuardianDetails({
   guardian,
   children,
   relationships,
+  onCreateRelationship,
+  onDeleteRelationship,
+  onCreateChild,
+  onUpdateGuardian,
   onBack,
   onDelete,
 }) {
+  const [relationshipDialog, setRelationshipDialog] = useState(false)
+  const [deletingRelationship, setDeletingRelationship] = useState(null)
+  const [editingGuardian, setEditingGuardian] = useState(false)
   const guardianRelationships = relationships.filter(
-    (relationship) => relationship.guardianId === guardian.guardianId,
+    (relationship) => String(relationship.guardianId) === String(guardian.guardianId),
   )
 
+  const documentTypeLabel =
+    catalogService.findLabel(
+      "document_types",
+      guardian.documentTypeId ?? guardian.documentType,
+    ) || guardian.documentType
+  const legalStatusLabel =
+    catalogService.findLabel(
+      "legal_statuses",
+      guardian.legalStatusId ?? guardian.legalStatus,
+    ) || guardian.legalStatus
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+    <>
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
       <Button variant="tertiary" onClick={onBack} className="mb-5 px-0">
         Volver a acudientes
       </Button>
@@ -41,15 +63,24 @@ function GuardianDetails({
       </Card>
 
       <Card className="rounded-3xl p-5">
-        <h2 className="mb-4 text-xl font-extrabold">Datos de guardians</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-extrabold">Datos de guardians</h2>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setEditingGuardian(true)}
+          >
+            Editar acudiente
+          </Button>
+        </div>
         <dl className="grid gap-3 sm:grid-cols-2">
           {[
             ["Nombre completo", guardian.fullName],
-            ["Tipo de documento", guardian.documentType],
+            ["Tipo de documento", documentTypeLabel],
             ["Número de documento", guardian.documentNumber],
             ["Teléfono", guardian.phone],
             ["Dirección", guardian.address],
-            ["Situación jurídica", guardian.legalStatus],
+            ["Situación jurídica", legalStatusLabel],
           ].map(([label, value]) => (
             <div key={label} className="rounded-xl bg-surface-muted p-3">
               <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
@@ -62,31 +93,66 @@ function GuardianDetails({
       </Card>
 
       <Card className="mt-4 rounded-3xl p-5">
-        <h2 className="mb-4 text-xl font-extrabold">
-          Relaciones childGuardian
-        </h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-extrabold">
+              Relaciones childGuardian
+            </h2>
+            <p className="text-sm text-muted">
+              Beneficiarios a cargo (un acudiente puede tener múltiples beneficiarios a su cargo).
+            </p>
+          </div>
+          <Button
+            type="button"
+            onClick={() => setRelationshipDialog(true)}
+          >
+            + Vincular beneficiario
+          </Button>
+        </div>
         {guardianRelationships.length > 0 ? (
           <div className="space-y-3">
             {guardianRelationships.map((relationship) => {
               const child = children.find(
-                (item) => item.childId === relationship.childId,
+                (item) => String(item.childId) === String(relationship.childId),
               )
+              const guardianshipTypeLabel =
+                catalogService.findLabel(
+                  "guardianship_types",
+                  relationship.guardianshipTypeId ?? relationship.guardianshipType,
+                ) || relationship.guardianshipType
+
               return (
                 <article
                   key={relationship.childGuardianId}
                   className="rounded-xl bg-surface-muted p-4"
                 >
-                  <p className="font-bold">
-                    Beneficiario:{" "}
-                    {child
-                      ? `${child.firstName} ${child.lastName}`
-                      : "Sin registro"}
-                  </p>
-                  <dl className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-bold">
+                        Beneficiario:{" "}
+                        {child
+                          ? `${child.firstName} ${child.lastName}`
+                          : "Sin registro"}
+                      </p>
+                      {child?.documentNumber && (
+                        <p className="text-xs text-muted">
+                          Documento: {child.documentNumber}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      onClick={() => setDeletingRelationship(relationship)}
+                    >
+                      Desvincular
+                    </Button>
+                  </div>
+                  <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
                     <div>
                       <dt className="text-muted">Tipo de vínculo</dt>
                       <dd className="font-semibold">
-                        {display(relationship.guardianshipType)}
+                        {display(guardianshipTypeLabel)}
                       </dd>
                     </div>
                     <div>
@@ -108,7 +174,7 @@ function GuardianDetails({
           </div>
         ) : (
           <p className="text-sm text-muted">
-            Este acudiente no tiene beneficiarios vinculados.
+            Este acudiente no tiene beneficiarios vinculados actualmente. Puedes vincular uno con el botón superior.
           </p>
         )}
       </Card>
@@ -121,6 +187,61 @@ function GuardianDetails({
         Eliminar acudiente
       </Button>
     </div>
+    {relationshipDialog && (
+      <GuardianChildDialog
+        guardian={guardian}
+        children={children}
+        onClose={() => setRelationshipDialog(false)}
+        onSave={async (data) => {
+          await onCreateRelationship(data)
+          setRelationshipDialog(false)
+        }}
+        onCreateChild={onCreateChild}
+      />
+    )}
+    {deletingRelationship && (
+      <DeletePersonDialog
+        kind="relationship"
+        name={`vínculo con ${
+          children.find(
+            (item) =>
+              String(item.childId) ===
+              String(deletingRelationship.childId),
+          )
+            ? `${
+                children.find(
+                  (item) =>
+                    String(item.childId) ===
+                    String(deletingRelationship.childId),
+                ).firstName
+              } ${
+                children.find(
+                  (item) =>
+                    String(item.childId) ===
+                    String(deletingRelationship.childId),
+                ).lastName
+              }`
+            : "el beneficiario"
+        }`}
+        onClose={() => setDeletingRelationship(null)}
+        onConfirm={async () => {
+          const result = await onDeleteRelationship(
+            deletingRelationship.childGuardianId,
+          )
+          if (result && !result.ok) return result
+          setDeletingRelationship(null)
+          return { ok: true }
+        }}
+      />
+    )}
+    {editingGuardian && (
+      <EditGuardianDialog
+        guardian={guardian}
+        onClose={() => setEditingGuardian(false)}
+        onSave={(changes) => onUpdateGuardian(guardian.guardianId, changes)}
+      />
+    )}
+    </>
   )
 }
 
@@ -132,7 +253,11 @@ export default function GuardiansScreen() {
     loading,
     error,
     createGuardian,
+    updateGuardian,
     deleteGuardian,
+    createRelationship,
+    deleteRelationship,
+    createChild,
   } = useGuardians()
   const [search, setSearch] = useState("")
   const [selectedId, setSelectedId] = useState(null)
@@ -160,6 +285,10 @@ export default function GuardiansScreen() {
           guardian={selected}
           children={children}
           relationships={relationships}
+          onCreateRelationship={createRelationship}
+          onDeleteRelationship={deleteRelationship}
+          onCreateChild={createChild}
+          onUpdateGuardian={updateGuardian}
           onBack={() => setSelectedId(null)}
           onDelete={() => setDeleting(selected)}
         />

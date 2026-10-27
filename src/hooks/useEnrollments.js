@@ -32,5 +32,18 @@ export function useEnrollments() {
     loadEnrollments()
   }, [])
 
-  return { enrollments, children, loading, error, loadEnrollments }
+  const createTuition = async (tuitionData) => {
+    const created = await enrollmentService.createTuition(tuitionData)
+    setEnrollments((current) => [...current, created])
+    return created
+  }
+
+  return {
+    enrollments,
+    children,
+    loading,
+    error,
+    loadEnrollments,
+    createTuition,
+  }
 }

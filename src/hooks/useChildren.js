@@ -151,7 +151,11 @@ export function useChildren() {
           child.childId === childId ? updatedChild : child,
         ),
       )
-      return { ok: true, message: "Beneficiario actualizado correctamente." }
+      return {
+        ok: true,
+        message: "Beneficiario actualizado correctamente.",
+        child: updatedChild,
+      }
     } catch (requestError) {
       return {
         ok: false,
@@ -278,6 +282,37 @@ export function useChildren() {
     }
   }
 
+  const createRelationship = async (relationship) => {
+    const created = await childGuardianService.createRelationship(relationship)
+    setRelationships((current) => [...current, created])
+    return created
+  }
+
+  const deleteRelationship = async (childGuardianId) => {
+    try {
+      await childGuardianService.deleteRelationship(childGuardianId)
+      setRelationships((current) =>
+        current.filter(
+          (relationship) =>
+            String(relationship.childGuardianId) !== String(childGuardianId),
+        ),
+      )
+      return { ok: true, message: "Vínculo eliminado correctamente." }
+    } catch (requestError) {
+      return {
+        ok: false,
+        message:
+          requestError.message || "No fue posible eliminar el vínculo.",
+      }
+    }
+  }
+
+  const createGuardian = async (guardianData) => {
+    const created = await guardianService.createGuardian(guardianData)
+    setGuardians((current) => [...current, created])
+    return created
+  }
+
   return {
     children,
     guardians,
@@ -294,6 +329,9 @@ export function useChildren() {
     enrollmentError,
     loadChildren,
     createChild,
+    createRelationship,
+    deleteRelationship,
+    createGuardian,
     createChildRecord,
     updateChildRecord,
     deleteChildRecord,

@@ -2,13 +2,16 @@ import { useState } from "react"
 import { formatCOP, formatFecha } from "../data"
 import { Avatar, Button, Card, Field } from "../components/ui"
 import {
+  ChildGuardianDialog,
   ChildInternalDescriptionDialog,
   ChildRecordDialog,
   ChildrenAssistanceDialog,
   CreateChildDialog,
   DeletePersonDialog,
+  EditChildDialog,
 } from "../components/EntityDialogs"
 import { useChildren } from "../hooks/useChildren"
+import { catalogService } from "../services/catalogService"
 
 function display(value) {
   return value === null || value === undefined || value === ""
@@ -37,6 +40,10 @@ function ChildDetails({
   onCreateAssistance,
   onUpdateAssistance,
   onDeleteAssistance,
+  onCreateRelationship,
+  onDeleteRelationship,
+  onCreateGuardian,
+  onUpdateChild,
   onBack,
   onDelete,
 }) {
@@ -46,8 +53,11 @@ function ChildDetails({
   const [deletingDescription, setDeletingDescription] = useState(null)
   const [assistanceDialog, setAssistanceDialog] = useState(null)
   const [deletingAssistance, setDeletingAssistance] = useState(null)
+  const [relationshipDialog, setRelationshipDialog] = useState(false)
+  const [deletingRelationship, setDeletingRelationship] = useState(null)
+  const [editingChild, setEditingChild] = useState(false)
   const childRelationships = relationships.filter(
-    (relationship) => relationship.childId === child.childId,
+    (relationship) => String(relationship.childId) === String(child.childId),
   )
   const recordsForChild = childRecords.filter(
     (record) => record.childId === child.childId,
@@ -61,6 +71,15 @@ function ChildDetails({
   const enrollmentsForChild = enrollments.filter(
     (enrollment) => enrollment.childId === child.childId,
   )
+
+  const sexLabel =
+    catalogService.findLabel("sexes", child.sexId ?? child.sex) || child.sex
+  const documentTypeLabel =
+    catalogService.findLabel("document_types", child.documentTypeId ?? child.documentType) ||
+    child.documentType
+  const statusLabel =
+    catalogService.findLabel("child_statuses", child.statusId ?? child.status) ||
+    child.status
 
   return (
     <>
@@ -83,18 +102,27 @@ function ChildDetails({
       </Card>
 
       <Card className="rounded-3xl p-5">
-        <h2 className="mb-4 text-xl font-extrabold">Datos de children</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-extrabold">Datos de children</h2>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setEditingChild(true)}
+          >
+            Editar beneficiario
+          </Button>
+        </div>
         <dl className="grid gap-3 sm:grid-cols-2">
           {[
             ["Nombres", child.firstName],
             ["Apellidos", child.lastName],
             ["Fecha de nacimiento", child.birthDate],
-            ["Sexo (código)", child.sex],
-            ["Tipo de documento (código)", child.documentType],
+            ["Sexo", sexLabel],
+            ["Tipo de documento", documentTypeLabel],
             ["Número de documento", child.documentNumber],
             ["Fecha de ingreso", child.admissionDate],
             ["Fecha de retiro", child.exitDate],
-            ["Estado (código)", child.statusId],
+            ["Estado del beneficiario", statusLabel],
             ["Observaciones", child.notes],
           ].map(([label, value]) => (
             <div key={label} className="rounded-xl bg-surface-muted p-3">
@@ -108,28 +136,63 @@ function ChildDetails({
       </Card>
 
       <Card className="mt-4 rounded-3xl p-5">
-        <h2 className="mb-4 text-xl font-extrabold">
-          Relaciones childGuardian
-        </h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-extrabold">
+              Relaciones childGuardian
+            </h2>
+            <p className="text-sm text-muted">
+              Acudientes vinculados (un beneficiario puede tener múltiples acudientes).
+            </p>
+          </div>
+          <Button
+            type="button"
+            onClick={() => setRelationshipDialog(true)}
+          >
+            + Vincular acudiente
+          </Button>
+        </div>
         {childRelationships.length > 0 ? (
           <div className="space-y-3">
             {childRelationships.map((relationship) => {
               const guardian = guardians.find(
-                (item) => item.guardianId === relationship.guardianId,
+                (item) => String(item.guardianId) === String(relationship.guardianId),
               )
+              const guardianshipTypeLabel =
+                catalogService.findLabel(
+                  "guardianship_types",
+                  relationship.guardianshipTypeId ?? relationship.guardianshipType,
+                ) || relationship.guardianshipType
+
               return (
                 <article
                   key={relationship.childGuardianId}
                   className="rounded-xl bg-surface-muted p-4"
                 >
-                  <p className="font-bold">
-                    Acudiente: {guardian?.fullName || "Sin registro"}
-                  </p>
-                  <dl className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-bold">
+                        Acudiente: {guardian?.fullName || "Sin registro"}
+                      </p>
+                      {guardian?.documentNumber && (
+                        <p className="text-xs text-muted">
+                          Documento: {guardian.documentNumber}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      onClick={() => setDeletingRelationship(relationship)}
+                    >
+                      Desvincular
+                    </Button>
+                  </div>
+                  <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
                     <div>
                       <dt className="text-muted">Tipo de vínculo</dt>
                       <dd className="font-semibold">
-                        {display(relationship.guardianshipType)}
+                        {display(guardianshipTypeLabel)}
                       </dd>
                     </div>
                     <div>
@@ -151,7 +214,7 @@ function ChildDetails({
           </div>
         ) : (
           <p className="text-sm text-muted">
-            Este beneficiario no tiene acudientes vinculados.
+            Este beneficiario no tiene acudientes vinculados actualmente. Puedes vincular uno con el botón superior.
           </p>
         )}
       </Card>
@@ -528,6 +591,46 @@ function ChildDetails({
         }}
       />
     )}
+    {relationshipDialog && (
+      <ChildGuardianDialog
+        child={child}
+        guardians={guardians}
+        onClose={() => setRelationshipDialog(false)}
+        onSave={async (data) => {
+          await onCreateRelationship(data)
+          setRelationshipDialog(false)
+        }}
+        onCreateGuardian={onCreateGuardian}
+      />
+    )}
+    {deletingRelationship && (
+      <DeletePersonDialog
+        kind="relationship"
+        name={`vínculo con ${
+          guardians.find(
+            (item) =>
+              String(item.guardianId) ===
+              String(deletingRelationship.guardianId),
+          )?.fullName || "el acudiente"
+        }`}
+        onClose={() => setDeletingRelationship(null)}
+        onConfirm={async () => {
+          const result = await onDeleteRelationship(
+            deletingRelationship.childGuardianId,
+          )
+          if (result && !result.ok) return result
+          setDeletingRelationship(null)
+          return { ok: true }
+        }}
+      />
+    )}
+    {editingChild && (
+      <EditChildDialog
+        child={child}
+        onClose={() => setEditingChild(false)}
+        onSave={(changes) => onUpdateChild(child.childId, changes)}
+      />
+    )}
     </>
   )
 }
@@ -557,6 +660,10 @@ export default function ChildrenScreen() {
     createAssistance,
     updateAssistance,
     deleteAssistance,
+    createRelationship,
+    deleteRelationship,
+    createGuardian,
+    updateChild,
     deleteChild,
   } = useChildren()
   const [search, setSearch] = useState("")
@@ -600,6 +707,10 @@ export default function ChildrenScreen() {
           onCreateAssistance={createAssistance}
           onUpdateAssistance={updateAssistance}
           onDeleteAssistance={deleteAssistance}
+          onCreateRelationship={createRelationship}
+          onDeleteRelationship={deleteRelationship}
+          onCreateGuardian={createGuardian}
+          onUpdateChild={updateChild}
           onBack={() => setSelectedId(null)}
           onDelete={() => setDeleting(selected)}
         />
@@ -637,6 +748,7 @@ export default function ChildrenScreen() {
         <CreateChildDialog
           guardians={guardians}
           onCreateChild={createChild}
+          onCreateGuardian={createGuardian}
           onClose={() => setCreating(false)}
           onCreated={(record) => {
             setCreating(false)
