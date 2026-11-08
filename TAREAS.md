@@ -27,7 +27,7 @@ Cada quien continúa los módulos que ya construyó:
 - **Laura:** Beneficiarios (`Children.jsx`), Acudientes (`Guardians.jsx`), Matrículas (`Enrollments.jsx`).
 - **Yeison:** Dashboard (`Dashboard.jsx`) y Talleristas (`Workshops.jsx`: personal, talleres, horarios, turnos).
 
-## 👩‍💻 Laura — Catálogos, beneficiarios, acudientes y matrículas
+## Laura — Catálogos, beneficiarios, acudientes y matrículas
 
 | # | Tarea | Endpoints | Esfuerzo |
 |---|---|---|---|
@@ -37,7 +37,7 @@ Cada quien continúa los módulos que ya construyó:
 | L4 | Toma de asistencia a talleres por beneficiario (`ChildrenAssistance.jsx`) | `/children-assistance` (+ lectura de `/professionals-workshops`) | Medio |
 | L5 | Bitácora de auditoría (`AuditLogs.jsx`) | `/audit-logs` | Medio |
 
-## 👨‍💻 Yeison — Dashboard, talleristas y personal
+## Yeison — Dashboard, talleristas y personal
 
 | # | Tarea | Endpoints | Esfuerzo |
 |---|---|---|---|
