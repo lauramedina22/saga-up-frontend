@@ -43,7 +43,7 @@ const PRODUCTS = [
     price: 18000,
     image: pulserasImg,
     shortDescription:
-      "Set de accesorios tejidos en mostacilla con patrones geométricos",
+      "Set de accesorios en mostacilla",
     fullDescription:
       "Conjunto juvenil que incluye aretes colgantes ligeros y pulseras de cierre deslizable ajustable. Elaborado con materiales hipoalergénicos e hilos de alta tenacidad que garantizan su perdurabilidad.",
     workshop: "Taller de Bisutería y Manualidades",
@@ -51,7 +51,7 @@ const PRODUCTS = [
   },
   {
     id: 4,
-    title: "Hoodie Saco Solidario ASISCO UP",
+    title: "Hoodie ASISCO UP",
     category: "Ropa",
     price: 70000,
     image: hoodieImg,
