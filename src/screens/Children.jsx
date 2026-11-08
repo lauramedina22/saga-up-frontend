@@ -11,7 +11,8 @@ import {
   EditChildDialog,
 } from "../components/EntityDialogs"
 import { useChildren } from "../hooks/useChildren"
-import { catalogService } from "../services/catalogService"
+import { useCatalogs } from "../hooks/useCatalogs"
+import { findCatalogLabel } from "../models/catalogModel"
 
 function display(value) {
   return value === null || value === undefined || value === ""
@@ -72,13 +73,20 @@ function ChildDetails({
     (enrollment) => enrollment.childId === child.childId,
   )
 
+  const { catalogs } = useCatalogs([
+    "sexes",
+    "document_types",
+    "child_statuses",
+    "guardianship_types",
+  ])
+
   const sexLabel =
-    catalogService.findLabel("sexes", child.sexId ?? child.sex) || child.sex
+    findCatalogLabel(catalogs.sexes, child.sexId ?? child.sex) || child.sex
   const documentTypeLabel =
-    catalogService.findLabel("document_types", child.documentTypeId ?? child.documentType) ||
+    findCatalogLabel(catalogs.document_types, child.documentTypeId ?? child.documentType) ||
     child.documentType
   const statusLabel =
-    catalogService.findLabel("child_statuses", child.statusId ?? child.status) ||
+    findCatalogLabel(catalogs.child_statuses, child.statusId ?? child.status) ||
     child.status
 
   return (
@@ -156,8 +164,8 @@ function ChildDetails({
                   (item) => String(item.guardianId) === String(relationship.guardianId),
                 )
                 const guardianshipTypeLabel =
-                  catalogService.findLabel(
-                    "guardianship_types",
+                  findCatalogLabel(
+                    catalogs.guardianship_types,
                     relationship.guardianshipTypeId ?? relationship.guardianshipType,
                   ) || relationship.guardianshipType
 

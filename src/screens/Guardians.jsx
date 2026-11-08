@@ -7,7 +7,8 @@ import {
   GuardianChildDialog,
 } from "../components/EntityDialogs"
 import { useGuardians } from "../hooks/useGuardians"
-import { catalogService } from "../services/catalogService"
+import { useCatalogs } from "../hooks/useCatalogs"
+import { findCatalogLabel } from "../models/catalogModel"
 
 function display(value) {
   return value === null || value === undefined || value === ""
@@ -33,14 +34,20 @@ function GuardianDetails({
     (relationship) => String(relationship.guardianId) === String(guardian.guardianId),
   )
 
+  const { catalogs } = useCatalogs([
+    "document_types",
+    "legal_statuses",
+    "guardianship_types",
+  ])
+
   const documentTypeLabel =
-    catalogService.findLabel(
-      "document_types",
+    findCatalogLabel(
+      catalogs.document_types,
       guardian.documentTypeId ?? guardian.documentType,
     ) || guardian.documentType
   const legalStatusLabel =
-    catalogService.findLabel(
-      "legal_statuses",
+    findCatalogLabel(
+      catalogs.legal_statuses,
       guardian.legalStatusId ?? guardian.legalStatus,
     ) || guardian.legalStatus
 
@@ -113,8 +120,8 @@ function GuardianDetails({
                   (item) => String(item.childId) === String(relationship.childId),
                 )
                 const guardianshipTypeLabel =
-                  catalogService.findLabel(
-                    "guardianship_types",
+                  findCatalogLabel(
+                    catalogs.guardianship_types,
                     relationship.guardianshipTypeId ?? relationship.guardianshipType,
                   ) || relationship.guardianshipType
 

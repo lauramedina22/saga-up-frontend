@@ -1,43 +1,49 @@
 import { useEffect, useState } from "react"
-import { CATALOG_DICTIONARY, catalogService } from "../services/catalogService"
+import { catalogService } from "../services/catalogService"
+
+function emptyCatalogs(catalogKeys) {
+  return Object.fromEntries(catalogKeys.map((key) => [key, []]))
+}
 
 export function useCatalogs(catalogKeys = []) {
-  // Inicializamos con el diccionario oficial para renderizar inmediatamente sin parpadeos
-  const [catalogs, setCatalogs] = useState(() => {
-    const initial = {}
-    for (const key of catalogKeys) {
-      initial[key] = CATALOG_DICTIONARY[key] ?? []
-    }
-    return initial
-  })
-  const [loading, setLoading] = useState(true)
+  const keysSignature = catalogKeys.join(",")
+  const [catalogs, setCatalogs] = useState(() => emptyCatalogs(catalogKeys))
+  const [loading, setLoading] = useState(catalogKeys.length > 0)
+  const [error, setError] = useState("")
 
   useEffect(() => {
+    const keys = keysSignature ? keysSignature.split(",") : []
     let isMounted = true
 
-    async function load() {
-      try {
-        const loaded = await catalogService.getCatalogs(catalogKeys)
-        if (isMounted) {
-          setCatalogs((current) => ({ ...current, ...loaded }))
-        }
-      } catch {
-        // En caso de error, el estado ya contiene los catálogos del diccionario
-      } finally {
-        if (isMounted) setLoading(false)
-      }
+    if (keys.length === 0) {
+      setLoading(false)
+      return undefined
     }
 
-    if (catalogKeys.length > 0) {
-      load()
-    } else {
-      setLoading(false)
-    }
+    setLoading(true)
+    setError("")
+
+    catalogService
+      .getCatalogs(keys)
+      .then((loaded) => {
+        if (isMounted) setCatalogs((current) => ({ ...current, ...loaded }))
+      })
+      .catch((loadError) => {
+        console.error("Error cargando catálogos:", loadError)
+        if (isMounted) {
+          setError(
+            loadError?.message || "No fue posible cargar los catálogos.",
+          )
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
 
     return () => {
       isMounted = false
     }
-  }, [catalogKeys.join(",")])
+  }, [keysSignature])
 
-  return { catalogs, loading }
+  return { catalogs, loading, error }
 }
