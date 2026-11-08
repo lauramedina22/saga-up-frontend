@@ -1,94 +1,55 @@
-# Distribución y Asignación de Tareas Frontend - SAGA-UP
+# Distribución de Tareas Frontend - SAGA-UP
 
-A continuación se presenta la distribución equitativa (50% / 50%) de las vistas y módulos faltantes identificados a partir del Swagger actualizado del backend de SAGA-UP (`https://saga-up-backend-lr4u.onrender.com/api-docs`).
-
----
-
-## 👩‍💻 Laura (50%) — Módulo de Talento Humano y Asistencias
-
-### 1. Gestión de Personal / Colaboradores (`/staff`)
-- **Endpoints asociados:**
-  - `GET /staff` (con soporte para búsqueda por documento/cédula y filtros de rol/estado)
-  - `GET /staff/:id`
-  - `POST /staff`
-  - `PUT /staff/:id`, `PATCH /staff/:id`, `DELETE /staff/:id` (Soft delete)
-- **Alcance de la vista (`src/screens/Staff.jsx`):**
-  - Tabla de colaboradores con badges de estado, rol y contrato.
-  - Barra de búsqueda por número de documento (cédula) y nombre.
-  - Modal de creación y edición con validación de campos obligatorios y selectores vinculados a tablas intermedias (`document_types`, `staff_roles`, `contract_types`, `staff_statuses`).
-  - Protección de interfaz para evitar modificación o asignación indebida de roles administrativos (ADMIN/SUPERADMIN).
-- **Archivos a crear/modificar:**
-  - `src/screens/Staff.jsx`
-  - `src/services/staffService.js`
-  - `src/models/staffModel.js`
-  - `src/hooks/useStaff.js`
-  - Enrutamiento y enlace en `src/App.jsx` y `src/components/Sidebar.jsx`.
-
-### 2. Registro y Control de Asistencia de Personal (`/staff-assistance`)
-- **Endpoints asociados:**
-  - `GET /staff-assistance` (filtro `?staff_id=&date_working=`)
-  - `GET /staff-assistance/:id`
-  - `POST /staff-assistance`
-  - `PUT /staff-assistance/:id`, `DELETE /staff-assistance/:id`
-- **Alcance de la vista (`src/screens/StaffAssistance.jsx`):**
-  - Registro de jornada diaria (`date_working`, `time_in`, `time_out`).
-  - Filtro por colaborador y rango de fechas.
-  - Tabla de auditoría de asistencia con visualización de horas registradas.
-- **Archivos a crear/modificar:**
-  - `src/screens/StaffAssistance.jsx`
-  - `src/services/staffAssistanceService.js`
-  - `src/models/staffAssistanceModel.js`
-  - `src/hooks/useStaffAssistance.js`
-
-### 3. Registro y Control de Asistencia a Talleres (`/children-assistance`)
-- **Endpoints asociados:**
-  - `GET /children-assistance` (filtro `?child_id=&professional_workshop_id=`)
-  - `GET /children-assistance/:id`
-  - `POST /children-assistance`
-  - `PUT /children-assistance/:id`, `DELETE /children-assistance/:id`
-- **Alcance de la vista (`src/screens/ChildrenAssistance.jsx`):**
-  - Selector de taller y sesión/horario (`professionals-workshops`).
-  - Lista de beneficiarios inscritos con controles rápidos (toggles/checkboxes):
-    - ¿Asistirá? (`will_assist`)
-    - ¿Asistió? (`attended`)
-    - ¿Taller completado? (`complete_workshop`)
-    - Campo de observación de conducta/participación (`behavior`).
-- **Archivos a crear/modificar:**
-  - `src/screens/ChildrenAssistance.jsx`
-  - `src/services/childrenAssistanceService.js`
-  - `src/models/childrenAssistanceModel.js`
-  - `src/hooks/useChildrenAssistance.js`
+> Fuente: Swagger `https://saga-up-backend-lr4u.onrender.com/api-docs` (OpenAPI 3.0.3, revisado el 2026-11-08).
+> Todas las rutas requieren `Authorization: Bearer <JWT>` (rol ADMIN salvo que se indique).
 
 ---
 
-## 👨‍💻 Yeison (50%) — Expediente de Beneficiarios, Acudientes y Parámetros
+## Inventario: estado actual vs. Swagger
 
-### 1. Expediente Integral de Beneficiarios (`/child-records` y `/child-internal-descriptions`)
-- **Endpoints asociados:**
-  - `GET/POST/PUT/PATCH /child-records` (Ficha médica: EPS, IPS, alergias, medicamentos, condiciones especiales).
-  - `GET/POST/PUT/PATCH /child-internal-descriptions` (Ficha confidencial interna: rutinas, crisis, gustos, terapias, antecedentes escolares).
-- **Alcance de la vista:**
-  - Integrar en `src/screens/Children.jsx` (o vista modal/expediente `ChildRecordModal.jsx`) pestañas dedicadas para:
-    - Ficha de Salud e Historial Médico.
-    - Ficha de Información Interna Confidencial.
-- **Archivos a intervenir:**
-  - `src/screens/Children.jsx` o componente modal dedicado en `src/components/`.
-  - `src/services/childRecordService.js` y `src/services/childInternalDescriptionService.js`.
-  - `src/models/childRecordModel.js` y `src/models/childInternalDescriptionModel.js`.
+| Módulo / Endpoint | Frontend actual | Brecha |
+|---|---|---|
+| Catálogos (`/sexes`, `/document-types`, `/child-statuses`, `/legal-statuses`, `/guardianship-types`, `/payment-methods`, `/tuition-statuses`, `/staff-roles`, `/contract-types`, `/staff-statuses`) | `catalogService.js` con `CATALOG_DICTIONARY` estático y rutas candidatas adivinadas (`/catalogs/...`) con fallback silencioso | Consumir solo los endpoints reales; eliminar datos en duro |
+| `/staff` + `/staff/document/{number}` + `/staff/{id}/link-account` | Solo `GET`/`POST` dentro de la pestaña de `Workshops.jsx` | Falta vista dedicada, edición (`PUT`/`PATCH`), retiro (`DELETE`), búsqueda por cédula, vinculación de cuenta |
+| `/interns` | No existe | Falta vista completa |
+| `/staff-assistance` | Solo `GET`/`POST` (pestaña "Turnos" en `Workshops.jsx`) | Faltan filtros `staff_id`/`date_working`, edición y eliminación |
+| `/children/document/{number}`, `/guardians/document/{number}` | Búsqueda solo local por texto | Falta búsqueda por cédula contra el backend |
+| `/professionals` | No se consume | Falta CRUD de profesionales/talleristas |
+| `/professionals-workshops` | Solo `GET`/`POST` | Faltan edición, eliminación y filtros |
+| `/children-assistance` | Servicio existe, sin vista operativa | Falta pantalla de toma de asistencia |
+| `/tuition` | Solo `GET`/`POST` | Faltan `PUT`/`PATCH`/`DELETE` |
+| `/audit-logs` | No existe | Falta bitácora de auditoría (solo lectura, paginada) |
 
-### 2. Búsqueda por Cédula y Tablas Intermedias en Beneficiarios y Acudientes
-- **Endpoints asociados:**
-  - `GET /children?document_number=` y `GET /guardians?document_number=`
-  - `/children-guardians` (asociación acudiente - beneficiario y parentesco)
-- **Alcance de la vista:**
-  - Barra de búsqueda por número de documento en `src/screens/Children.jsx` y `src/screens/Guardians.jsx`.
-  - Selectores formales vinculados a tablas intermedias (`sexes`, `document_types`, `legal_statuses`, `guardianship_types`).
-  - Vinculación interactiva de beneficiarios con sus acudientes en la interfaz de Acudientes.
+---
 
-### 3. Panel de Catálogos y Parámetros Maestros (`/catalogs`)
-- **Endpoints / Catálogos asociados:**
-  - Sexos (`sexes`), Tipos de Documento (`document_types`), Estados de Niño (`child_statuses`), Estados Legales (`legal_statuses`), Métodos de Pago (`payment_methods`), etc.
-- **Alcance de la vista (`src/screens/Catalogs.jsx`):**
-  - Vista de consulta y administración de parámetros maestros del sistema.
-  - Sincronización y validación visual con el diccionario de base de datos.
+## Criterio de reparto
+Cada quien continúa los módulos que ya construyó:
+- **Laura:** Beneficiarios (`Children.jsx`), Acudientes (`Guardians.jsx`), Matrículas (`Enrollments.jsx`).
+- **Yeison:** Dashboard (`Dashboard.jsx`) y Talleristas (`Workshops.jsx`: personal, talleres, horarios, turnos).
 
+## 👩‍💻 Laura — Catálogos, beneficiarios, acudientes y matrículas
+
+| # | Tarea | Endpoints | Esfuerzo |
+|---|---|---|---|
+| L1 | Catálogos dinámicos desde las tablas intermedias del backend (`catalogService.js`, `useCatalogs.js`, consumidores) | 10 endpoints de catálogo | Alto |
+| L2 | Búsqueda por cédula en Beneficiarios y Acudientes | `/children/document/{number}`, `/guardians/document/{number}` | Bajo |
+| L3 | Matrículas: completar CRUD (editar, eliminar, estados) | `/tuition` | Bajo |
+| L4 | Toma de asistencia a talleres por beneficiario (`ChildrenAssistance.jsx`) | `/children-assistance` (+ lectura de `/professionals-workshops`) | Medio |
+| L5 | Bitácora de auditoría (`AuditLogs.jsx`) | `/audit-logs` | Medio |
+
+## 👨‍💻 Yeison — Dashboard, talleristas y personal
+
+| # | Tarea | Endpoints | Esfuerzo |
+|---|---|---|---|
+| Y1 | Módulo de Personal: CRUD completo, búsqueda por cédula, vincular/desvincular cuenta | `/staff`, `/staff/document/{number}`, `/staff/{id}/link-account` | Alto |
+| Y2 | Profesionales/talleristas + edición/eliminación de horarios | `/professionals`, `/professionals-workshops` | Alto |
+| Y3 | Asistencia de personal completa (filtros, editar, eliminar) | `/staff-assistance` | Medio |
+| Y4 | Módulo de Practicantes (`Interns.jsx`) | `/interns` | Medio |
+| Y5 | Actualizar Dashboard con los nuevos módulos | Lectura de los anteriores | Bajo |
+
+> [!NOTE]
+> L1 es dependencia de todos: cuando esté integrado en `main`, Yeison debe consumir catálogos (`staff_roles`, `contract_types`, `staff_statuses`, `document_types`) únicamente vía `useCatalogs`, sin IDs en duro.
+
+## Fuera de alcance por ahora
+- Integración SUMA 21 y Anamnesis → ver `PENDIENTES.md`.
+- Flujos de autorregistro por rol (`/staff/register`, `/children/register`, `/guardians/register`, `/*/link-account` sin `{id}`): requieren JWT de TALLERISTA / ESTUDIANTE / ACUDIENTE, no de ADMIN.
