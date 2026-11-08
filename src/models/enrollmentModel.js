@@ -13,8 +13,8 @@ export function toEnrollmentModel(rawEnrollment = {}) {
   const tuitionStatusId = normalizeId(readValue(rawEnrollment, "tuition_status_id"))
 
   return {
-    id: normalizeId(rawEnrollment.tuition_fee_id),
-    childId: normalizeId(rawEnrollment.child_id),
+    id: normalizeId(readValue(rawEnrollment, "tuition_fee_id", "id")),
+    childId: normalizeId(readValue(rawEnrollment, "child_id")),
     amount: normalizeNumber(rawEnrollment.amount),
     paidDate: normalizeDate(rawEnrollment.paid_date),
     paymentMethodId,
@@ -36,9 +36,14 @@ export function toEnrollmentModel(rawEnrollment = {}) {
 }
 
 export function toTuitionPayload(tuition = {}) {
+  const rawAmount =
+    tuition.amount !== undefined && tuition.amount !== null && tuition.amount !== ""
+      ? String(Math.round(Number(tuition.amount)))
+      : null
+
   return {
     child_id: toForeignKey(tuition.child_id ?? tuition.childId, "Beneficiario"),
-    amount: tuition.amount ? Number(tuition.amount) : null,
+    amount: rawAmount,
     paid_date: normalizeDate(tuition.paid_date ?? tuition.paidDate),
     payment_method_id: toForeignKey(
       tuition.payment_method_id ?? tuition.paymentMethodId,

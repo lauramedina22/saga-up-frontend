@@ -857,7 +857,7 @@ export default function WorkshopsScreen() {
                 value={scheduleForm.workshopId}
                 onChange={(e) => setScheduleForm({ ...scheduleForm, workshopId: e.target.value })}
               >
-                <option value="">Selecciona un taller…</option>
+                <option value="" disabled hidden>Selecciona un taller…</option>
                 {workshops.map((w) => (
                   <option key={w.workshopId} value={w.workshopId}>
                     {w.name} ({w.durationMinutes} min)
@@ -873,7 +873,7 @@ export default function WorkshopsScreen() {
                   setScheduleForm({ ...scheduleForm, professionalId: e.target.value })
                 }
               >
-                <option value="">Selecciona un profesional…</option>
+                <option value="" disabled hidden>Selecciona un profesional…</option>
                 {staffList.map((s) => (
                   <option
                     key={s.staffId}
@@ -969,7 +969,7 @@ export default function WorkshopsScreen() {
                 value={shiftForm.staffId}
                 onChange={(e) => setShiftForm({ ...shiftForm, staffId: e.target.value })}
               >
-                <option value="">Seleccionar colaborador…</option>
+                <option value="" disabled hidden>Seleccionar colaborador…</option>
                 {staffList.map((s) => (
                   <option key={s.staffId} value={s.staffId}>
                     {s.fullName}

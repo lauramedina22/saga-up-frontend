@@ -38,6 +38,30 @@ export function useEnrollments() {
     return created
   }
 
+  const updateTuition = async (tuitionId, tuitionData) => {
+    const updated = await enrollmentService.updateTuition(tuitionId, tuitionData)
+    setEnrollments((current) =>
+      current.map((item) => (item.id === tuitionId ? updated : item)),
+    )
+    return updated
+  }
+
+  const deleteTuition = async (tuitionId) => {
+    try {
+      await enrollmentService.deleteTuition(tuitionId)
+      setEnrollments((current) =>
+        current.filter((item) => item.id !== tuitionId),
+      )
+      return { ok: true, message: "Pago de matrícula eliminado correctamente." }
+    } catch (requestError) {
+      return {
+        ok: false,
+        message:
+          requestError.message || "No fue posible eliminar la matrícula.",
+      }
+    }
+  }
+
   return {
     enrollments,
     children,
@@ -45,5 +69,7 @@ export function useEnrollments() {
     error,
     loadEnrollments,
     createTuition,
+    updateTuition,
+    deleteTuition,
   }
 }

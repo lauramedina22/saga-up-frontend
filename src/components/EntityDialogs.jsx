@@ -156,7 +156,7 @@ export function CreateChildDialog({
               value={form.sex}
               onChange={(event) => update("sex", event.target.value)}
             >
-              <option value="">Selecciona el sexo</option>
+              <option value="" disabled hidden>Selecciona el sexo</option>
               {catalogs.sexes?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -168,7 +168,7 @@ export function CreateChildDialog({
               value={form.documentType}
               onChange={(event) => update("documentType", event.target.value)}
             >
-              <option value="">Selecciona el tipo de documento</option>
+              <option value="" disabled hidden>Selecciona el tipo de documento</option>
               {catalogs.document_types?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -197,7 +197,7 @@ export function CreateChildDialog({
               value={form.statusId}
               onChange={(event) => update("statusId", event.target.value)}
             >
-              <option value="">Selecciona el estado</option>
+              <option value="" disabled hidden>Selecciona el estado</option>
               {catalogs.child_statuses?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -276,7 +276,7 @@ export function CreateChildDialog({
                   }
                   required
                 >
-                  <option value="">Selecciona el tipo de vínculo</option>
+                  <option value="" disabled hidden>Selecciona el tipo de vínculo</option>
                   {catalogs.guardianship_types?.map((option) => (
                     <option key={option.id} value={option.id}>
                       {option.name}
@@ -436,7 +436,7 @@ export function EditChildDialog({ child, onClose, onSave }) {
               value={form.sex}
               onChange={(e) => update("sex", e.target.value)}
             >
-              <option value="">Selecciona el sexo</option>
+              <option value="" disabled hidden>Selecciona el sexo</option>
               {catalogs.sexes?.map((opt) => (
                 <option key={opt.id} value={opt.id}>
                   {opt.name}
@@ -448,7 +448,7 @@ export function EditChildDialog({ child, onClose, onSave }) {
               value={form.documentType}
               onChange={(e) => update("documentType", e.target.value)}
             >
-              <option value="">Selecciona el tipo de documento</option>
+              <option value="" disabled hidden>Selecciona el tipo de documento</option>
               {catalogs.document_types?.map((opt) => (
                 <option key={opt.id} value={opt.id}>
                   {opt.name}
@@ -477,7 +477,7 @@ export function EditChildDialog({ child, onClose, onSave }) {
               value={form.statusId}
               onChange={(e) => update("statusId", e.target.value)}
             >
-              <option value="">Selecciona el estado</option>
+              <option value="" disabled hidden>Selecciona el estado</option>
               {catalogs.child_statuses?.map((opt) => (
                 <option key={opt.id} value={opt.id}>
                   {opt.name}
@@ -598,7 +598,7 @@ export function ChildGuardianDialog({
                   required
                   className="min-h-12 w-full appearance-none rounded-xl border border-border bg-surface px-4 pr-10 text-base text-foreground outline-none transition focus:border-primary focus:ring-3 focus:ring-primary/15"
                 >
-                  <option value="">Selecciona el acudiente</option>
+                  <option value="" disabled hidden>Selecciona el acudiente</option>
                   {guardians.map((guardian) => (
                     <option
                       key={guardian.guardianId}
@@ -636,7 +636,7 @@ export function ChildGuardianDialog({
               }
               required
             >
-              <option value="">Selecciona el tipo de vínculo</option>
+              <option value="" disabled hidden>Selecciona el tipo de vínculo</option>
               {catalogs.guardianship_types?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -778,7 +778,7 @@ export function GuardianChildDialog({
                   required
                   className="min-h-12 w-full appearance-none rounded-xl border border-border bg-surface px-4 pr-10 text-base text-foreground outline-none transition focus:border-primary focus:ring-3 focus:ring-primary/15"
                 >
-                  <option value="">Selecciona el beneficiario</option>
+                  <option value="" disabled hidden>Selecciona el beneficiario</option>
                   {children.map((child) => (
                     <option key={child.childId} value={child.childId}>
                       {child.firstName} {child.lastName}{" "}
@@ -811,7 +811,7 @@ export function GuardianChildDialog({
               }
               required
             >
-              <option value="">Selecciona el tipo de vínculo</option>
+              <option value="" disabled hidden>Selecciona el tipo de vínculo</option>
               {catalogs.guardianship_types?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -922,7 +922,7 @@ export function CreateGuardianDialog({ onClose, onCreateGuardian, onCreated }) {
               value={form.documentType}
               onChange={(event) => update("documentType", event.target.value)}
             >
-              <option value="">Selecciona el tipo de documento</option>
+              <option value="" disabled hidden>Selecciona el tipo de documento</option>
               {catalogs.document_types?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -952,7 +952,7 @@ export function CreateGuardianDialog({ onClose, onCreateGuardian, onCreated }) {
               value={form.legalStatus}
               onChange={(event) => update("legalStatus", event.target.value)}
             >
-              <option value="">Selecciona la situación jurídica</option>
+              <option value="" disabled hidden>Selecciona la situación jurídica</option>
               {catalogs.legal_statuses?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -1040,7 +1040,7 @@ export function EditGuardianDialog({ guardian, onClose, onSave }) {
               value={form.documentType}
               onChange={(e) => update("documentType", e.target.value)}
             >
-              <option value="">Selecciona el tipo de documento</option>
+              <option value="" disabled hidden>Selecciona el tipo de documento</option>
               {catalogs.document_types?.map((opt) => (
                 <option key={opt.id} value={opt.id}>
                   {opt.name}
@@ -1068,7 +1068,7 @@ export function EditGuardianDialog({ guardian, onClose, onSave }) {
               value={form.legalStatus}
               onChange={(e) => update("legalStatus", e.target.value)}
             >
-              <option value="">Selecciona la situación jurídica</option>
+              <option value="" disabled hidden>Selecciona la situación jurídica</option>
               {catalogs.legal_statuses?.map((opt) => (
                 <option key={opt.id} value={opt.id}>
                   {opt.name}
@@ -1143,7 +1143,7 @@ export function CreateTuitionDialog({ children = [], onClose, onCreateTuition, o
               onChange={(event) => update("childId", event.target.value)}
               required
             >
-              <option value="">Selecciona el beneficiario</option>
+              <option value="" disabled hidden>Selecciona el beneficiario</option>
               {children.map((child) => (
                 <option key={child.childId} value={child.childId}>
                   {child.firstName} {child.lastName}
@@ -1168,7 +1168,7 @@ export function CreateTuitionDialog({ children = [], onClose, onCreateTuition, o
               value={form.paymentMethodId}
               onChange={(event) => update("paymentMethodId", event.target.value)}
             >
-              <option value="">Selecciona el medio de pago</option>
+              <option value="" disabled hidden>Selecciona el medio de pago</option>
               {catalogs.payment_methods?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -1180,7 +1180,7 @@ export function CreateTuitionDialog({ children = [], onClose, onCreateTuition, o
               value={form.tuitionStatusId}
               onChange={(event) => update("tuitionStatusId", event.target.value)}
             >
-              <option value="">Selecciona el estado</option>
+              <option value="" disabled hidden>Selecciona el estado</option>
               {catalogs.tuition_statuses?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -1195,6 +1195,132 @@ export function CreateTuitionDialog({ children = [], onClose, onCreateTuition, o
           </Button>
           <Button type="submit" loading={saving}>
             Guardar pago
+          </Button>
+        </footer>
+      </form>
+    </DialogShell>
+  )
+}
+
+export function EditTuitionDialog({
+  tuition,
+  children = [],
+  onClose,
+  onUpdateTuition,
+  onUpdated,
+}) {
+  const { catalogs } = useCatalogs(["payment_methods", "tuition_statuses"])
+  const [form, setForm] = useState({
+    childId: tuition.childId || "",
+    amount:
+      tuition.amount !== null && tuition.amount !== undefined
+        ? String(tuition.amount)
+        : "",
+    paidDate: tuition.paidDate || new Date().toISOString().slice(0, 10),
+    paymentMethodId: tuition.paymentMethodId || "",
+    tuitionStatusId: tuition.tuitionStatusId || "",
+  })
+  const [error, setError] = useState("")
+  const [saving, setSaving] = useState(false)
+
+  const update = (key, value) =>
+    setForm((current) => ({ ...current, [key]: value }))
+  const submit = async (event) => {
+    event.preventDefault()
+    setError("")
+    if (!form.childId) {
+      setError("Debes seleccionar un beneficiario.")
+      return
+    }
+    setSaving(true)
+    try {
+      const record = await onUpdateTuition(tuition.id, {
+        child_id: form.childId,
+        amount: form.amount ? Number(form.amount) : null,
+        paid_date: form.paidDate || null,
+        payment_method_id: form.paymentMethodId || null,
+        tuition_status_id: form.tuitionStatusId || null,
+      })
+      onUpdated(record)
+    } catch (requestError) {
+      setError(
+        requestError.message || "No fue posible actualizar la matrícula.",
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <DialogShell
+      title="Editar pago de matrícula"
+      description="Modifica los datos del registro de pago."
+      onClose={onClose}
+    >
+      <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
+          {error && <DialogError>{error}</DialogError>}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <SelectField
+              label="Beneficiario *"
+              value={form.childId}
+              onChange={(event) => update("childId", event.target.value)}
+              required
+            >
+              <option value="" disabled hidden>Selecciona el beneficiario</option>
+              {children.map((child) => (
+                <option key={child.childId} value={child.childId}>
+                  {child.firstName} {child.lastName}
+                </option>
+              ))}
+            </SelectField>
+            <Field
+              label="Monto en COP"
+              type="number"
+              value={form.amount}
+              onChange={(event) => update("amount", event.target.value)}
+              placeholder="Ej. 150000"
+            />
+            <Field
+              label="Fecha de pago"
+              type="date"
+              value={form.paidDate}
+              onChange={(event) => update("paidDate", event.target.value)}
+            />
+            <SelectField
+              label="Medio de pago"
+              value={form.paymentMethodId}
+              onChange={(event) => update("paymentMethodId", event.target.value)}
+            >
+              <option value="" disabled hidden>Selecciona el medio de pago</option>
+              {catalogs.payment_methods?.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </SelectField>
+            <SelectField
+              label="Estado del pago"
+              value={form.tuitionStatusId}
+              onChange={(event) =>
+                update("tuitionStatusId", event.target.value)
+              }
+            >
+              <option value="" disabled hidden>Selecciona el estado</option>
+              {catalogs.tuition_statuses?.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </SelectField>
+          </div>
+        </div>
+        <footer className="flex justify-end gap-3 border-t border-border p-4 sm:px-6">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" loading={saving}>
+            Actualizar pago
           </Button>
         </footer>
       </form>
@@ -1273,7 +1399,7 @@ export function CreateStaffDialog({ onClose, onCreateStaff, onCreated }) {
               value={form.documentTypeId}
               onChange={(event) => update("documentTypeId", event.target.value)}
             >
-              <option value="">Selecciona el tipo de documento</option>
+              <option value="" disabled hidden>Selecciona el tipo de documento</option>
               {catalogs.document_types?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -1290,7 +1416,7 @@ export function CreateStaffDialog({ onClose, onCreateStaff, onCreated }) {
               value={form.staffRoleId}
               onChange={(event) => update("staffRoleId", event.target.value)}
             >
-              <option value="">Selecciona el cargo o rol</option>
+              <option value="" disabled hidden>Selecciona el cargo o rol</option>
               {catalogs.staff_roles?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -1308,7 +1434,7 @@ export function CreateStaffDialog({ onClose, onCreateStaff, onCreated }) {
               value={form.contractTypeId}
               onChange={(event) => update("contractTypeId", event.target.value)}
             >
-              <option value="">Selecciona el tipo de contrato</option>
+              <option value="" disabled hidden>Selecciona el tipo de contrato</option>
               {catalogs.contract_types?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -1320,7 +1446,7 @@ export function CreateStaffDialog({ onClose, onCreateStaff, onCreated }) {
               value={form.staffStatusId}
               onChange={(event) => update("staffStatusId", event.target.value)}
             >
-              <option value="">Selecciona el estado laboral</option>
+              <option value="" disabled hidden>Selecciona el estado laboral</option>
               {catalogs.staff_statuses?.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
@@ -1641,15 +1767,17 @@ export function DeletePersonDialog({ kind, name, onClose, onConfirm }) {
   const label =
     kind === "guardian"
       ? "acudiente"
-      : kind === "record"
-        ? "ficha de salud"
-        : kind === "assistance"
-          ? "asistencia"
-          : kind === "description"
-            ? "descripción interna"
-          : kind === "relationship"
-            ? "vínculo"
-        : "beneficiario"
+      : kind === "tuition"
+        ? "pago de matrícula"
+        : kind === "record"
+          ? "ficha de salud"
+          : kind === "assistance"
+            ? "asistencia"
+            : kind === "description"
+              ? "descripción interna"
+            : kind === "relationship"
+              ? "vínculo"
+          : "beneficiario"
 
   const confirm = async () => {
     setError("")

@@ -37,4 +37,18 @@ export const enrollmentService = {
     )
     return toEnrollmentModel(readRecord(response, "tuition", "payment"))
   },
+
+  // PUT /tuition/:id
+  async updateTuition(tuitionId, tuition) {
+    const response = await apiClient.put(
+      `${TUITION_ENDPOINT}/${tuitionId}`,
+      toTuitionPayload(tuition),
+    )
+    return toEnrollmentModel(readRecord(response, "tuition", "payment"))
+  },
+
+  // DELETE /tuition/:id
+  async deleteTuition(tuitionId) {
+    return apiClient.delete(`${TUITION_ENDPOINT}/${tuitionId}`)
+  },
 }
