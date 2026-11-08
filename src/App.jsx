@@ -15,6 +15,7 @@ import ChildrenScreen from "./screens/Children"
 import EnrollmentsScreen from "./screens/Enrollments"
 import WorkshopsScreen from "./screens/Workshops"
 import SalesScreen from "./screens/Sales"
+import DashboardScreen from "./screens/Dashboard"
 
 function AppLayout({ session, onLogout }) {
   const navigate = useNavigate()
@@ -40,6 +41,7 @@ function AppLayout({ session, onLogout }) {
 
   const handleNavigate = (screen) => {
     const routes = {
+      dashboard: "/",
       beneficiarios: "/children",
       acudientes: "/guardians",
       matriculas: "/enrollments",
@@ -121,24 +123,7 @@ const App = () => {
           path="/"
           element={
             session ? (
-              <main className="flex min-h-dvh items-center justify-center bg-background p-4">
-                <section className="w-full max-w-md rounded-3xl border border-border bg-surface p-8 text-center shadow-dialog">
-                  <h1 className="text-2xl font-extrabold">Sesión iniciada</h1>
-                  <p className="mt-2 text-muted">Ya te conectaste con SAGA UP.</p>
-                  {session.roles?.length > 0 && (
-                    <p className="mt-3 text-sm font-semibold">
-                      Roles: {session.roles.join(", ")}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => navigate("/children")}
-                    className="mt-6 min-h-11 rounded-xl bg-primary px-4 py-2.5 font-extrabold text-foreground hover:bg-primary-hover hover:text-white"
-                  >
-                    Ver beneficiarios
-                  </button>
-                </section>
-              </main>
+              <DashboardScreen session={session} />
             ) : (
               <Navigate to="/login" replace />
             )
