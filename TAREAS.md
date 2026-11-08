@@ -34,7 +34,7 @@ Cada quien continúa los módulos que ya construyó:
 | L1 | Catálogos dinámicos desde las tablas intermedias del backend (`catalogService.js`, `useCatalogs.js`, consumidores) | 10 endpoints de catálogo | Alto | ✅ **Completado** |
 | L2 | Búsqueda por cédula en Beneficiarios y Acudientes | `/children/document/{number}`, `/guardians/document/{number}` | Bajo | ✅ **Completado** |
 | L3 | Matrículas: completar CRUD (editar, eliminar, estados) | `/tuition` | Bajo | ✅ **Completado** |
-| L4 | Toma de asistencia a talleres por beneficiario (`ChildrenAssistance.jsx`) | `/children-assistance` (+ lectura de `/professionals-workshops`) | Medio | ⏳ Pendiente |
+| L4 | Toma de asistencia a talleres por beneficiario (`Children.jsx` + `ChildrenAssistanceDialog`) | `/children-assistance` (+ lectura de `/professionals-workshops`) | Medio | ✅ **Completado** |
 | L5 | Bitácora de auditoría (`AuditLogs.jsx`) | `/audit-logs` | Medio | ⏳ Pendiente |
 | L6 | Módulo de Practicantes (`Interns.jsx`) | `/interns` | Medio | ⏳ Pendiente |
 

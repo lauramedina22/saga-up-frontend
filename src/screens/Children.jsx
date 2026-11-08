@@ -27,6 +27,7 @@ function ChildDetails({
   childRecords,
   internalDescriptions,
   assistanceRecords,
+  schedules = [],
   enrollments,
   childRecordsError,
   internalDescriptionsError,
@@ -250,26 +251,21 @@ function ChildDetails({
                   key={description.childInternalDescriptionId}
                   className="rounded-xl bg-surface-muted p-4"
                 >
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm font-bold text-muted">
-                      Descripción #{description.childInternalDescriptionId}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => setDescriptionDialog(description)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        onClick={() => setDeletingDescription(description)}
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
+                  <div className="mb-3 flex items-center justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => setDescriptionDialog(description)}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      onClick={() => setDeletingDescription(description)}
+                    >
+                      Eliminar
+                    </Button>
                   </div>
                   <dl className="grid gap-3 sm:grid-cols-2">
                     {[
@@ -316,37 +312,41 @@ function ChildDetails({
           )}
           {assistanceForChild.length ? (
             <div className="space-y-3">
-              {assistanceForChild.map((assistance) => (
-                <article
-                  key={assistance.childrenAssistanceId}
-                  className="rounded-xl bg-surface-muted p-4"
-                >
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-bold">
-                        Sesión de taller #{assistance.professionalWorkshopId}
-                      </p>
-                      <p className="text-xs text-muted">
-                        Registro #{assistance.childrenAssistanceId}
-                      </p>
+              {assistanceForChild.map((assistance) => {
+                const schedule = schedules.find(
+                  (s) =>
+                    String(s.professionalWorkshopId) ===
+                    String(assistance.professionalWorkshopId),
+                )
+                return (
+                  <article
+                    key={assistance.childrenAssistanceId}
+                    className="rounded-xl bg-surface-muted p-4"
+                  >
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-bold text-foreground">
+                          {schedule?.label ||
+                            `Sesión de taller #${assistance.professionalWorkshopId}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => setAssistanceDialog(assistance)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="danger"
+                          onClick={() => setDeletingAssistance(assistance)}
+                        >
+                          Eliminar
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => setAssistanceDialog(assistance)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        onClick={() => setDeletingAssistance(assistance)}
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
-                  </div>
                   <dl className="grid gap-3 sm:grid-cols-3">
                     {[
                       ["Confirmó asistencia", assistance.willAssist],
@@ -372,7 +372,7 @@ function ChildDetails({
                     </div>
                   </dl>
                 </article>
-              ))}
+              )})}
             </div>
           ) : (
             <p className="text-sm text-muted">
@@ -405,8 +405,8 @@ function ChildDetails({
                   className="rounded-xl bg-surface-muted p-4"
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm font-bold text-muted">
-                      Ficha #{record.recordId}
+                    <p className="text-sm font-bold text-foreground">
+                      {record.eps ? `EPS: ${record.eps}` : "Ficha médica"}
                     </p>
                     <div className="flex gap-2">
                       <Button
@@ -521,7 +521,11 @@ function ChildDetails({
       {deletingRecord && (
         <DeletePersonDialog
           kind="record"
-          name={`#${deletingRecord.recordId}`}
+          name={
+            deletingRecord.eps
+              ? `ficha médica (EPS: ${deletingRecord.eps})`
+              : "esta ficha médica"
+          }
           onClose={() => setDeletingRecord(null)}
           onConfirm={async () => {
             await onDeleteChildRecord(child.childId, deletingRecord.recordId)
@@ -552,7 +556,7 @@ function ChildDetails({
       {deletingDescription && (
         <DeletePersonDialog
           kind="description"
-          name={`#${deletingDescription.childInternalDescriptionId}`}
+          name="esta descripción interna"
           onClose={() => setDeletingDescription(null)}
           onConfirm={async () => {
             await onDeleteInternalDescription(
@@ -569,6 +573,7 @@ function ChildDetails({
           assistance={
             assistanceDialog.childrenAssistanceId ? assistanceDialog : null
           }
+          schedules={schedules}
           onClose={() => setAssistanceDialog(null)}
           onSave={(changes) =>
             assistanceDialog.childrenAssistanceId
@@ -584,7 +589,7 @@ function ChildDetails({
       {deletingAssistance && (
         <DeletePersonDialog
           kind="assistance"
-          name={`#${deletingAssistance.childrenAssistanceId}`}
+          name="este registro de asistencia"
           onClose={() => setDeletingAssistance(null)}
           onConfirm={async () => {
             await onDeleteAssistance(
@@ -647,6 +652,7 @@ export default function ChildrenScreen() {
     childRecords,
     internalDescriptions,
     assistanceRecords,
+    schedules,
     enrollments,
     loading,
     error,
@@ -706,6 +712,7 @@ export default function ChildrenScreen() {
           childRecords={childRecords}
           internalDescriptions={internalDescriptions}
           assistanceRecords={assistanceRecords}
+          schedules={schedules}
           enrollments={enrollments}
           childRecordsError={childRecordsError}
           internalDescriptionsError={internalDescriptionsError}

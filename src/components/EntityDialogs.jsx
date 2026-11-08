@@ -1675,7 +1675,12 @@ export function ChildInternalDescriptionDialog({
   )
 }
 
-export function ChildrenAssistanceDialog({ assistance, onClose, onSave }) {
+export function ChildrenAssistanceDialog({
+  assistance,
+  schedules = [],
+  onClose,
+  onSave,
+}) {
   const [form, setForm] = useState({
     professionalWorkshopId: assistance?.professionalWorkshopId ?? "",
     willAssist: assistance?.willAssist ?? false,
@@ -1692,7 +1697,7 @@ export function ChildrenAssistanceDialog({ assistance, onClose, onSave }) {
     event.preventDefault()
     setError("")
     if (!form.professionalWorkshopId.trim()) {
-      setError("El identificador de la sesión del taller es obligatorio.")
+      setError("Debes seleccionar una sesión de taller.")
       return
     }
     setSaving(true)
@@ -1700,9 +1705,19 @@ export function ChildrenAssistanceDialog({ assistance, onClose, onSave }) {
       await onSave(form)
       onClose()
     } catch (requestError) {
-      setError(
-        requestError.message || "No fue posible guardar la asistencia.",
-      )
+      const msg = requestError.message || ""
+      if (
+        msg.includes("409") ||
+        msg.toLowerCase().includes("conflict") ||
+        msg.toLowerCase().includes("unique") ||
+        msg.toLowerCase().includes("duplicate")
+      ) {
+        setError(
+          "El beneficiario ya cuenta con un registro para esta sesión de taller.",
+        )
+      } else {
+        setError(msg || "No fue posible guardar la asistencia.")
+      }
     } finally {
       setSaving(false)
     }
@@ -1711,21 +1726,32 @@ export function ChildrenAssistanceDialog({ assistance, onClose, onSave }) {
   return (
     <DialogShell
       title={assistance ? "Editar asistencia" : "Agregar asistencia"}
-      description="Campos de children_assistance. Ingresa el ID de la sesión de taller (professional_workshop_id)."
+      description="Selecciona la sesión de taller y registra la asistencia del beneficiario."
       onClose={onClose}
     >
       <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
           {error && <DialogError>{error}</DialogError>}
-          <Field
-            label="ID de sesión de taller *"
-            inputMode="numeric"
+          <SelectField
+            label="Sesión de taller *"
             value={form.professionalWorkshopId}
             onChange={(event) =>
               update("professionalWorkshopId", event.target.value)
             }
             required
-          />
+          >
+            <option value="" disabled hidden>
+              Selecciona una sesión de taller
+            </option>
+            {schedules.map((schedule) => (
+              <option
+                key={schedule.professionalWorkshopId}
+                value={schedule.professionalWorkshopId}
+              >
+                {schedule.label}
+              </option>
+            ))}
+          </SelectField>
           {[
             ["willAssist", "Confirmó que asistirá"],
             ["asisted", "Asistió"],

@@ -97,3 +97,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,react
+
+# OpenAPI / Swagger local exports
+vistas.json

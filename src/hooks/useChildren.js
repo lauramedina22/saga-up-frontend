@@ -6,7 +6,14 @@ import { childService } from "../services/childService"
 import { enrollmentService } from "../services/enrollmentService"
 import { childrenAssistanceService } from "../services/childrenAssistanceService"
 import { guardianService } from "../services/guardianService"
+import { staffWorkshopService } from "../services/staffWorkshopService"
 import { toForeignKey } from "../models/modelUtils"
+
+function formatTime(timeStr) {
+  if (!timeStr) return ""
+  const match = String(timeStr).match(/(?:T|\b)(\d{2}:\d{2})/)
+  return match ? match[1] : String(timeStr)
+}
 
 export function useChildren() {
   const [children, setChildren] = useState([])
@@ -15,6 +22,7 @@ export function useChildren() {
   const [childRecords, setChildRecords] = useState([])
   const [internalDescriptions, setInternalDescriptions] = useState([])
   const [assistanceRecords, setAssistanceRecords] = useState([])
+  const [schedules, setSchedules] = useState([])
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -51,11 +59,15 @@ export function useChildren() {
         internalDescriptionResults,
         assistanceResults,
         enrollmentResult,
+        scheduleResults,
+        workshopResults,
       ] = await Promise.allSettled([
         childRecordService.getRecords(),
         childInternalDescriptionService.getAll(),
         childrenAssistanceService.getAll(),
         enrollmentService.getEnrollmentData(),
+        staffWorkshopService.getSchedules(),
+        staffWorkshopService.getWorkshops(),
       ])
       if (recordResults.status === "fulfilled") {
         setChildRecords(recordResults.value)
@@ -94,6 +106,36 @@ export function useChildren() {
           enrollmentResult.reason?.message ||
             "No fue posible cargar los pagos relacionados.",
         )
+      }
+      if (scheduleResults.status === "fulfilled") {
+        const rawSchedules = scheduleResults.value || []
+        const rawWorkshops =
+          workshopResults.status === "fulfilled"
+            ? workshopResults.value || []
+            : []
+        const workshopMap = new Map(
+          rawWorkshops.map((w) => [String(w.workshopId), w.name]),
+        )
+
+        const mapped = rawSchedules.map((s) => {
+          const workshopName =
+            s.workshop?.name ||
+            workshopMap.get(String(s.workshopId)) ||
+            `Taller #${s.workshopId || s.professionalWorkshopId}`
+          const day = s.dayWeek ? ` · ${s.dayWeek}` : ""
+          const start = formatTime(s.timeStarts)
+          const end = formatTime(s.timeEnds)
+          const time = start ? ` (${start}${end ? ` - ${end}` : ""})` : ""
+          const prof = s.professionalName ? ` con ${s.professionalName}` : ""
+          return {
+            professionalWorkshopId: String(s.professionalWorkshopId),
+            workshopName,
+            label: `${workshopName}${day}${time}${prof}`,
+          }
+        })
+        setSchedules(mapped)
+      } else {
+        setSchedules([])
       }
     } catch (requestError) {
       setError(
@@ -312,6 +354,7 @@ export function useChildren() {
     childRecords,
     internalDescriptions,
     assistanceRecords,
+    schedules,
     enrollments,
     loading,
     error,
