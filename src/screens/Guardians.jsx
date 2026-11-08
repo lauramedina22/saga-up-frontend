@@ -274,6 +274,7 @@ export default function GuardiansScreen() {
       .toLocaleLowerCase("es-CO")
       .includes(search.trim().toLocaleLowerCase("es-CO")),
   )
+
   const showToast = (message) => {
     setToast(message)
     window.setTimeout(() => setToast(""), 3000)
@@ -367,7 +368,7 @@ export default function GuardiansScreen() {
       </header>
       <Field
         label="Buscar acudiente"
-        placeholder="Buscar por nombre o documento..."
+        placeholder="Buscar por nombre o número de documento..."
         value={search}
         onChange={(event) => setSearch(event.target.value)}
         className="mb-4"

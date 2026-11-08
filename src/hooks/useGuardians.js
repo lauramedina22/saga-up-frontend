@@ -143,5 +143,6 @@ export function useGuardians() {
     createRelationship,
     deleteRelationship,
     createChild,
+    searchByDocument: guardianService.searchByDocument,
   }
 }

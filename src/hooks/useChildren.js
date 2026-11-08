@@ -254,30 +254,18 @@ export function useChildren() {
   const deleteChild = async (childId) => {
     try {
       await childService.deleteChild(childId)
+      const today = new Date().toISOString().slice(0, 10)
       setChildren((current) =>
-        current.filter((child) => child.childId !== childId),
+        current.map((child) =>
+          child.childId === childId ? { ...child, exitDate: today } : child,
+        ),
       )
-      setRelationships((current) =>
-        current.filter((relationship) => relationship.childId !== childId),
-      )
-      setChildRecords((current) =>
-        current.filter((record) => record.childId !== childId),
-      )
-      setInternalDescriptions((current) =>
-        current.filter((record) => record.childId !== childId),
-      )
-      setAssistanceRecords((current) =>
-        current.filter((record) => record.childId !== childId),
-      )
-      setEnrollments((current) =>
-        current.filter((enrollment) => enrollment.childId !== childId),
-      )
-      return { ok: true, message: "Beneficiario eliminado correctamente." }
+      return { ok: true, message: "Beneficiario desactivado correctamente." }
     } catch (requestError) {
       return {
         ok: false,
         message:
-          requestError.message || "No fue posible eliminar el registro.",
+          requestError.message || "No fue posible desactivar el registro.",
       }
     }
   }
@@ -313,6 +301,10 @@ export function useChildren() {
     return created
   }
 
+  const searchByDocument = async (documentNumber) => {
+    return childService.searchByDocument(documentNumber)
+  }
+
   return {
     children,
     guardians,
@@ -343,5 +335,6 @@ export function useChildren() {
     deleteAssistance,
     updateChild,
     deleteChild,
+    searchByDocument,
   }
 }

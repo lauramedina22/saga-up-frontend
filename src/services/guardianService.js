@@ -60,4 +60,14 @@ export const guardianService = {
   async deleteGuardian(guardianId) {
     return apiClient.delete(`${GUARDIANS_ENDPOINT}/${guardianId}`)
   },
+
+  // GET /guardians/document/:number
+  async searchByDocument(documentNumber) {
+    const cleanNumber = String(documentNumber ?? "").trim()
+    if (!cleanNumber) return []
+    const response = await apiClient.get(
+      `${GUARDIANS_ENDPOINT}/document/${encodeURIComponent(cleanNumber)}`,
+    )
+    return getGuardianList(response)
+  },
 }

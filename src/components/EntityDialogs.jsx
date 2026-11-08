@@ -1637,6 +1637,7 @@ export function ChildrenAssistanceDialog({ assistance, onClose, onSave }) {
 
 export function DeletePersonDialog({ kind, name, onClose, onConfirm }) {
   const [error, setError] = useState("")
+  const isChild = kind === "child"
   const label =
     kind === "guardian"
       ? "acudiente"
@@ -1656,17 +1657,26 @@ export function DeletePersonDialog({ kind, name, onClose, onConfirm }) {
       const result = await onConfirm()
       if (result && !result.ok) setError(result.message)
     } catch (requestError) {
-      setError(requestError.message || "No fue posible eliminar el registro.")
+      setError(
+        requestError.message ||
+          (isChild
+            ? "No fue posible desactivar el registro."
+            : "No fue posible eliminar el registro."),
+      )
     }
   }
 
   return (
     <DialogShell
-      title={`Eliminar ${label}`}
+      title={isChild ? "Desactivar beneficiario" : `Eliminar ${label}`}
       onClose={onClose}
     >
       <div className="p-5 sm:p-6">
-        <p className="font-bold">¿Deseas eliminar el registro de {name}?</p>
+        <p className="font-bold">
+          {isChild
+            ? `¿Deseas desactivar a ${name}? El beneficiario pasará a la lista de retirados conservando todo su historial.`
+            : `¿Deseas eliminar el registro de ${name}?`}
+        </p>
         {error && <div className="mt-4"><DialogError>{error}</DialogError></div>}
       </div>
       <footer className="flex gap-3 border-t border-border p-4 sm:px-6">
@@ -1684,7 +1694,7 @@ export function DeletePersonDialog({ kind, name, onClose, onConfirm }) {
           onClick={confirm}
           className="flex-1"
         >
-          Confirmar eliminación
+          {isChild ? "Confirmar desactivación" : "Confirmar eliminación"}
         </Button>
       </footer>
     </DialogShell>

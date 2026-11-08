@@ -492,14 +492,20 @@ function ChildDetails({
             </p>
           )}
         </Card>
-        <Button
-          variant="danger"
-          onClick={onDelete}
-          className="mt-4"
-          type="button"
-        >
-          Eliminar beneficiario
-        </Button>
+        {child.exitDate ? (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
+            Beneficiario desactivado (fecha de retiro: {child.exitDate}). Su historial se encuentra conservado.
+          </div>
+        ) : (
+          <Button
+            variant="danger"
+            onClick={onDelete}
+            className="mt-4"
+            type="button"
+          >
+            Desactivar beneficiario
+          </Button>
+        )}
       </div>
       {recordDialog && (
         <ChildRecordDialog
@@ -665,17 +671,26 @@ export default function ChildrenScreen() {
     deleteChild,
   } = useChildren()
   const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState("activos")
   const [selectedId, setSelectedId] = useState(null)
   const [creating, setCreating] = useState(false)
   const [deleting, setDeleting] = useState(null)
   const [toast, setToast] = useState("")
 
+  const activeCount = children.filter((child) => !child.exitDate).length
+  const retiredCount = children.filter((child) => Boolean(child.exitDate)).length
+
   const selected = children.find((child) => child.childId === selectedId)
-  const filteredChildren = children.filter((child) =>
-    `${child.firstName} ${child.lastName} ${child.documentNumber}`
-      .toLocaleLowerCase("es-CO")
-      .includes(search.trim().toLocaleLowerCase("es-CO")),
-  )
+  const filteredChildren = children
+    .filter((child) =>
+      statusFilter === "activos" ? !child.exitDate : Boolean(child.exitDate),
+    )
+    .filter((child) =>
+      `${child.firstName} ${child.lastName} ${child.documentNumber}`
+        .toLocaleLowerCase("es-CO")
+        .includes(search.trim().toLocaleLowerCase("es-CO")),
+    )
+
   const showToast = (message) => {
     setToast(message)
     window.setTimeout(() => setToast(""), 3000)
@@ -775,7 +790,7 @@ export default function ChildrenScreen() {
         <div>
           <h1 className="text-3xl font-extrabold">Beneficiarios</h1>
           <p className="text-sm font-semibold text-muted">
-            {children.length} registros
+            {activeCount} activo(s) · {retiredCount} retirado(s)
           </p>
         </div>
         <Button
@@ -786,9 +801,36 @@ export default function ChildrenScreen() {
           + Agregar beneficiario
         </Button>
       </header>
+
+      {/* Selector de pestañas: Activos / Retirados */}
+      <div className="mb-4 flex border-b border-border">
+        <button
+          type="button"
+          onClick={() => setStatusFilter("activos")}
+          className={`border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+            statusFilter === "activos"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted hover:text-foreground"
+          }`}
+        >
+          Activos ({activeCount})
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusFilter("retirados")}
+          className={`border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+            statusFilter === "retirados"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted hover:text-foreground"
+          }`}
+        >
+          Retirados ({retiredCount})
+        </button>
+      </div>
+
       <Field
         label="Buscar beneficiario"
-        placeholder="Buscar por nombre o documento..."
+        placeholder="Buscar por nombre o número de documento..."
         value={search}
         onChange={(event) => setSearch(event.target.value)}
         className="mb-4"
@@ -827,18 +869,26 @@ export default function ChildrenScreen() {
                 </span>
               </span>
             </button>
-            <Button
-              type="button"
-              variant="danger"
-              onClick={() => setDeleting(child)}
-            >
-              Eliminar
-            </Button>
+            {!child.exitDate ? (
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => setDeleting(child)}
+              >
+                Desactivar
+              </Button>
+            ) : (
+              <span className="shrink-0 rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
+                Retirado: {child.exitDate}
+              </span>
+            )}
           </article>
         ))}
         {!loading && filteredChildren.length === 0 && (
           <p className="rounded-3xl border border-border bg-surface p-8 text-center text-muted">
-            No se encontraron beneficiarios.
+            {statusFilter === "activos"
+              ? "No se encontraron beneficiarios activos."
+              : "No se encontraron beneficiarios retirados."}
           </p>
         )}
       </div>

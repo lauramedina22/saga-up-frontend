@@ -54,4 +54,14 @@ export const childService = {
   async deleteChild(childId) {
     return apiClient.delete(`${CHILDREN_ENDPOINT}/${childId}`)
   },
+
+  // GET /children/document/:number
+  async searchByDocument(documentNumber) {
+    const cleanNumber = String(documentNumber ?? "").trim()
+    if (!cleanNumber) return []
+    const response = await apiClient.get(
+      `${CHILDREN_ENDPOINT}/document/${encodeURIComponent(cleanNumber)}`,
+    )
+    return getChildList(response)
+  },
 }
