@@ -17,6 +17,7 @@ import WorkshopsScreen from "./screens/Workshops"
 import SalesScreen from "./screens/Sales"
 import DashboardScreen from "./screens/Dashboard"
 import AuditLogsScreen from "./screens/AuditLogs"
+import ServicesScreen from "./screens/Services"
 
 function AppLayout({ session, onLogout }) {
   const navigate = useNavigate()
@@ -34,7 +35,9 @@ function AppLayout({ session, onLogout }) {
               ? "ventas"
               : pathname === "/audit-logs" || pathname === "/auditoria"
                 ? "auditoria"
-                : "dashboard"
+                : pathname === "/services" || pathname === "/servicios"
+                  ? "servicios"
+                  : "dashboard"
   const userName =
     session?.usuario?.username ||
     session?.usuario?.email ||
@@ -51,6 +54,7 @@ function AppLayout({ session, onLogout }) {
       talleristas: "/workshops",
       ventas: "/sales",
       auditoria: "/audit-logs",
+      servicios: "/services",
     }
     if (routes[screen]) navigate(routes[screen])
   }
@@ -141,6 +145,8 @@ const App = () => {
         <Route path="/ventas" element={<SalesScreen />} />
         <Route path="/audit-logs" element={<AuditLogsScreen />} />
         <Route path="/auditoria" element={<AuditLogsScreen />} />
+        <Route path="/services" element={<ServicesScreen />} />
+        <Route path="/servicios" element={<ServicesScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -36,6 +36,7 @@ Cada quien continúa los módulos que ya construyó:
 | L3 | Matrículas: completar CRUD (editar, eliminar, estados) | `/tuition` | Bajo | ✅ **Completado** |
 | L4 | Toma de asistencia a talleres por beneficiario (`Children.jsx` + `ChildrenAssistanceDialog`) | `/children-assistance` (+ lectura de `/professionals-workshops`) | Medio | ✅ **Completado** |
 | L5 | Bitácora de auditoría (`AuditLogs.jsx`) | `/audit-logs` | Medio | ✅ **Completado** |
+| L6 | Portal de Integración con Otros Proyectos ("Más Servicios") | Vínculos y ecosistema de plataformas UP (`Services.jsx`) | Bajo | ✅ **Completado** |
 
 
 ## Yeison — Dashboard, talleristas y personal
