@@ -45,15 +45,22 @@ export function toSuma21InventoryModel(raw = {}) {
 
 export function toSuma21SaleTransactionModel(raw = {}, index = 0) {
   const rawCents = Number(readValue(raw, "amount_in_cents", "amount", "total")) || 0
-  const amount = rawCents > 1000 ? rawCents / 100 : rawCents // Convertir centavos a pesos
+  // Siempre dividir entre 100 para convertir centavos a pesos reales
+  // Ej: 25000000 centavos = $250.000 COP, 1998 centavos = $19.98 COP
+  const amount = rawCents / 100
   const completedAt = readValue(raw, "completed_at", "created_at", "date")
   const id = normalizeId(readValue(raw, "sale_id", "transaction_id", "id")) || `sale-${index + 1}`
+  const reference = readValue(raw, "reference")
+  const paymentMethod = readValue(raw, "payment_method", "method")
 
   return {
     id,
+    transactionId: normalizeId(readValue(raw, "transaction_id")),
+    reference: reference || null,
     amount,
-    paymentMethod: String(readValue(raw, "payment_method", "method") || "Efectivo / Transferencia"),
-    completedAt: completedAt ? new Date(completedAt).toISOString() : new Date().toISOString(),
+    currency: String(readValue(raw, "currency") || "COP"),
+    paymentMethod: paymentMethod ? String(paymentMethod) : "Sin registrar",
+    completedAt: completedAt ? new Date(completedAt).toISOString() : null,
     items: Array.isArray(raw.items) ? raw.items : [],
     status: "Aprobada",
   }
@@ -61,16 +68,22 @@ export function toSuma21SaleTransactionModel(raw = {}, index = 0) {
 
 export function toSuma21DonationTransactionModel(raw = {}, index = 0) {
   const rawCents = Number(readValue(raw, "amount_in_cents", "amount", "total")) || 0
-  const amount = rawCents > 1000 ? rawCents / 100 : rawCents // Convertir centavos a pesos
+  // 5000000 centavos = $50.000 COP
+  const amount = rawCents / 100
   const completedAt = readValue(raw, "completed_at", "created_at", "date")
-  const donationId = normalizeId(readValue(raw, "donation_id", "transaction_id", "id")) || `don-${index + 1}`
+  const donationId = normalizeId(readValue(raw, "donation_id", "id")) || `don-${index + 1}`
+  const reference = readValue(raw, "reference")
+  const paymentMethod = readValue(raw, "payment_method", "method")
 
   return {
     id: donationId,
     donationId,
+    transactionId: normalizeId(readValue(raw, "transaction_id")),
+    reference: reference || null,
     amount,
-    paymentMethod: String(readValue(raw, "payment_method", "method") || "Transferencia / Online"),
-    completedAt: completedAt ? new Date(completedAt).toISOString() : new Date().toISOString(),
+    currency: String(readValue(raw, "currency") || "COP"),
+    paymentMethod: paymentMethod ? String(paymentMethod) : "Aporte solidario",
+    completedAt: completedAt ? new Date(completedAt).toISOString() : null,
     status: "Aprobada",
   }
 }
