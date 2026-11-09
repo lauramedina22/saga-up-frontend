@@ -95,7 +95,7 @@ export default function AuditLogs() {
       <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-extrabold text-foreground">
-            Bitácora de Auditoría
+            Auditoría
           </h1>
           <p className="text-sm font-semibold text-muted">
             {logs.length} movimiento(s) registrado(s) en el sistema
@@ -150,11 +150,10 @@ export default function AuditLogs() {
             type="button"
             onClick={() => setFilter(item.id)}
             aria-pressed={filter === item.id}
-            className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-all ${
-              filter === item.id
-                ? "bg-primary text-white"
-                : "border border-border bg-surface text-muted hover:text-foreground"
-            }`}
+            className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-all ${filter === item.id
+              ? "bg-primary text-white"
+              : "border border-border bg-surface text-muted hover:text-foreground"
+              }`}
           >
             {item.label}
           </button>
