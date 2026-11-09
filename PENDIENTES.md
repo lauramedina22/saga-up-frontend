@@ -23,7 +23,12 @@
     4. **SON UP** (Seguimiento y Desarrollo)
     5. **LUPE** (Asistente IA para Proyectos y Convocatorias)
 
-## 3. Anamnesis (vinculada a Beneficiarios — `children`)
+## 3. Formato de Horarios en Talleres (`Workshops.jsx` / Yeison)
+- **Estado:** 🟡 Pendiente de formatear en la vista de Talleres.
+- **Situación:** En la pantalla de Talleres y Turnos, los horarios se muestran con el formato crudo de PostgreSQL que incluye la fecha de época ficticia (ej. `1970-01-01T10:30:00.000Z - 1970-01-01T11:30:00.000Z`).
+- **Por solucionar:** Aplicar la función de formateo (`formatTime` que extrae solo `HH:mm`) para que muestre únicamente la hora legible (ej. `10:30 - 11:30`).
+
+## 4. Anamnesis (vinculada a Beneficiarios — `children`)
 - **Estado:** 🟡 Pendiente de clarificación con Backend.
 - **Situación:** el Swagger actual no expone ningún endpoint ni esquema de anamnesis.
 - **Por aclarar:**
