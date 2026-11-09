@@ -1,221 +1,223 @@
 import { useState, useMemo } from "react"
 import { useAuditLogs } from "../hooks/useAuditLogs.js"
-import {
-  Badge,
-  Card,
-  EmptyState,
-  PageHeader,
-  Button,
-} from "../components/ui.jsx"
+import { Avatar, Badge, Button, Card, Icon } from "../components/ui.jsx"
 
 const MODULE_LABELS = {
   children: "Beneficiarios",
   guardians: "Acudientes",
   workshops: "Talleres",
   enrollments: "Matrículas",
+  tuition: "Matrículas",
   staff: "Personal",
   staff_attendance: "Asistencia Personal",
   workshop_shifts: "Turnos de Taller",
   workshop_sessions: "Sesiones de Taller",
+  children_assistance: "Asistencia Beneficiarios",
 }
 
 function formatModule(tableName) {
   if (!tableName) return "General"
-  return MODULE_LABELS[tableName] || tableName
+  return MODULE_LABELS[tableName.toLowerCase()] || tableName
 }
 
-function formatTimestamp(isoString) {
+function formatFechaCompleta(isoString) {
   if (!isoString) return "-"
   const date = new Date(isoString)
   if (Number.isNaN(date.getTime())) return isoString
   return date.toLocaleString("es-CO", {
     year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
+    month: "short",
+    day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   })
 }
 
-function getActionBadge(action) {
+function getActionTone(action) {
   const act = String(action || "").toUpperCase()
-  if (act === "INSERT" || act.includes("CREATE")) {
-    return <Badge tone="success">Creación</Badge>
-  }
-  if (act === "UPDATE" || act.includes("EDIT")) {
-    return <Badge tone="info">Modificación</Badge>
-  }
-  if (act === "DELETE" || act.includes("REMOVE")) {
-    return <Badge tone="danger">Eliminación</Badge>
-  }
-  return <Badge tone="neutral">{act}</Badge>
+  if (act === "INSERT" || act.includes("CREATE")) return "success"
+  if (act === "UPDATE" || act.includes("EDIT")) return "info"
+  if (act === "DELETE" || act.includes("REMOVE")) return "danger"
+  return "neutral"
+}
+
+function getActionLabel(action) {
+  const act = String(action || "").toUpperCase()
+  if (act === "INSERT" || act.includes("CREATE")) return "Creación"
+  if (act === "UPDATE" || act.includes("EDIT")) return "Modificación"
+  if (act === "DELETE" || act.includes("REMOVE")) return "Eliminación"
+  return act
 }
 
 export default function AuditLogs() {
   const { logs, loading, error, loadLogs } = useAuditLogs()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedAction, setSelectedAction] = useState("ALL")
+  const [filter, setFilter] = useState("TODOS")
+  const [search, setSearch] = useState("")
+
+  const insertCount = logs.filter((l) => l.action === "INSERT").length
+  const updateCount = logs.filter((l) => l.action === "UPDATE").length
+  const deleteCount = logs.filter((l) => l.action === "DELETE").length
+
+  const filters = [
+    { id: "TODOS", label: "Todas" },
+    { id: "INSERT", label: `Creaciones (${insertCount})` },
+    { id: "UPDATE", label: `Modificaciones (${updateCount})` },
+    { id: "DELETE", label: `Eliminaciones (${deleteCount})` },
+  ]
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
-      // Filtro por acción
-      if (selectedAction !== "ALL" && log.action !== selectedAction) {
+      // Filtro por pestaña
+      if (filter !== "TODOS" && log.action !== filter) {
         return false
       }
 
-      // Filtro de búsqueda por texto
-      if (!searchTerm.trim()) return true
-      const term = searchTerm.toLowerCase()
+      // Filtro de búsqueda
+      if (!search.trim()) return true
+      const term = search.toLowerCase()
       const moduleName = formatModule(log.tableName).toLowerCase()
       const performedBy = String(log.performedBy || "").toLowerCase()
       const recordId = String(log.recordId || "").toLowerCase()
-      const actionName = String(log.action || "").toLowerCase()
+      const actionLabel = getActionLabel(log.action).toLowerCase()
 
       return (
         moduleName.includes(term) ||
         performedBy.includes(term) ||
         recordId.includes(term) ||
-        actionName.includes(term)
+        actionLabel.includes(term)
       )
     })
-  }, [logs, selectedAction, searchTerm])
+  }, [logs, filter, search])
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Bitácora de Auditoría"
-        description="Historial y registro de operaciones y cambios realizados en el sistema."
-        action={
-          <Button
-            variant="secondary"
-            onClick={() => loadLogs()}
-            loading={loading}
-          >
-            Actualizar
-          </Button>
-        }
-      />
+    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+      {/* Encabezado idéntico a Children y Enrollments */}
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-3xl font-extrabold text-foreground">
+            Bitácora de Auditoría
+          </h1>
+          <p className="text-sm font-semibold text-muted">
+            {logs.length} movimiento(s) registrado(s) en el sistema
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => loadLogs()}
+          loading={loading}
+        >
+          Actualizar
+        </Button>
+      </div>
 
-      {error ? (
-        <div className="p-4 rounded-xl bg-danger-soft text-danger text-sm font-semibold">
+      {loading && (
+        <p className="mb-4 text-sm font-semibold text-muted" role="status">
+          Cargando bitácora de auditoría…
+        </p>
+      )}
+
+      {error && (
+        <p
+          className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+          role="alert"
+        >
           {error}
+        </p>
+      )}
+
+      {/* Tarjetas resumen con métricas (igual que en Enrollments) */}
+      <div className="mb-6 grid grid-cols-3 gap-3">
+        <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
+          <p className="text-2xl font-extrabold text-success">{insertCount}</p>
+          <p className="text-xs font-semibold text-muted">Creaciones</p>
         </div>
-      ) : null}
-
-      <Card className="p-6">
-        {/* Barra superior de filtros */}
-        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between pb-4 border-b border-border">
-          {/* Pestañas de Tipo de Acción */}
-          <div className="flex items-center gap-1 bg-surface-muted p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => setSelectedAction("ALL")}
-              className={`px-3 py-1.5 text-xs font-extrabold rounded-lg transition-colors ${
-                selectedAction === "ALL"
-                  ? "bg-surface text-foreground shadow-sm"
-                  : "text-muted hover:text-foreground"
-              }`}
-            >
-              Todas
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedAction("INSERT")}
-              className={`px-3 py-1.5 text-xs font-extrabold rounded-lg transition-colors ${
-                selectedAction === "INSERT"
-                  ? "bg-surface text-success shadow-sm"
-                  : "text-muted hover:text-foreground"
-              }`}
-            >
-              Creaciones
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedAction("UPDATE")}
-              className={`px-3 py-1.5 text-xs font-extrabold rounded-lg transition-colors ${
-                selectedAction === "UPDATE"
-                  ? "bg-surface text-info shadow-sm"
-                  : "text-muted hover:text-foreground"
-              }`}
-            >
-              Modificaciones
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedAction("DELETE")}
-              className={`px-3 py-1.5 text-xs font-extrabold rounded-lg transition-colors ${
-                selectedAction === "DELETE"
-                  ? "bg-surface text-danger shadow-sm"
-                  : "text-muted hover:text-foreground"
-              }`}
-            >
-              Eliminaciones
-            </button>
-          </div>
-
-          {/* Buscador */}
-          <div className="w-full sm:w-72">
-            <input
-              type="search"
-              placeholder="Buscar módulo, registro o usuario..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-11 rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-3 focus:ring-primary/15"
-            />
-          </div>
+        <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
+          <p className="text-2xl font-extrabold text-info">{updateCount}</p>
+          <p className="text-xs font-semibold text-muted">Modificaciones</p>
         </div>
+        <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
+          <p className="text-2xl font-extrabold text-danger">{deleteCount}</p>
+          <p className="text-xs font-semibold text-muted">Eliminaciones</p>
+        </div>
+      </div>
 
-        {/* Tabla de registros */}
-        {loading ? (
-          <div className="py-12 flex justify-center items-center text-muted">
-            <span className="size-6 animate-spin rounded-full border-2 border-primary border-r-transparent" />
-          </div>
-        ) : filteredLogs.length === 0 ? (
-          <div className="pt-6">
-            <EmptyState
-              title="Sin registros de auditoría"
-              description="No se encontraron operaciones registradas con los filtros seleccionados."
-            />
-          </div>
-        ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-xs uppercase text-muted font-bold">
-                <tr>
-                  <th className="pb-3 pr-4 font-bold">Fecha y Hora</th>
-                  <th className="pb-3 px-4 font-bold">Acción</th>
-                  <th className="pb-3 px-4 font-bold">Módulo / Recurso</th>
-                  <th className="pb-3 px-4 font-bold">ID Registro</th>
-                  <th className="pb-3 pl-4 font-bold">Realizado por</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-primary-soft/30 transition-colors">
-                    <td className="py-3.5 pr-4 text-xs text-muted font-mono whitespace-nowrap">
-                      {formatTimestamp(log.timestamp)}
-                    </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      {getActionBadge(log.action)}
-                    </td>
-                    <td className="py-3.5 px-4 font-semibold text-foreground whitespace-nowrap">
-                      <span className="px-2 py-0.5 rounded-lg bg-surface-muted text-xs text-muted">
-                        {formatModule(log.tableName)}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-muted font-mono whitespace-nowrap">
-                      #{log.recordId || "-"}
-                    </td>
-                    <td className="py-3.5 pl-4 text-xs font-semibold text-foreground whitespace-nowrap">
-                      {log.performedBy}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* Filtros tipo píldoras redondeadas */}
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+        {filters.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setFilter(item.id)}
+            aria-pressed={filter === item.id}
+            className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-all ${
+              filter === item.id
+                ? "bg-primary text-white"
+                : "border border-border bg-surface text-muted hover:text-foreground"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Buscador de estilo SAGA-UP */}
+      <div className="mb-4">
+        <input
+          type="search"
+          placeholder="Buscar por módulo, registro o persona..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full h-12 rounded-2xl border border-border bg-surface px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary focus:ring-3 focus:ring-primary/15 shadow-sm"
+        />
+      </div>
+
+      {/* Lista de operaciones en artículos redondeados (idéntico a Enrollments y Children) */}
+      <div className="flex flex-col gap-3">
+        {filteredLogs.map((log) => {
+          const actionTone = getActionTone(log.action)
+          const actionLabel = getActionLabel(log.action)
+          const moduleLabel = formatModule(log.tableName)
+
+          return (
+            <article
+              key={log.id}
+              className="flex items-center gap-4 rounded-3xl border border-border bg-surface p-4 shadow-sm hover:border-primary/30 transition-colors"
+            >
+              {/* Avatar / Iniciales del responsable */}
+              <Avatar name={log.performedBy || "Admin"} size="sm" />
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-extrabold text-foreground truncate">
+                    {actionLabel} en {moduleLabel}
+                  </p>
+                  <span className="shrink-0 text-xs font-mono font-bold text-muted bg-surface-muted px-2 py-0.5 rounded-lg">
+                    #{log.recordId || "-"}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-muted truncate">
+                  {formatFechaCompleta(log.timestamp)} · Por:{" "}
+                  <span className="font-semibold text-foreground/80">
+                    {log.performedBy}
+                  </span>
+                </p>
+              </div>
+
+              {/* Distintivo de la acción */}
+              <div className="shrink-0">
+                <Badge tone={actionTone}>{actionLabel}</Badge>
+              </div>
+            </article>
+          )
+        })}
+
+        {!loading && !error && filteredLogs.length === 0 && (
+          <p className="rounded-3xl border border-border bg-surface p-8 text-center text-muted">
+            No se encontraron registros de auditoría para este filtro.
+          </p>
         )}
-      </Card>
+      </div>
     </div>
   )
 }
