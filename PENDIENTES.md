@@ -1,18 +1,18 @@
 # Pendientes - SAGA-UP Frontend
 
 ## 1. Integración con SUMA 21
-- **Estado:** 🟡 Pendiente.
-- **Acceso:** siempre a través de nuestro backend (proxy), nunca directo a SUMA 21. Hoy la única conexión confirmada es el listado de productos.
+- **Estado:** 🟢 En progreso / Avanzado (Productos, Inventario y Cuentas completados).
+- **Acceso:** siempre a través de nuestro backend (proxy), nunca directo a SUMA 21.
 - **Documentación:**
   - Proxy Saga UP: https://saga-up-backend-lr4u.onrender.com/api-docs/suma21/
   - SUMA 21 directo: https://suma21-backend.onrender.com/api-docs/
-- **Endpoints expuestos por el proxy:**
-  - `GET/POST /api/suma21/products`, `GET/PATCH/DELETE /api/suma21/products/{id}`
-  - `GET/POST /api/suma21/payment-methods`, `GET/POST /api/suma21/accounts`, `GET/POST /api/suma21/inventory`
-  - `POST /api/suma21/sales`, `POST /api/suma21/donations/monetary`, `POST /api/suma21/donations/inkind`
-  - `POST /api/suma21/payments/checkout`, `GET /api/suma21/payments/{reference}`
-- **Impacto previsto:** `Sales.jsx` hoy usa un arreglo `PRODUCTS` local; debe pasar a `GET /api/suma21/products`. Las opciones del menú "Pagos" y "Donaciones" podrían depender de este módulo.
-- **Por definir:** alcance de ventas/donaciones/pagos y si se usará checkout (Wompi).
+- **Endpoints implementados en el frontend (`Sales.jsx` / `useSuma21.js`):**
+  - ✅ `GET /api/suma21/products`: Catálogo visual con imágenes de Supabase, precios en COP y stock en tiempo real.
+  - ✅ `GET /api/suma21/inventory`: Control de existencias de insumos e ítems (`inventory_item_id`, nombre, descripción y estado de disponibilidad).
+  - ✅ `GET /api/suma21/accounts`: Listado de cuentas con saldo de apertura (`account_id`, nombre y saldo).
+- **Pendiente de integración:**
+  - 🟡 **Transacciones:** Mostrar el historial de transacciones o movimientos realizados en SUMA 21 (ventas, pagos, donaciones).
+  - 🟡 **Flujo de Checkout / Salidas:** Definir si se habilitará la pasarela de pagos (Wompi) o si se registrarán ventas/salidas directamente vía `POST /api/suma21/sales`.
 
 ## 2. Anamnesis (vinculada a Beneficiarios — `children`)
 - **Estado:** 🟡 Pendiente de clarificación.
