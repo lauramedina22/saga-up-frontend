@@ -28,11 +28,16 @@ export function toSuma21AccountModel(raw = {}) {
 }
 
 export function toSuma21InventoryModel(raw = {}) {
+  const id = normalizeId(
+    readValue(raw, "inventory_item_id", "inventory_id", "product_id", "id")
+  )
+  const quantity = Number(readValue(raw, "stock", "quantity", "stock_qty")) || 0
+
   return {
-    id: normalizeId(readValue(raw, "inventory_id", "product_id", "id")),
-    productId: normalizeId(readValue(raw, "product_id")),
-    productName: String(readValue(raw, "product_name", "name") || "Producto"),
-    quantity: Number(readValue(raw, "quantity", "stock_qty", "stock")) || 0,
+    id,
+    productName: String(readValue(raw, "name", "product_name") || "Ítem de inventario"),
+    description: String(readValue(raw, "description", "details") || ""),
+    quantity,
     unitPrice: Number(readValue(raw, "unit_price", "price")) || 0,
     updatedAt: readValue(raw, "updated_at", "last_updated"),
   }

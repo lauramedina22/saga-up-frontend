@@ -243,27 +243,27 @@ export default function SalesScreen() {
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-border text-xs uppercase text-muted font-bold">
                   <tr>
-                    <th className="pb-3 pr-4 font-bold">Producto</th>
+                    <th className="pb-3 pr-4 font-bold">Insumo / Ítem</th>
                     <th className="pb-3 px-4 font-bold">Código</th>
-                    <th className="pb-3 px-4 font-bold">Precio Unitario</th>
+                    <th className="pb-3 px-4 font-bold">Descripción</th>
                     <th className="pb-3 px-4 font-bold">Stock</th>
                     <th className="pb-3 pl-4 font-bold">Estado</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {filteredInventory.map((item) => (
+                  {filteredInventory.map((item, index) => (
                     <tr
-                      key={item.id}
+                      key={item.id || `inv-${index}`}
                       className="hover:bg-primary-soft/30 transition-colors"
                     >
                       <td className="py-3.5 pr-4 font-bold text-foreground whitespace-nowrap">
                         {item.productName}
                       </td>
                       <td className="py-3.5 px-4 text-xs font-mono text-muted whitespace-nowrap">
-                        #{item.productId}
+                        #{item.id}
                       </td>
-                      <td className="py-3.5 px-4 text-xs font-semibold text-foreground whitespace-nowrap">
-                        {formatCOP(item.unitPrice)}
+                      <td className="py-3.5 px-4 text-xs text-muted max-w-xs truncate">
+                        {item.description || "Sin descripción"}
                       </td>
                       <td className="py-3.5 px-4 text-xs font-extrabold text-foreground whitespace-nowrap font-mono">
                         {item.quantity} unds
