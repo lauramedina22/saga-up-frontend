@@ -5,6 +5,8 @@ export function useSuma21() {
   const [products, setProducts] = useState([])
   const [accounts, setAccounts] = useState([])
   const [inventory, setInventory] = useState([])
+  const [sales, setSales] = useState([])
+  const [donations, setDonations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
@@ -12,10 +14,18 @@ export function useSuma21() {
     setLoading(true)
     setError("")
     try {
-      const [productsData, accountsData, inventoryData] = await Promise.allSettled([
+      const [
+        productsData,
+        accountsData,
+        inventoryData,
+        salesData,
+        donationsData,
+      ] = await Promise.allSettled([
         suma21Service.getProducts(),
         suma21Service.getAccounts(),
         suma21Service.getInventory(),
+        suma21Service.getSaleTransactions(),
+        suma21Service.getDonationTransactions(),
       ])
 
       if (productsData.status === "fulfilled") {
@@ -31,17 +41,23 @@ export function useSuma21() {
       if (inventoryData.status === "fulfilled" && inventoryData.value.length > 0) {
         setInventory(inventoryData.value)
       } else if (productsData.status === "fulfilled") {
-        // Si el endpoint de inventario viene vacío o no responde,
-        // generamos la vista de inventario a partir del stock real de cada producto
         const fallbackInventory = productsData.value.map((p) => ({
           id: p.id,
           productId: p.id,
           productName: p.name,
+          description: p.description,
           quantity: p.stockQty,
           unitPrice: p.unitPrice,
-          imageUrl: p.imageUrl,
         }))
         setInventory(fallbackInventory)
+      }
+
+      if (salesData.status === "fulfilled") {
+        setSales(salesData.value)
+      }
+
+      if (donationsData.status === "fulfilled") {
+        setDonations(donationsData.value)
       }
     } catch (err) {
       setError(err.message || "Error al conectar con SUMA 21.")
@@ -58,9 +74,10 @@ export function useSuma21() {
     products,
     accounts,
     inventory,
+    sales,
+    donations,
     loading,
     error,
     refresh: loadData,
   }
 }
-

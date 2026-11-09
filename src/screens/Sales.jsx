@@ -1,12 +1,25 @@
 import { useState } from "react"
 import { formatCOP } from "../data"
 import { useSuma21 } from "../hooks/useSuma21"
-import { Badge, Button, Card, EmptyState, Icon } from "../components/ui"
+import { Badge, Button, Card, EmptyState } from "../components/ui"
 import bisuteriaImg from "../imports/bisuteria.jpg"
 
+function formatFecha(isoString) {
+  if (!isoString) return "-"
+  const d = new Date(isoString)
+  if (Number.isNaN(d.getTime())) return isoString
+  return d.toLocaleString("es-CO", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
 export default function SalesScreen() {
-  const { products, accounts, inventory, loading, error, refresh } = useSuma21()
-  const [activeTab, setActiveTab] = useState("productos") // 'productos' | 'inventario' | 'cuentas'
+  const { products, accounts, inventory, sales, loading, error, refresh } = useSuma21()
+  const [activeTab, setActiveTab] = useState("productos") // 'productos' | 'inventario' | 'ventas' | 'cuentas'
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [toastMessage, setToastMessage] = useState("")
@@ -32,7 +45,19 @@ export default function SalesScreen() {
     const q = searchQuery.toLowerCase()
     return (
       item.productName.toLowerCase().includes(q) ||
-      String(item.productId).includes(q)
+      String(item.id).includes(q) ||
+      item.description.toLowerCase().includes(q)
+    )
+  })
+
+  // Filtrado de ventas
+  const filteredSales = sales.filter((s) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return (
+      String(s.id).toLowerCase().includes(q) ||
+      s.paymentMethod.toLowerCase().includes(q) ||
+      s.items.some((it) => String(it.name || it.title || "").toLowerCase().includes(q))
     )
   })
 
@@ -40,14 +65,12 @@ export default function SalesScreen() {
   const filteredAccounts = accounts.filter((acc) => {
     if (!searchQuery.trim()) return true
     const q = searchQuery.toLowerCase()
-    return (
-      acc.name.toLowerCase().includes(q) ||
-      String(acc.id).includes(q)
-    )
+    return acc.name.toLowerCase().includes(q) || String(acc.id).includes(q)
   })
 
-  // Contadores para las pestañas
+  // Contadores
   const totalStock = products.reduce((acc, p) => acc + (p.stockQty || 0), 0)
+  const totalSalesAmount = sales.reduce((acc, s) => acc + (s.amount || 0), 0)
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
@@ -61,14 +84,14 @@ export default function SalesScreen() {
         </p>
       )}
 
-      {/* Encabezado uniforme con SAGA-UP */}
+      {/* Encabezado */}
       <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-extrabold text-foreground">
             Tienda Solidaria
           </h1>
           <p className="text-sm font-semibold text-muted">
-            {products.length} producto(s) · {totalStock} unidades en inventario
+            {products.length} producto(s) · {totalStock} unidades en inventario · {sales.length} ventas reportadas
           </p>
         </div>
         <Button
@@ -81,12 +104,12 @@ export default function SalesScreen() {
         </Button>
       </div>
 
-      {/* Pestañas idénticas a Workshops y Beneficiarios */}
-      <div className="mb-4 flex border-b border-border">
+      {/* Pestañas de Navegación */}
+      <div className="mb-4 flex gap-2 overflow-x-auto border-b border-border pb-1">
         <button
           type="button"
           onClick={() => setActiveTab("productos")}
-          className={`border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+          className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
             activeTab === "productos"
               ? "border-primary text-primary"
               : "border-transparent text-muted hover:text-foreground"
@@ -97,7 +120,7 @@ export default function SalesScreen() {
         <button
           type="button"
           onClick={() => setActiveTab("inventario")}
-          className={`border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+          className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
             activeTab === "inventario"
               ? "border-primary text-primary"
               : "border-transparent text-muted hover:text-foreground"
@@ -107,15 +130,28 @@ export default function SalesScreen() {
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab("cuentas")}
-          className={`border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
-            activeTab === "cuentas"
+          onClick={() => setActiveTab("ventas")}
+          className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+            activeTab === "ventas"
               ? "border-primary text-primary"
               : "border-transparent text-muted hover:text-foreground"
           }`}
         >
-          Cuentas ({accounts.length})
+          Historial de Ventas ({sales.length})
         </button>
+        {accounts.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("cuentas")}
+            className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+              activeTab === "cuentas"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted hover:text-foreground"
+            }`}
+          >
+            Cuentas ({accounts.length})
+          </button>
+        )}
       </div>
 
       {/* Buscador */}
@@ -127,7 +163,9 @@ export default function SalesScreen() {
               ? "Buscar producto por nombre o descripción..."
               : activeTab === "inventario"
                 ? "Buscar en el inventario por producto o código..."
-                : "Buscar cuenta por nombre o código..."
+                : activeTab === "ventas"
+                  ? "Buscar venta por código o método de pago..."
+                  : "Buscar cuenta por nombre o código..."
           }
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -150,13 +188,13 @@ export default function SalesScreen() {
         </p>
       )}
 
-      {/* PESTAÑA 1: CATÁLOGO DE PRODUCTOS (Vitrina con tarjetas redondeadas) */}
+      {/* PESTAÑA 1: PRODUCTOS */}
       {activeTab === "productos" && (
         <>
           {filteredProducts.length === 0 && !loading ? (
             <EmptyState
               title="No hay productos disponibles"
-              description="No se encontraron productos registrados en SUMA 21 con los términos de búsqueda."
+              description="No se encontraron productos registrados en SUMA 21."
             />
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -216,7 +254,7 @@ export default function SalesScreen() {
         </>
       )}
 
-      {/* PESTAÑA 2: CONTROL DE INVENTARIO (Tabla con estética idéntica a Auditoría) */}
+      {/* PESTAÑA 2: CONTROL DE INVENTARIO */}
       {activeTab === "inventario" && (
         <Card className="p-4 sm:p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
@@ -236,7 +274,7 @@ export default function SalesScreen() {
           {filteredInventory.length === 0 && !loading ? (
             <EmptyState
               title="Sin registros de inventario"
-              description="No hay productos en inventario que coincidan con la búsqueda."
+              description="No hay insumos o productos en inventario con este filtro."
             />
           ) : (
             <div className="overflow-x-auto">
@@ -294,48 +332,109 @@ export default function SalesScreen() {
         </Card>
       )}
 
-      {/* PESTAÑA 3: CUENTAS (Idéntico estilo a las tarjetas resumen de SAGA-UP) */}
-      {activeTab === "cuentas" && (
-        <>
-          {filteredAccounts.length === 0 && !loading ? (
+      {/* PESTAÑA 3: HISTORIAL DE VENTAS */}
+      {activeTab === "ventas" && (
+        <Card className="p-4 sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+            <div>
+              <h2 className="text-lg font-extrabold text-foreground">
+                Ventas Aprobadas
+              </h2>
+              <p className="text-xs font-semibold text-muted">
+                Reporte de ventas completadas en la tienda solidaria
+              </p>
+            </div>
+            <div className="rounded-2xl bg-success-soft px-3.5 py-1.5 text-xs font-extrabold text-success border border-success/20">
+              Total recaudado: {formatCOP(totalSalesAmount)}
+            </div>
+          </div>
+
+          {filteredSales.length === 0 && !loading ? (
             <EmptyState
-              title="Sin cuentas registradas"
-              description="No se encontraron cuentas activas en SUMA 21."
+              title="Sin ventas registradas"
+              description="Aún no se reportan transacciones de venta completadas en SUMA 21."
             />
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {filteredAccounts.map((acc) => (
-                <article
-                  key={acc.id}
-                  className="rounded-3xl border border-border bg-surface p-5 shadow-sm hover:border-primary/40 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold uppercase text-primary tracking-wide">
-                      Cuenta #{acc.id}
-                    </span>
-                    <Badge tone={acc.balance > 0 ? "success" : "neutral"}>
-                      {acc.balance > 0 ? "Con saldo" : "Sin saldo"}
-                    </Badge>
-                  </div>
-                  <h3 className="mt-2 text-lg font-extrabold text-foreground truncate">
-                    {acc.name}
-                  </h3>
-                  <div className="mt-4 pt-3 border-t border-border flex items-baseline justify-between">
-                    <span className="text-xs font-semibold text-muted">
-                      Saldo de apertura
-                    </span>
-                    <span className="text-xl font-black text-foreground">
-                      {formatCOP(acc.balance)}
-                    </span>
-                  </div>
-                </article>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border text-xs uppercase text-muted font-bold">
+                  <tr>
+                    <th className="pb-3 pr-4 font-bold">Fecha y Hora</th>
+                    <th className="pb-3 px-4 font-bold">Comprobante</th>
+                    <th className="pb-3 px-4 font-bold">Método de Pago</th>
+                    <th className="pb-3 px-4 font-bold">Productos</th>
+                    <th className="pb-3 px-4 font-bold">Monto Total</th>
+                    <th className="pb-3 pl-4 font-bold">Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredSales.map((sale, idx) => (
+                    <tr
+                      key={sale.id || `sale-${idx}`}
+                      className="hover:bg-primary-soft/30 transition-colors"
+                    >
+                      <td className="py-3.5 pr-4 text-xs font-mono text-muted whitespace-nowrap">
+                        {formatFecha(sale.completedAt)}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-mono font-bold text-foreground whitespace-nowrap">
+                        #{sale.id}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-semibold text-foreground whitespace-nowrap">
+                        {sale.paymentMethod}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-muted max-w-xs truncate">
+                        {sale.items.length > 0
+                          ? sale.items.map((i) => i.name || i.title || "Ítem").join(", ")
+                          : "Venta directa"}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-extrabold text-foreground whitespace-nowrap font-mono">
+                        {formatCOP(sale.amount)}
+                      </td>
+                      <td className="py-3.5 pl-4 whitespace-nowrap">
+                        <Badge tone="success">{sale.status}</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-        </>
+        </Card>
       )}
 
-      {/* MODAL / DIÁLOGO DE DETALLE DEL PRODUCTO */}
+      {/* PESTAÑA 4: CUENTAS */}
+      {activeTab === "cuentas" && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {filteredAccounts.map((acc) => (
+            <article
+              key={acc.id}
+              className="rounded-3xl border border-border bg-surface p-5 shadow-sm hover:border-primary/40 transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold uppercase text-primary tracking-wide">
+                  Cuenta #{acc.id}
+                </span>
+                <Badge tone={acc.balance > 0 ? "success" : "neutral"}>
+                  {acc.balance > 0 ? "Con saldo" : "Sin saldo"}
+                </Badge>
+              </div>
+              <h3 className="mt-2 text-lg font-extrabold text-foreground truncate">
+                {acc.name}
+              </h3>
+              <div className="mt-4 pt-3 border-t border-border flex items-baseline justify-between">
+                <span className="text-xs font-semibold text-muted">
+                  Saldo de apertura
+                </span>
+                <span className="text-xl font-black text-foreground">
+                  {formatCOP(acc.balance)}
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {/* Modal de Detalle */}
       {selectedProduct && (
         <div
           role="dialog"
@@ -347,7 +446,6 @@ export default function SalesScreen() {
             className="w-full max-w-lg rounded-3xl bg-surface p-6 shadow-2xl border border-border max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header del modal */}
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-lg font-extrabold text-foreground truncate">
                 {selectedProduct.name}
@@ -361,7 +459,6 @@ export default function SalesScreen() {
               </button>
             </div>
 
-            {/* Imagen del producto */}
             <div className="relative mt-4 w-full h-64 rounded-2xl overflow-hidden bg-surface-muted border border-border">
               <img
                 src={selectedProduct.imageUrl || bisuteriaImg}
@@ -380,7 +477,6 @@ export default function SalesScreen() {
               </div>
             </div>
 
-            {/* Contenido descriptivo */}
             <div className="mt-4 space-y-3">
               <div className="flex items-baseline justify-between border-y border-border py-3">
                 <div>
@@ -404,17 +500,8 @@ export default function SalesScreen() {
                   {selectedProduct.description || "Sin descripción detallada registrada en SUMA 21."}
                 </p>
               </div>
-
-              {/* Caja de impacto social */}
-              <div className="rounded-2xl bg-primary-soft p-4 text-xs text-foreground">
-                <strong className="block text-primary-hover font-bold mb-1">
-                  Sincronizado con SUMA 21
-                </strong>
-                Este producto y su stock se encuentran conectados con el backend proxy de SUMA 21.
-              </div>
             </div>
 
-            {/* Acciones */}
             <div className="mt-6 flex items-center justify-end gap-3 pt-2">
               <Button
                 type="button"

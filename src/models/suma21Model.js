@@ -42,3 +42,35 @@ export function toSuma21InventoryModel(raw = {}) {
     updatedAt: readValue(raw, "updated_at", "last_updated"),
   }
 }
+
+export function toSuma21SaleTransactionModel(raw = {}, index = 0) {
+  const rawCents = Number(readValue(raw, "amount_in_cents", "amount", "total")) || 0
+  const amount = rawCents > 1000 ? rawCents / 100 : rawCents // Convertir centavos a pesos
+  const completedAt = readValue(raw, "completed_at", "created_at", "date")
+  const id = normalizeId(readValue(raw, "sale_id", "transaction_id", "id")) || `sale-${index + 1}`
+
+  return {
+    id,
+    amount,
+    paymentMethod: String(readValue(raw, "payment_method", "method") || "Efectivo / Transferencia"),
+    completedAt: completedAt ? new Date(completedAt).toISOString() : new Date().toISOString(),
+    items: Array.isArray(raw.items) ? raw.items : [],
+    status: "Aprobada",
+  }
+}
+
+export function toSuma21DonationTransactionModel(raw = {}, index = 0) {
+  const rawCents = Number(readValue(raw, "amount_in_cents", "amount", "total")) || 0
+  const amount = rawCents > 1000 ? rawCents / 100 : rawCents // Convertir centavos a pesos
+  const completedAt = readValue(raw, "completed_at", "created_at", "date")
+  const donationId = normalizeId(readValue(raw, "donation_id", "transaction_id", "id")) || `don-${index + 1}`
+
+  return {
+    id: donationId,
+    donationId,
+    amount,
+    paymentMethod: String(readValue(raw, "payment_method", "method") || "Transferencia / Online"),
+    completedAt: completedAt ? new Date(completedAt).toISOString() : new Date().toISOString(),
+    status: "Aprobada",
+  }
+}
