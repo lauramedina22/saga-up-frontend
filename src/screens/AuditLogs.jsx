@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { useAuditLogs } from "../hooks/useAuditLogs.js"
-import { Avatar, Badge, Button, Card, Icon } from "../components/ui.jsx"
+import { Badge, Button, Card, EmptyState } from "../components/ui.jsx"
 
 const MODULE_LABELS = {
   children: "Beneficiarios",
@@ -90,8 +90,8 @@ export default function AuditLogs() {
   }, [logs, filter, search])
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      {/* Encabezado idéntico a Children y Enrollments */}
+    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+      {/* Encabezado */}
       <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-extrabold text-foreground">
@@ -126,7 +126,7 @@ export default function AuditLogs() {
         </p>
       )}
 
-      {/* Tarjetas resumen con métricas (igual que en Enrollments) */}
+      {/* Tarjetas resumen con métricas */}
       <div className="mb-6 grid grid-cols-3 gap-3">
         <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
           <p className="text-2xl font-extrabold text-success">{insertCount}</p>
@@ -150,18 +150,19 @@ export default function AuditLogs() {
             type="button"
             onClick={() => setFilter(item.id)}
             aria-pressed={filter === item.id}
-            className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-all ${filter === item.id
-              ? "bg-primary text-white"
-              : "border border-border bg-surface text-muted hover:text-foreground"
-              }`}
+            className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-all ${
+              filter === item.id
+                ? "bg-primary text-white shadow-xs"
+                : "border border-border bg-surface text-muted hover:text-foreground"
+            }`}
           >
             {item.label}
           </button>
         ))}
       </div>
 
-      {/* Buscador de estilo SAGA-UP */}
-      <div className="mb-4">
+      {/* Buscador */}
+      <div className="mb-6">
         <input
           type="search"
           placeholder="Buscar por módulo, registro o persona..."
@@ -171,52 +172,75 @@ export default function AuditLogs() {
         />
       </div>
 
-      {/* Lista de operaciones en artículos redondeados (idéntico a Enrollments y Children) */}
-      <div className="flex flex-col gap-3">
-        {filteredLogs.map((log) => {
-          const actionTone = getActionTone(log.action)
-          const actionLabel = getActionLabel(log.action)
-          const moduleLabel = formatModule(log.tableName)
+      {/* Tabla idéntica a Control de Inventario, Ventas y Donaciones */}
+      <Card className="p-4 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+          <div>
+            <h2 className="text-lg font-extrabold text-foreground">
+              Registro de Operaciones
+            </h2>
+            <p className="text-xs font-semibold text-muted">
+              Trazabilidad de cambios en las tablas del sistema
+            </p>
+          </div>
+          <div className="rounded-2xl bg-surface-muted px-3.5 py-1.5 text-xs font-bold text-foreground">
+            {filteredLogs.length} registro(s)
+          </div>
+        </div>
 
-          return (
-            <article
-              key={log.id}
-              className="flex items-center gap-4 rounded-3xl border border-border bg-surface p-4 shadow-sm hover:border-primary/30 transition-colors"
-            >
-              {/* Avatar / Iniciales del responsable */}
-              <Avatar name={log.performedBy || "Admin"} size="sm" />
+        {filteredLogs.length === 0 && !loading ? (
+          <EmptyState
+            title="Sin registros de auditoría"
+            description="No se encontraron operaciones registradas con los filtros seleccionados."
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-border text-xs uppercase text-muted font-bold">
+                <tr>
+                  <th className="pb-3 pr-4 font-bold">Fecha y Hora</th>
+                  <th className="pb-3 px-4 font-bold">Acción</th>
+                  <th className="pb-3 px-4 font-bold">Módulo / Tabla</th>
+                  <th className="pb-3 px-4 font-bold">ID Registro</th>
+                  <th className="pb-3 pl-4 font-bold">Realizado por</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredLogs.map((log) => {
+                  const actionTone = getActionTone(log.action)
+                  const actionLabel = getActionLabel(log.action)
+                  const moduleLabel = formatModule(log.tableName)
 
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-extrabold text-foreground truncate">
-                    {actionLabel} en {moduleLabel}
-                  </p>
-                  <span className="shrink-0 text-xs font-mono font-bold text-muted bg-surface-muted px-2 py-0.5 rounded-lg">
-                    #{log.recordId || "-"}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-muted truncate">
-                  {formatFechaCompleta(log.timestamp)} · Por:{" "}
-                  <span className="font-semibold text-foreground/80">
-                    {log.performedBy}
-                  </span>
-                </p>
-              </div>
-
-              {/* Distintivo de la acción */}
-              <div className="shrink-0">
-                <Badge tone={actionTone}>{actionLabel}</Badge>
-              </div>
-            </article>
-          )
-        })}
-
-        {!loading && !error && filteredLogs.length === 0 && (
-          <p className="rounded-3xl border border-border bg-surface p-8 text-center text-muted">
-            No se encontraron registros de auditoría para este filtro.
-          </p>
+                  return (
+                    <tr
+                      key={log.id}
+                      className="hover:bg-primary-soft/30 transition-colors"
+                    >
+                      <td className="py-3.5 pr-4 text-xs font-mono text-muted whitespace-nowrap">
+                        {formatFechaCompleta(log.timestamp)}
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <Badge tone={actionTone}>{actionLabel}</Badge>
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-foreground whitespace-nowrap">
+                        <span className="px-2 py-0.5 rounded-lg bg-surface-muted text-xs text-muted font-bold">
+                          {moduleLabel}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-mono text-muted whitespace-nowrap font-bold">
+                        #{log.recordId || "-"}
+                      </td>
+                      <td className="py-3.5 pl-4 text-xs font-semibold text-foreground whitespace-nowrap">
+                        {log.performedBy}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
-      </div>
+      </Card>
     </div>
   )
 }
