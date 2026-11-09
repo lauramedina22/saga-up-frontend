@@ -35,8 +35,8 @@ Cada quien continúa los módulos que ya construyó:
 | L2 | Búsqueda por cédula en Beneficiarios y Acudientes | `/children/document/{number}`, `/guardians/document/{number}` | Bajo | ✅ **Completado** |
 | L3 | Matrículas: completar CRUD (editar, eliminar, estados) | `/tuition` | Bajo | ✅ **Completado** |
 | L4 | Toma de asistencia a talleres por beneficiario (`Children.jsx` + `ChildrenAssistanceDialog`) | `/children-assistance` (+ lectura de `/professionals-workshops`) | Medio | ✅ **Completado** |
-| L5 | Bitácora de auditoría (`AuditLogs.jsx`) | `/audit-logs` | Medio | ⏳ Pendiente |
-| L6 | Módulo de Practicantes (`Interns.jsx`) | `/interns` | Medio | ⏳ Pendiente |
+| L5 | Bitácora de auditoría (`AuditLogs.jsx`) | `/audit-logs` | Medio | ✅ **Completado** |
+
 
 ## Yeison — Dashboard, talleristas y personal
 
@@ -45,7 +45,9 @@ Cada quien continúa los módulos que ya construyó:
 | Y1 | Módulo de Personal: CRUD completo, búsqueda por cédula, vincular/desvincular cuenta | `/staff`, `/staff/document/{number}`, `/staff/{id}/link-account` | Alto | ⏳ Pendiente |
 | Y2 | Profesionales/talleristas + edición/eliminación de horarios | `/professionals`, `/professionals-workshops` | Alto | ⏳ Pendiente |
 | Y3 | Asistencia de personal completa (filtros, editar, eliminar) | `/staff-assistance` | Medio | ⏳ Pendiente |
+| Y4 | Módulo de Practicantes (`Interns.jsx`) | `/interns` | Medio | ⏳ Pendiente |
 | Y5 | Actualizar Dashboard con los nuevos módulos | Lectura de los anteriores | Bajo | ⏳ Pendiente |
+
 
 > [!NOTE]
 > L1 es dependencia de todos: cuando esté integrado en `main`, Yeison debe consumir catálogos (`staff_roles`, `contract_types`, `staff_statuses`, `document_types`) únicamente vía `useCatalogs`, sin IDs en duro.
