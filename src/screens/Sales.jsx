@@ -1,318 +1,341 @@
 import { useState } from "react"
-import bisuteriaImg from "../imports/bisuteria.jpg"
-import collarImg from "../imports/collar.jpg"
-import pulserasImg from "../imports/pulseras.jpg"
-import ropaImg from "../imports/ropa.jpg"
-import camisetaImg from "../imports/camiseta.jpg"
-import gargantillaImg from "../imports/gargantilla.jpg"
-import packcamisetasImg from "../imports/packcamisetas.jpg"
-import hoodieImg from "../imports/hoodie.jpg"
 import { formatCOP } from "../data"
-
-const PRODUCTS = [
-  {
-    id: 1,
-    title: "Collar de Mostacilla Artesanal",
-    category: "Bisutería",
-    price: 25000,
-    image: collarImg,
-    shortDescription:
-      "Hecho a mano en el taller de artesanías. Colores vivos e hilo resistente.",
-    fullDescription:
-      "Hermoso collar elaborado minuciosamente por los jóvenes de la fundación en el taller de bisutería y arte manual. Emplea mostacilla checa de primera calidad con terminaciones seguras y resistentes. Cada pieza es única y refleja el talento y dedicación de nuestros beneficiarios.",
-    workshop: "Taller de Bisutería y Manualidades",
-    availability: "Disponible en sede",
-  },
-  {
-    id: 2,
-    title: "Camiseta Estampada ASISCO UP",
-    category: "Ropa",
-    price: 45000,
-    image: camisetaImg,
-    shortDescription:
-      "100% Algodón con diseño exclusivo del programa de jóvenes.",
-    fullDescription:
-      "Prenda clásica y cómoda confeccionada en 100% algodón suave de alta calidad. Estampada artesanalmente por los participantes del taller formativo con tintas duraderas a base de agua. Disponible en tallas juveniles y de adulto (S, M, L, XL).",
-    workshop: "Taller de Confección y Diseño",
-    availability: "Tallas S, M, L y XL",
-  },
-  {
-    id: 3,
-    title: "Juego de Pulseras",
-    category: "Bisutería",
-    price: 18000,
-    image: pulserasImg,
-    shortDescription:
-      "Set de accesorios en mostacilla",
-    fullDescription:
-      "Conjunto juvenil que incluye aretes colgantes ligeros y pulseras de cierre deslizable ajustable. Elaborado con materiales hipoalergénicos e hilos de alta tenacidad que garantizan su perdurabilidad.",
-    workshop: "Taller de Bisutería y Manualidades",
-    availability: "Colores variados",
-  },
-  {
-    id: 4,
-    title: "Hoodie ASISCO UP",
-    category: "Ropa",
-    price: 70000,
-    image: hoodieImg,
-    shortDescription:
-      "Buzo con capota en algodón perchado abrigador de alta calidad.",
-    fullDescription:
-      "Saco tipo hoodie confeccionado en algodón perchado grueso, ideal para bajas temperaturas. Cuenta con capota forrada, bolsillo frontal tipo canguro y rib elástico en puños y cintura.",
-    workshop: "Taller de Confección y Diseño",
-    availability: "Varios colores y tallas",
-  },
-  {
-    id: 5,
-    title: "Gargantilla",
-    category: "Bisutería",
-    price: 30000,
-    image: gargantillaImg,
-    shortDescription:
-      "Diseño exclusivo y vibrante con acabados finos hecho por los jóvenes.",
-    fullDescription:
-      "Gargantilla con técnica de tejido apretado que combina tonos cálidos y contrastes alegres. Una pieza decorativa especial para regalar y a su vez apoyar directamente los proyectos educativos de la fundación.",
-    workshop: "Taller de Bisutería y Manualidades",
-    availability: "Piezas limitadas",
-  },
-  {
-    id: 6,
-    title: "4 Camisetas Básicas",
-    category: "Ropa",
-    price: 38000,
-    image: packcamisetasImg,
-    shortDescription:
-      "Camisetas frescas de uso diario",
-    fullDescription:
-      "Camiseta de tacto suave, cuello redondo reforzado y excelente transpirabilidad.",
-    workshop: "Taller de Confección y Diseño",
-    availability: "Colores negro, blanco y gris",
-  },
-]
-
-const CATEGORIES = [
-  { id: "todos", label: "Todos" },
-  { id: "Ropa", label: "Ropa" },
-  { id: "Bisutería", label: "Bisutería" },
-]
+import { useSuma21 } from "../hooks/useSuma21"
+import { Badge, Button, Card, EmptyState, Icon } from "../components/ui"
+import bisuteriaImg from "../imports/bisuteria.jpg"
 
 export default function SalesScreen() {
-  const [selectedCategory, setSelectedCategory] = useState("todos")
+  const { products, accounts, inventory, loading, error, refresh } = useSuma21()
+  const [activeTab, setActiveTab] = useState("productos") // 'productos' | 'inventario' | 'cuentas'
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [toastMessage, setToastMessage] = useState("")
 
-  const filteredProducts = PRODUCTS.filter((product) => {
-    const matchesCategory =
-      selectedCategory === "todos" || product.category === selectedCategory
-
-    const query = searchQuery.trim().toLowerCase()
-    const matchesQuery =
-      !query ||
-      product.title.toLowerCase().includes(query) ||
-      product.shortDescription.toLowerCase().includes(query) ||
-      product.category.toLowerCase().includes(query)
-
-    return matchesCategory && matchesQuery
-  })
-
-  const handleShowInterest = (product) => {
-    setToastMessage(`Información de compra solicitada para: ${product.title}`)
-    setTimeout(() => setToastMessage(""), 4000)
-    setSelectedProduct(null)
+  const showToast = (msg) => {
+    setToastMessage(msg)
+    window.setTimeout(() => setToastMessage(""), 4000)
   }
 
+  // Filtrado de productos
+  const filteredProducts = products.filter((product) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return (
+      product.name.toLowerCase().includes(q) ||
+      product.description.toLowerCase().includes(q)
+    )
+  })
+
+  // Filtrado de inventario
+  const filteredInventory = inventory.filter((item) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return (
+      item.productName.toLowerCase().includes(q) ||
+      String(item.productId).includes(q)
+    )
+  })
+
+  // Filtrado de cuentas
+  const filteredAccounts = accounts.filter((acc) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return (
+      acc.name.toLowerCase().includes(q) ||
+      String(acc.id).includes(q)
+    )
+  })
+
+  // Contadores para las pestañas
+  const totalStock = products.reduce((acc, p) => acc + (p.stockQty || 0), 0)
+
   return (
-    <div className="min-h-screen bg-[#F7F8FA] p-4 sm:p-8 font-sans text-[#2D3748]">
-      {/* Notificación Toast */}
+    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+      {/* Toast Notificación */}
       {toastMessage && (
-        <div
+        <p
           role="status"
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl bg-[#1A202C] px-5 py-3.5 text-sm font-semibold text-white shadow-2xl animate-enter border border-white/10"
+          className="fixed right-4 top-4 z-50 rounded-xl bg-success px-4 py-3 text-sm font-bold text-white shadow-dialog"
         >
-          <span className="text-lg">🛍️</span>
-          <span>{toastMessage}</span>
-          <button
-            type="button"
-            onClick={() => setToastMessage("")}
-            className="ml-2 text-gray-400 hover:text-white"
-          >
-            ✕
-          </button>
-        </div>
+          {toastMessage}
+        </p>
       )}
 
-      <div className="mx-auto max-w-7xl">
-        {/* HEADER DEL MÓDULO */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1A202C] font-heading">
-                Tienda Solidaria
-              </h1>
-            </div>
-            <p className="mt-1 text-sm text-[#718096]">
-              Catálogo visual de productos elaborados para beneficio de la fundación.
-            </p>
-          </div>
-
-          {/* BARRA DE BÚSQUEDA */}
-          <div className="relative w-full md:w-80">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar producto..."
-              className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E08709]/50 shadow-sm transition-all"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 text-sm"
-                title="Limpiar búsqueda"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+      {/* Encabezado uniforme con SAGA-UP */}
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-3xl font-extrabold text-foreground">
+            Tienda Solidaria
+          </h1>
+          <p className="text-sm font-semibold text-muted">
+            {products.length} producto(s) · {totalStock} unidades en inventario
+          </p>
         </div>
-
-        {/* BANNER INFORMATIVO SOLIDARIO */}
-        <div className="mb-6 rounded-2xl bg-gradient-to-r from-[#FFF4E3] via-[#FFF8EE] to-[#FFF4E3] p-4 sm:p-5 border border-[#FCE3B4] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div>
-              <p className="text-sm font-extrabold text-[#1A202C]">
-                100% con Propósito Social
-              </p>
-              <p className="text-xs text-[#718096]">
-                Los recursos obtenidos financian refrigerios, materiales artísticos y acompañamiento formativo a los beneficiarios.
-              </p>
-            </div>
-          </div>
-          <div className="text-xs font-bold text-[#E08709] bg-white px-3 py-1.5 rounded-lg border border-[#FCE3B4] shrink-0 self-start sm:self-center shadow-xs">
-            {PRODUCTS.length} productos en catálogo
-          </div>
-        </div>
-
-        {/* FILTROS POR CATEGORÍA (CHIPS) */}
-        <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none">
-          {CATEGORIES.map((cat) => {
-            const isActive = selectedCategory === cat.id
-            const count =
-              cat.id === "todos"
-                ? PRODUCTS.length
-                : PRODUCTS.filter((p) => p.category === cat.id).length
-
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm transition-all cursor-pointer select-none ${isActive
-                  ? "font-semibold bg-[#FCE3B4] text-[#E08709] shadow-sm border border-[#FCE3B4]"
-                  : "font-medium bg-white text-[#718096] hover:bg-gray-100 border border-gray-200 shadow-sm"
-                  }`}
-              >
-                <span>{cat.label}</span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-bold ${isActive
-                    ? "bg-[#E08709] text-white"
-                    : "bg-gray-100 text-gray-500"
-                    }`}
-                >
-                  {count}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* GRID DE PRODUCTOS */}
-        {filteredProducts.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-sm">
-            <span className="mx-auto block text-4xl mb-3">🔍</span>
-            <h3 className="text-lg font-bold text-[#1A202C]">
-              No se encontraron productos
-            </h3>
-            <p className="mt-1 text-sm text-[#718096]">
-              Intenta con otro término de búsqueda o selecciona otra categoría.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("")
-                setSelectedCategory("todos")
-              }}
-              className="mt-4 rounded-xl bg-[#E08709] px-4 py-2 text-xs font-bold text-white hover:bg-[#c97807] transition-all"
-            >
-              Restablecer filtros
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="group bg-white rounded-2xl p-4 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col justify-between hover:shadow-lg hover:border-[#E08709]/30 transition-all duration-200"
-              >
-                <div>
-                  {/* Imagen con badge sobrepuesto */}
-                  <div
-                    onClick={() => setSelectedProduct(product)}
-                    className="relative w-full h-56 bg-gray-100 rounded-xl overflow-hidden mb-4 cursor-pointer"
-                  >
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-md text-[#E08709] text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm border border-black/5 flex items-center gap-1">
-                      <span>{product.categoryIcon}</span>
-                      <span>{product.category}</span>
-                    </span>
-                    <span className="absolute bottom-2 right-2 rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                      Clic para ampliar
-                    </span>
-                  </div>
-
-                  {/* Información */}
-                  <h3
-                    onClick={() => setSelectedProduct(product)}
-                    className="font-bold text-base text-[#1A202C] mb-1 font-heading cursor-pointer hover:text-[#E08709] transition-colors"
-                  >
-                    {product.title}
-                  </h3>
-                  <p className="text-xs text-[#718096] mb-4 line-clamp-2 leading-relaxed">
-                    {product.shortDescription}
-                  </p>
-                </div>
-
-                {/* Precio y Botón */}
-                <div className="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">
-                  <div>
-                    <span className="text-[11px] font-medium text-gray-400 block uppercase tracking-wider">
-                      Aporte sugerido
-                    </span>
-                    <span className="text-lg font-bold text-[#E08709]">
-                      {formatCOP(product.price)}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedProduct(product)}
-                    className="bg-[#E08709] hover:bg-[#c97807] text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm active:scale-95 cursor-pointer"
-                  >
-                    Ver detalle
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => refresh()}
+          loading={loading}
+        >
+          Sincronizar
+        </Button>
       </div>
 
-      {/* DIÁLOGO / MODAL DE DETALLE DEL PRODUCTO */}
+      {/* Pestañas idénticas a Workshops y Beneficiarios */}
+      <div className="mb-4 flex border-b border-border">
+        <button
+          type="button"
+          onClick={() => setActiveTab("productos")}
+          className={`border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+            activeTab === "productos"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted hover:text-foreground"
+          }`}
+        >
+          Productos ({products.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("inventario")}
+          className={`border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+            activeTab === "inventario"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted hover:text-foreground"
+          }`}
+        >
+          Control de Inventario ({inventory.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("cuentas")}
+          className={`border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+            activeTab === "cuentas"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted hover:text-foreground"
+          }`}
+        >
+          Cuentas ({accounts.length})
+        </button>
+      </div>
+
+      {/* Buscador */}
+      <div className="mb-6">
+        <input
+          type="search"
+          placeholder={
+            activeTab === "productos"
+              ? "Buscar producto por nombre o descripción..."
+              : activeTab === "inventario"
+                ? "Buscar en el inventario por producto o código..."
+                : "Buscar cuenta por nombre o código..."
+          }
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full h-12 rounded-2xl border border-border bg-surface px-4 text-sm font-medium text-foreground outline-none transition focus:border-primary focus:ring-3 focus:ring-primary/15 shadow-sm"
+        />
+      </div>
+
+      {loading && (
+        <p className="mb-4 text-sm font-semibold text-muted" role="status">
+          Cargando datos desde SUMA 21…
+        </p>
+      )}
+
+      {error && (
+        <p
+          className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
+
+      {/* PESTAÑA 1: CATÁLOGO DE PRODUCTOS (Vitrina con tarjetas redondeadas) */}
+      {activeTab === "productos" && (
+        <>
+          {filteredProducts.length === 0 && !loading ? (
+            <EmptyState
+              title="No hay productos disponibles"
+              description="No se encontraron productos registrados en SUMA 21 con los términos de búsqueda."
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredProducts.map((product) => {
+                const imgSource = product.imageUrl || bisuteriaImg
+
+                return (
+                  <article
+                    key={product.id}
+                    className="flex flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-sm hover:border-primary/40 transition-colors"
+                  >
+                    <div className="relative aspect-4/3 w-full bg-surface-muted overflow-hidden">
+                      <img
+                        src={imgSource}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                        onError={(e) => {
+                          e.target.src = bisuteriaImg
+                        }}
+                      />
+                      <div className="absolute top-3 right-3">
+                        <Badge tone={product.stockQty > 0 ? "success" : "danger"}>
+                          {product.stockQty > 0
+                            ? `${product.stockQty} en stock`
+                            : "Agotado"}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-1 flex-col p-4">
+                      <h3 className="font-extrabold text-foreground truncate text-base">
+                        {product.name}
+                      </h3>
+                      <p className="mt-1 line-clamp-2 text-xs text-muted">
+                        {product.description || "Sin descripción registrada."}
+                      </p>
+
+                      <div className="mt-4 flex items-center justify-between pt-3 border-t border-border">
+                        <span className="text-lg font-extrabold text-primary">
+                          {formatCOP(product.unitPrice)}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => setSelectedProduct(product)}
+                          className="min-h-9 px-3 text-xs"
+                        >
+                          Ver detalle
+                        </Button>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* PESTAÑA 2: CONTROL DE INVENTARIO (Tabla con estética idéntica a Auditoría) */}
+      {activeTab === "inventario" && (
+        <Card className="p-4 sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+            <div>
+              <h2 className="text-lg font-extrabold text-foreground">
+                Estado del Inventario
+              </h2>
+              <p className="text-xs font-semibold text-muted">
+                Control de existencias y disponibilidad en SUMA 21
+              </p>
+            </div>
+            <div className="rounded-2xl bg-surface-muted px-3 py-1.5 text-xs font-bold text-foreground">
+              Total referencias: {inventory.length}
+            </div>
+          </div>
+
+          {filteredInventory.length === 0 && !loading ? (
+            <EmptyState
+              title="Sin registros de inventario"
+              description="No hay productos en inventario que coincidan con la búsqueda."
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border text-xs uppercase text-muted font-bold">
+                  <tr>
+                    <th className="pb-3 pr-4 font-bold">Producto</th>
+                    <th className="pb-3 px-4 font-bold">Código</th>
+                    <th className="pb-3 px-4 font-bold">Precio Unitario</th>
+                    <th className="pb-3 px-4 font-bold">Stock</th>
+                    <th className="pb-3 pl-4 font-bold">Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredInventory.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-primary-soft/30 transition-colors"
+                    >
+                      <td className="py-3.5 pr-4 font-bold text-foreground whitespace-nowrap">
+                        {item.productName}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-mono text-muted whitespace-nowrap">
+                        #{item.productId}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-semibold text-foreground whitespace-nowrap">
+                        {formatCOP(item.unitPrice)}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-extrabold text-foreground whitespace-nowrap font-mono">
+                        {item.quantity} unds
+                      </td>
+                      <td className="py-3.5 pl-4 whitespace-nowrap">
+                        <Badge
+                          tone={
+                            item.quantity > 5
+                              ? "success"
+                              : item.quantity > 0
+                                ? "warning"
+                                : "danger"
+                          }
+                        >
+                          {item.quantity > 5
+                            ? "Disponible"
+                            : item.quantity > 0
+                              ? "Pocas unidades"
+                              : "Agotado"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* PESTAÑA 3: CUENTAS (Idéntico estilo a las tarjetas resumen de SAGA-UP) */}
+      {activeTab === "cuentas" && (
+        <>
+          {filteredAccounts.length === 0 && !loading ? (
+            <EmptyState
+              title="Sin cuentas registradas"
+              description="No se encontraron cuentas activas en SUMA 21."
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {filteredAccounts.map((acc) => (
+                <article
+                  key={acc.id}
+                  className="rounded-3xl border border-border bg-surface p-5 shadow-sm hover:border-primary/40 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold uppercase text-primary tracking-wide">
+                      Cuenta #{acc.id}
+                    </span>
+                    <Badge tone={acc.balance > 0 ? "success" : "neutral"}>
+                      {acc.balance > 0 ? "Con saldo" : "Sin saldo"}
+                    </Badge>
+                  </div>
+                  <h3 className="mt-2 text-lg font-extrabold text-foreground truncate">
+                    {acc.name}
+                  </h3>
+                  <div className="mt-4 pt-3 border-t border-border flex items-baseline justify-between">
+                    <span className="text-xs font-semibold text-muted">
+                      Saldo de apertura
+                    </span>
+                    <span className="text-xl font-black text-foreground">
+                      {formatCOP(acc.balance)}
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* MODAL / DIÁLOGO DE DETALLE DEL PRODUCTO */}
       {selectedProduct && (
         <div
           role="dialog"
@@ -321,92 +344,94 @@ export default function SalesScreen() {
           onClick={() => setSelectedProduct(null)}
         >
           <div
-            className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-lg rounded-3xl bg-surface p-6 shadow-2xl border border-border max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header del modal */}
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{selectedProduct.categoryIcon}</span>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#E08709]">
-                  {selectedProduct.category}
-                </span>
-              </div>
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h2 className="text-lg font-extrabold text-foreground truncate">
+                {selectedProduct.name}
+              </h2>
               <button
                 type="button"
                 onClick={() => setSelectedProduct(null)}
-                className="flex size-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+                className="flex size-8 items-center justify-center rounded-full bg-surface-muted text-muted hover:text-foreground transition-colors font-bold"
               >
                 ✕
               </button>
             </div>
 
-            {/* Imagen destacada en alta resolución */}
-            <div className="relative mt-4 w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200">
+            {/* Imagen del producto */}
+            <div className="relative mt-4 w-full h-64 rounded-2xl overflow-hidden bg-surface-muted border border-border">
               <img
-                src={selectedProduct.image}
-                alt={selectedProduct.title}
+                src={selectedProduct.imageUrl || bisuteriaImg}
+                alt={selectedProduct.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = bisuteriaImg
+                }}
               />
-              <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg text-xs text-white font-medium">
-                {selectedProduct.workshop}
+              <div className="absolute top-3 right-3">
+                <Badge tone={selectedProduct.stockQty > 0 ? "success" : "danger"}>
+                  {selectedProduct.stockQty > 0
+                    ? `${selectedProduct.stockQty} en inventario`
+                    : "Agotado"}
+                </Badge>
               </div>
             </div>
 
             {/* Contenido descriptivo */}
-            <div className="mt-4">
-              <h2 className="text-xl font-extrabold text-[#1A202C] font-heading">
-                {selectedProduct.title}
-              </h2>
-
-              <div className="mt-2 flex items-baseline justify-between border-y border-gray-100 py-3">
+            <div className="mt-4 space-y-3">
+              <div className="flex items-baseline justify-between border-y border-border py-3">
                 <div>
-                  <span className="text-xs text-gray-400 block font-medium">
-                    Aporte o donación sugerida
+                  <span className="text-xs text-muted block font-semibold">
+                    Precio unitario
                   </span>
-                  <span className="text-2xl font-black text-[#E08709]">
-                    {formatCOP(selectedProduct.price)}
+                  <span className="text-2xl font-black text-primary">
+                    {formatCOP(selectedProduct.unitPrice)}
                   </span>
                 </div>
-                <span className="rounded-lg bg-green-50 px-3 py-1 text-xs font-bold text-green-700 border border-green-200">
-                  {selectedProduct.availability}
+                <span className="text-xs text-muted font-mono">
+                  ID: #{selectedProduct.id}
                 </span>
               </div>
 
-              <div className="mt-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-                  Descripción del producto
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted mb-1">
+                  Descripción
                 </h4>
-                <p className="text-sm text-[#718096] leading-relaxed">
-                  {selectedProduct.fullDescription}
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  {selectedProduct.description || "Sin descripción detallada registrada en SUMA 21."}
                 </p>
               </div>
 
               {/* Caja de impacto social */}
-              <div className="mt-4 rounded-xl bg-[#FFF8EE] border border-[#FCE3B4] p-3.5 text-xs text-[#718096]">
-                <strong className="block text-[#E08709] font-bold mb-0.5">
-                  ¿Cómo ayuda tu compra?
+              <div className="rounded-2xl bg-primary-soft p-4 text-xs text-foreground">
+                <strong className="block text-primary-hover font-bold mb-1">
+                  Sincronizado con SUMA 21
                 </strong>
-                El 100% del dinero recaudado es reinvertido directamente en compra de materiales, refrigerios nutritivos y talleres de formación para los niños y jóvenes del programa.
+                Este producto y su stock se encuentran conectados con el backend proxy de SUMA 21.
               </div>
             </div>
 
-            {/* Botones de acción */}
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
-              <button
+            {/* Acciones */}
+            <div className="mt-6 flex items-center justify-end gap-3 pt-2">
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => setSelectedProduct(null)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors"
               >
                 Cerrar
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                onClick={() => handleShowInterest(selectedProduct)}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#E08709] hover:bg-[#c97807] text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2"
+                onClick={() => {
+                  showToast(`Solicitud registrada para: ${selectedProduct.name}`)
+                  setSelectedProduct(null)
+                }}
               >
-                <span>Adquirir en sede</span>
-              </button>
+                Registrar salida / venta
+              </Button>
             </div>
           </div>
         </div>
