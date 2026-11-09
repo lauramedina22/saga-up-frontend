@@ -58,6 +58,7 @@ function ChildDetails({
   const [relationshipDialog, setRelationshipDialog] = useState(false)
   const [deletingRelationship, setDeletingRelationship] = useState(null)
   const [editingChild, setEditingChild] = useState(false)
+  const [activeTab, setActiveTab] = useState("general") // 'general' | 'acudientes' | 'salud' | 'asistencia' | 'pedagogia' | 'pagos'
   const childRelationships = relationships.filter(
     (relationship) => String(relationship.childId) === String(child.childId),
   )
@@ -97,414 +98,517 @@ function ChildDetails({
           Volver a beneficiarios
         </Button>
         <Card className="mb-4 rounded-3xl p-6">
-          <div className="flex items-center gap-4">
-            <Avatar name={`${child.firstName} ${child.lastName}`} size="lg" />
-            <div className="min-w-0">
-              <h1 className="truncate text-2xl font-extrabold">
-                {child.firstName} {child.lastName}
-              </h1>
-              <p className="text-sm text-muted">
-                ID de registro: {display(child.childId)}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="rounded-3xl p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-extrabold">Datos del beneficiario</h2>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setEditingChild(true)}
-            >
-              Editar beneficiario
-            </Button>
-          </div>
-          <dl className="grid gap-3 sm:grid-cols-2">
-            {[
-              ["Nombres", child.firstName],
-              ["Apellidos", child.lastName],
-              ["Fecha de nacimiento", child.birthDate],
-              ["Sexo", sexLabel],
-              ["Tipo de documento", documentTypeLabel],
-              ["Número de documento", child.documentNumber],
-              ["Fecha de ingreso", child.admissionDate],
-              ["Fecha de retiro", child.exitDate],
-              ["Estado del beneficiario", statusLabel],
-              ["Observaciones", child.notes],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-xl bg-surface-muted p-3">
-                <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                  {label}
-                </dt>
-                <dd className="mt-1 font-semibold">{display(value)}</dd>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Avatar name={`${child.firstName} ${child.lastName}`} size="lg" />
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl font-extrabold text-foreground">
+                  {child.firstName} {child.lastName}
+                </h1>
+                <p className="text-sm font-semibold text-muted">
+                  ID: #{display(child.childId)} · Doc: {display(child.documentNumber)} · {display(statusLabel)}
+                </p>
               </div>
-            ))}
-          </dl>
-        </Card>
-
-        <Card className="mt-4 rounded-3xl p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-extrabold">
-                Acudientes vinculados
-              </h2>
             </div>
-            <Button
-              type="button"
-              onClick={() => setRelationshipDialog(true)}
-            >
-              + Vincular acudiente
-            </Button>
-          </div>
-          {childRelationships.length > 0 ? (
-            <div className="space-y-3">
-              {childRelationships.map((relationship) => {
-                const guardian = guardians.find(
-                  (item) => String(item.guardianId) === String(relationship.guardianId),
-                )
-                const guardianshipTypeLabel =
-                  findCatalogLabel(
-                    catalogs.guardianship_types,
-                    relationship.guardianshipTypeId ?? relationship.guardianshipType,
-                  ) || relationship.guardianshipType
-
-                return (
-                  <article
-                    key={relationship.childGuardianId}
-                    className="rounded-xl bg-surface-muted p-4"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="font-bold">
-                          Acudiente: {guardian?.fullName || "Sin registro"}
-                        </p>
-                        {guardian?.documentNumber && (
-                          <p className="text-xs text-muted">
-                            Documento: {guardian.documentNumber}
-                          </p>
-                        )}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        onClick={() => setDeletingRelationship(relationship)}
-                      >
-                        Desvincular
-                      </Button>
-                    </div>
-                    <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-                      <div>
-                        <dt className="text-muted">Tipo de vínculo</dt>
-                        <dd className="font-semibold">
-                          {display(guardianshipTypeLabel)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted">Inicio</dt>
-                        <dd className="font-semibold">
-                          {display(relationship.startDate)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted">Fin</dt>
-                        <dd className="font-semibold">
-                          {display(relationship.endDate)}
-                        </dd>
-                      </div>
-                    </dl>
-                  </article>
-                )
-              })}
-            </div>
-          ) : (
-            <p className="text-sm text-muted">
-              Este beneficiario no tiene acudientes vinculados actualmente. Puedes vincular uno con el botón superior.
-            </p>
-          )}
-        </Card>
-        <Card className="mt-4 rounded-3xl p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-extrabold">Descripción interna</h2>
-              <p className="text-sm text-muted">
-                Comunicación, rutina, gustos e indicaciones de manejo de crisis.
-              </p>
-            </div>
-            <Button type="button" onClick={() => setDescriptionDialog({})}>
-              Agregar descripción
-            </Button>
-          </div>
-          {internalDescriptionsError && (
-            <p
-              role="alert"
-              className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
-            >
-              {internalDescriptionsError}
-            </p>
-          )}
-          {descriptionsForChild.length ? (
-            <div className="space-y-3">
-              {descriptionsForChild.map((description) => (
-                <article
-                  key={description.childInternalDescriptionId}
-                  className="rounded-xl bg-surface-muted p-4"
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setEditingChild(true)}
+              >
+                Editar
+              </Button>
+              {!child.exitDate && (
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={onDelete}
                 >
-                  <div className="mb-3 flex items-center justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => setDescriptionDialog(description)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      onClick={() => setDeletingDescription(description)}
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
-                  <dl className="grid gap-3 sm:grid-cols-2">
-                    {[
-                      ["Formas de comunicación", description.communicationWays],
-                      ["Apoyos para la rutina diaria", description.dailyRoutineHelp],
-                      ["Gustos e intereses", description.likings],
-                      ["Manejo de crisis", description.crisisManagement],
-                    ].map(([label, value]) => (
-                      <div key={label} className="rounded-lg bg-surface p-3">
-                        <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                          {label}
-                        </dt>
-                        <dd className="mt-1 whitespace-pre-wrap font-semibold">
-                          {display(value)}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                </article>
-              ))}
+                  Desactivar
+                </Button>
+              )}
             </div>
-          ) : (
-            <p className="text-sm text-muted">
-              No hay descripciones internas registradas.
-            </p>
-          )}
-        </Card>
-        <Card className="mt-4 rounded-3xl p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-extrabold">Asistencia a talleres</h2>
-            </div>
-            <Button type="button" onClick={() => setAssistanceDialog({})}>
-              Agregar asistencia
-            </Button>
           </div>
-          {assistanceError && (
-            <p
-              role="alert"
-              className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
-            >
-              {assistanceError}
-            </p>
-          )}
-          {assistanceForChild.length ? (
-            <div className="space-y-3">
-              {assistanceForChild.map((assistance) => {
-                const schedule = schedules.find(
-                  (s) =>
-                    String(s.professionalWorkshopId) ===
-                    String(assistance.professionalWorkshopId),
-                )
-                return (
+        </Card>
+
+        {/* Pestañas de navegación de la ficha */}
+        <div className="mb-4 flex gap-2 overflow-x-auto border-b border-border pb-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab("general")}
+            className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+              activeTab === "general"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted hover:text-foreground"
+            }`}
+          >
+            General
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("acudientes")}
+            className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+              activeTab === "acudientes"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted hover:text-foreground"
+            }`}
+          >
+            Acudientes ({childRelationships.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("salud")}
+            className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+              activeTab === "salud"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted hover:text-foreground"
+            }`}
+          >
+            Salud ({recordsForChild.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("asistencia")}
+            className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+              activeTab === "asistencia"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted hover:text-foreground"
+            }`}
+          >
+            Asistencia ({assistanceForChild.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("pedagogia")}
+            className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+              activeTab === "pedagogia"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted hover:text-foreground"
+            }`}
+          >
+            Rutina & Pedagogía ({descriptionsForChild.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("pagos")}
+            className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
+              activeTab === "pagos"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted hover:text-foreground"
+            }`}
+          >
+            Pagos ({enrollmentsForChild.length})
+          </button>
+        </div>
+
+        {/* PESTAÑA: GENERAL */}
+        {activeTab === "general" && (
+          <Card className="rounded-3xl p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-extrabold">Datos del beneficiario</h2>
+              <span className="text-xs font-semibold text-muted">Información básica y administrativa</span>
+            </div>
+            <dl className="grid gap-3 sm:grid-cols-2">
+              {[
+                ["Nombres", child.firstName],
+                ["Apellidos", child.lastName],
+                ["Fecha de nacimiento", child.birthDate],
+                ["Sexo", sexLabel],
+                ["Tipo de documento", documentTypeLabel],
+                ["Número de documento", child.documentNumber],
+                ["Fecha de ingreso", child.admissionDate],
+                ["Fecha de retiro", child.exitDate],
+                ["Estado del beneficiario", statusLabel],
+                ["Observaciones", child.notes],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-xl bg-surface-muted p-3">
+                  <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                    {label}
+                  </dt>
+                  <dd className="mt-1 font-semibold">{display(value)}</dd>
+                </div>
+              ))}
+            </dl>
+          </Card>
+        )}
+
+        {/* PESTAÑA: ACUDIENTES */}
+        {activeTab === "acudientes" && (
+          <Card className="rounded-3xl p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-extrabold">Acudientes vinculados</h2>
+                <p className="text-xs font-semibold text-muted">Familiares y responsables a cargo</p>
+              </div>
+              <Button
+                type="button"
+                onClick={() => setRelationshipDialog(true)}
+              >
+                + Vincular acudiente
+              </Button>
+            </div>
+            {childRelationships.length > 0 ? (
+              <div className="space-y-3">
+                {childRelationships.map((relationship) => {
+                  const guardian = guardians.find(
+                    (item) => String(item.guardianId) === String(relationship.guardianId),
+                  )
+                  const guardianshipTypeLabel =
+                    findCatalogLabel(
+                      catalogs.guardianship_types,
+                      relationship.guardianshipTypeId ?? relationship.guardianshipType,
+                    ) || relationship.guardianshipType
+
+                  return (
+                    <article
+                      key={relationship.childGuardianId}
+                      className="rounded-xl bg-surface-muted p-4"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="font-bold">
+                            Acudiente: {guardian?.fullName || "Sin registro"}
+                          </p>
+                          {guardian?.documentNumber && (
+                            <p className="text-xs text-muted">
+                              Documento: {guardian.documentNumber}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="danger"
+                          onClick={() => setDeletingRelationship(relationship)}
+                        >
+                          Desvincular
+                        </Button>
+                      </div>
+                      <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+                        <div>
+                          <dt className="text-muted">Tipo de vínculo</dt>
+                          <dd className="font-semibold">
+                            {display(guardianshipTypeLabel)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted">Inicio</dt>
+                          <dd className="font-semibold">
+                            {display(relationship.startDate)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted">Fin</dt>
+                          <dd className="font-semibold">
+                            {display(relationship.endDate)}
+                          </dd>
+                        </div>
+                      </dl>
+                    </article>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                Este beneficiario no tiene acudientes vinculados actualmente. Puedes vincular uno con el botón superior.
+              </p>
+            )}
+          </Card>
+        )}
+
+        {/* PESTAÑA: SALUD */}
+        {activeTab === "salud" && (
+          <Card className="rounded-3xl p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-extrabold">Ficha médica y de salud</h2>
+                <p className="text-xs font-semibold text-muted">EPS, medicamentos, alergias y condiciones</p>
+              </div>
+              <Button type="button" onClick={() => setRecordDialog({})}>
+                + Agregar ficha médica
+              </Button>
+            </div>
+            {childRecordsError && (
+              <p
+                role="alert"
+                className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+              >
+                {childRecordsError}
+              </p>
+            )}
+            {recordsForChild.length ? (
+              <div className="space-y-3">
+                {recordsForChild.map((record) => (
                   <article
-                    key={assistance.childrenAssistanceId}
+                    key={record.recordId}
                     className="rounded-xl bg-surface-muted p-4"
                   >
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="font-bold text-foreground">
-                          {schedule?.label ||
-                            `Sesión de taller #${assistance.professionalWorkshopId}`}
-                        </p>
-                      </div>
+                      <p className="text-sm font-bold text-foreground">
+                        {record.eps ? `EPS: ${record.eps}` : "Ficha médica"}
+                      </p>
                       <div className="flex gap-2">
                         <Button
                           type="button"
                           variant="secondary"
-                          onClick={() => setAssistanceDialog(assistance)}
+                          onClick={() => setRecordDialog(record)}
                         >
                           Editar
                         </Button>
                         <Button
                           type="button"
                           variant="danger"
-                          onClick={() => setDeletingAssistance(assistance)}
+                          onClick={() => setDeletingRecord(record)}
                         >
                           Eliminar
                         </Button>
                       </div>
                     </div>
-                  <dl className="grid gap-3 sm:grid-cols-3">
-                    {[
-                      ["Confirmó asistencia", assistance.willAssist],
-                      ["Asistió", assistance.asisted],
-                      ["Completó el taller", assistance.completeWorkshop],
-                    ].map(([label, value]) => (
-                      <div key={label} className="rounded-lg bg-surface p-3">
-                        <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                          {label}
-                        </dt>
-                        <dd className="mt-1 font-semibold">
-                          {value ? "Sí" : "No"}
-                        </dd>
+                    <dl className="grid gap-3 sm:grid-cols-2">
+                      {[
+                        ["EPS", record.eps],
+                        ["Estado de afiliación", record.state],
+                        ["IPS asignada", record.ipsAssigned],
+                        ["Alergias", record.allergies],
+                        ["Restricciones alimentarias", record.mealRestrictions],
+                        ["Medicamentos", record.medicines],
+                        ["Condiciones especiales", record.specialConditions],
+                      ].map(([label, value]) => (
+                        <div key={label} className="rounded-lg bg-surface p-3">
+                          <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                            {label}
+                          </dt>
+                          <dd className="mt-1 font-semibold">{display(value)}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                No hay fichas de salud registradas para este beneficiario.
+              </p>
+            )}
+          </Card>
+        )}
+
+        {/* PESTAÑA: ASISTENCIA */}
+        {activeTab === "asistencia" && (
+          <Card className="rounded-3xl p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-extrabold">Asistencia a talleres</h2>
+                <p className="text-xs font-semibold text-muted">Control de asistencia, cumplimiento y comportamiento</p>
+              </div>
+              <Button type="button" onClick={() => setAssistanceDialog({})}>
+                + Agregar asistencia
+              </Button>
+            </div>
+            {assistanceError && (
+              <p
+                role="alert"
+                className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+              >
+                {assistanceError}
+              </p>
+            )}
+            {assistanceForChild.length ? (
+              <div className="space-y-3">
+                {assistanceForChild.map((assistance) => {
+                  const schedule = schedules.find(
+                    (s) =>
+                      String(s.professionalWorkshopId) ===
+                      String(assistance.professionalWorkshopId),
+                  )
+                  return (
+                    <article
+                      key={assistance.childrenAssistanceId}
+                      className="rounded-xl bg-surface-muted p-4"
+                    >
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="font-bold text-foreground">
+                            {schedule?.label ||
+                              `Sesión de taller #${assistance.professionalWorkshopId}`}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setAssistanceDialog(assistance)}
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            onClick={() => setDeletingAssistance(assistance)}
+                          >
+                            Eliminar
+                          </Button>
+                        </div>
                       </div>
-                    ))}
-                    <div className="rounded-lg bg-surface p-3 sm:col-span-3">
-                      <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                        Comportamiento
-                      </dt>
-                      <dd className="mt-1 whitespace-pre-wrap font-semibold">
-                        {display(assistance.behavior)}
-                      </dd>
-                    </div>
-                  </dl>
-                </article>
-              )})}
+                      <dl className="grid gap-3 sm:grid-cols-3">
+                        {[
+                          ["Confirmó asistencia", assistance.willAssist],
+                          ["Asistió", assistance.asisted],
+                          ["Completó el taller", assistance.completeWorkshop],
+                        ].map(([label, value]) => (
+                          <div key={label} className="rounded-lg bg-surface p-3">
+                            <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                              {label}
+                            </dt>
+                            <dd className="mt-1 font-semibold">
+                              {value ? "Sí" : "No"}
+                            </dd>
+                          </div>
+                        ))}
+                        <div className="rounded-lg bg-surface p-3 sm:col-span-3">
+                          <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                            Comportamiento
+                          </dt>
+                          <dd className="mt-1 whitespace-pre-wrap font-semibold">
+                            {display(assistance.behavior)}
+                          </dd>
+                        </div>
+                      </dl>
+                    </article>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                No hay registros de asistencia para este beneficiario.
+              </p>
+            )}
+          </Card>
+        )}
+
+        {/* PESTAÑA: PEDAGOGÍA / RUTINA */}
+        {activeTab === "pedagogia" && (
+          <Card className="rounded-3xl p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-extrabold">Descripción interna</h2>
+                <p className="text-sm text-muted">
+                  Comunicación, rutina, gustos e indicaciones de manejo de crisis.
+                </p>
+              </div>
+              <Button type="button" onClick={() => setDescriptionDialog({})}>
+                + Agregar descripción
+              </Button>
             </div>
-          ) : (
-            <p className="text-sm text-muted">
-              No hay registros de asistencia para este beneficiario.
-            </p>
-          )}
-        </Card>
-        <Card className="mt-4 rounded-3xl p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-extrabold">Ficha de salud</h2>
-            </div>
-            <Button type="button" onClick={() => setRecordDialog({})}>
-              Agregar ficha
-            </Button>
-          </div>
-          {childRecordsError && (
-            <p
-              role="alert"
-              className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
-            >
-              {childRecordsError}
-            </p>
-          )}
-          {recordsForChild.length ? (
-            <div className="space-y-3">
-              {recordsForChild.map((record) => (
-                <article
-                  key={record.recordId}
-                  className="rounded-xl bg-surface-muted p-4"
-                >
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm font-bold text-foreground">
-                      {record.eps ? `EPS: ${record.eps}` : "Ficha médica"}
-                    </p>
-                    <div className="flex gap-2">
+            {internalDescriptionsError && (
+              <p
+                role="alert"
+                className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+              >
+                {internalDescriptionsError}
+              </p>
+            )}
+            {descriptionsForChild.length ? (
+              <div className="space-y-3">
+                {descriptionsForChild.map((description) => (
+                  <article
+                    key={description.childInternalDescriptionId}
+                    className="rounded-xl bg-surface-muted p-4"
+                  >
+                    <div className="mb-3 flex items-center justify-end gap-2">
                       <Button
                         type="button"
                         variant="secondary"
-                        onClick={() => setRecordDialog(record)}
+                        onClick={() => setDescriptionDialog(description)}
                       >
                         Editar
                       </Button>
                       <Button
                         type="button"
                         variant="danger"
-                        onClick={() => setDeletingRecord(record)}
+                        onClick={() => setDeletingDescription(description)}
                       >
                         Eliminar
                       </Button>
                     </div>
-                  </div>
-                  <dl className="grid gap-3 sm:grid-cols-2">
-                    {[
-                      ["EPS", record.eps],
-                      ["Estado de afiliación", record.state],
-                      ["IPS asignada", record.ipsAssigned],
-                      ["Alergias", record.allergies],
-                      ["Restricciones alimentarias", record.mealRestrictions],
-                      ["Medicamentos", record.medicines],
-                      ["Condiciones especiales", record.specialConditions],
-                    ].map(([label, value]) => (
-                      <div key={label} className="rounded-lg bg-surface p-3">
-                        <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
-                          {label}
-                        </dt>
-                        <dd className="mt-1 font-semibold">{display(value)}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </article>
-              ))}
+                    <dl className="grid gap-3 sm:grid-cols-2">
+                      {[
+                        ["Formas de comunicación", description.communicationWays],
+                        ["Apoyos para la rutina diaria", description.dailyRoutineHelp],
+                        ["Gustos e intereses", description.likings],
+                        ["Manejo de crisis", description.crisisManagement],
+                      ].map(([label, value]) => (
+                        <div key={label} className="rounded-lg bg-surface p-3">
+                          <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                            {label}
+                          </dt>
+                          <dd className="mt-1 whitespace-pre-wrap font-semibold">
+                            {display(value)}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                No hay descripciones internas registradas.
+              </p>
+            )}
+          </Card>
+        )}
+
+        {/* PESTAÑA: PAGOS */}
+        {activeTab === "pagos" && (
+          <Card className="rounded-3xl p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-extrabold">Pagos asociados</h2>
+                <p className="text-xs font-semibold text-muted">Historial de matrículas y mensualidades del beneficiario</p>
+              </div>
             </div>
-          ) : (
-            <p className="text-sm text-muted">
-              No hay fichas de salud registradas para este beneficiario.
-            </p>
-          )}
-        </Card>
-        <Card className="mt-4 rounded-3xl p-5">
-          <h2 className="mb-4 text-xl font-extrabold">
-            Pagos asociados
-          </h2>
-          {enrollmentError && (
-            <p
-              role="alert"
-              className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
-            >
-              {enrollmentError}
-            </p>
-          )}
-          {enrollmentsForChild.length ? (
-            <div className="space-y-2">
-              {enrollmentsForChild.map((enrollment) => (
-                <article
-                  key={enrollment.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-muted p-3"
-                >
-                  <div>
-                    <p className="font-bold">
-                      {enrollment.status || "Sin estado"}
+            {enrollmentError && (
+              <p
+                role="alert"
+                className="mb-4 rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger"
+              >
+                {enrollmentError}
+              </p>
+            )}
+            {enrollmentsForChild.length ? (
+              <div className="space-y-2">
+                {enrollmentsForChild.map((enrollment) => (
+                  <article
+                    key={enrollment.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-muted p-4"
+                  >
+                    <div>
+                      <p className="font-bold">
+                        {enrollment.status || "Sin estado"}
+                      </p>
+                      <p className="text-sm text-muted">
+                        {enrollment.paymentMethod || "Medio sin registrar"} ·{" "}
+                        {formatFecha(enrollment.paidDate)}
+                      </p>
+                    </div>
+                    <p className="text-lg font-extrabold text-foreground">
+                      {formatCOP(Number(enrollment.amount) || 0)}
                     </p>
-                    <p className="text-sm text-muted">
-                      {enrollment.paymentMethod || "Medio sin registrar"} ·{" "}
-                      {formatFecha(enrollment.paidDate)}
-                    </p>
-                  </div>
-                  <p className="font-extrabold">
-                    {formatCOP(Number(enrollment.amount) || 0)}
-                  </p>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted">
-              No hay pagos registrados para este beneficiario.
-            </p>
-          )}
-        </Card>
-        {child.exitDate ? (
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                No hay pagos registrados para este beneficiario.
+              </p>
+            )}
+          </Card>
+        )}
+
+        {child.exitDate && (
           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
             Beneficiario desactivado (fecha de retiro: {child.exitDate}). Su historial se encuentra conservado.
           </div>
-        ) : (
-          <Button
-            variant="danger"
-            onClick={onDelete}
-            className="mt-4"
-            type="button"
-          >
-            Desactivar beneficiario
-          </Button>
         )}
       </div>
       {recordDialog && (
