@@ -153,7 +153,7 @@ function ChildDetails({
                 : "border-transparent text-muted hover:text-foreground"
             }`}
           >
-            Acudientes ({childRelationships.length})
+            Acudientes
           </button>
           <button
             type="button"
@@ -164,7 +164,7 @@ function ChildDetails({
                 : "border-transparent text-muted hover:text-foreground"
             }`}
           >
-            Salud ({recordsForChild.length})
+            Salud
           </button>
           <button
             type="button"
@@ -175,7 +175,7 @@ function ChildDetails({
                 : "border-transparent text-muted hover:text-foreground"
             }`}
           >
-            Asistencia ({assistanceForChild.length})
+            Asistencia
           </button>
           <button
             type="button"
@@ -186,7 +186,7 @@ function ChildDetails({
                 : "border-transparent text-muted hover:text-foreground"
             }`}
           >
-            Rutina & Pedagogía ({descriptionsForChild.length})
+            Rutina & Pedagogía
           </button>
           <button
             type="button"
@@ -197,7 +197,7 @@ function ChildDetails({
                 : "border-transparent text-muted hover:text-foreground"
             }`}
           >
-            Pagos ({enrollmentsForChild.length})
+            Pagos
           </button>
         </div>
 
