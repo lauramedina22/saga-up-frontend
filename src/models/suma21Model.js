@@ -44,10 +44,8 @@ export function toSuma21InventoryModel(raw = {}) {
 }
 
 export function toSuma21SaleTransactionModel(raw = {}, index = 0) {
-  const rawCents = Number(readValue(raw, "amount_in_cents", "amount", "total")) || 0
-  // Siempre dividir entre 100 para convertir centavos a pesos reales
-  // Ej: 25000000 centavos = $250.000 COP, 1998 centavos = $19.98 COP
-  const amount = rawCents / 100
+  // Tomar el valor directamente en pesos (sin dividir entre 100)
+  const amount = Number(readValue(raw, "amount_in_cents", "amount", "total")) || 0
   const completedAt = readValue(raw, "completed_at", "created_at", "date")
   const id = normalizeId(readValue(raw, "sale_id", "transaction_id", "id")) || `sale-${index + 1}`
   const reference = readValue(raw, "reference")
@@ -67,9 +65,8 @@ export function toSuma21SaleTransactionModel(raw = {}, index = 0) {
 }
 
 export function toSuma21DonationTransactionModel(raw = {}, index = 0) {
-  const rawCents = Number(readValue(raw, "amount_in_cents", "amount", "total")) || 0
-  // 5000000 centavos = $50.000 COP
-  const amount = rawCents / 100
+  // Tomar el valor directamente en pesos (sin dividir entre 100)
+  const amount = Number(readValue(raw, "amount_in_cents", "amount", "total")) || 0
   const completedAt = readValue(raw, "completed_at", "created_at", "date")
   const donationId = normalizeId(readValue(raw, "donation_id", "id")) || `don-${index + 1}`
   const reference = readValue(raw, "reference")
