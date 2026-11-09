@@ -22,9 +22,11 @@ saga-up-frontend/
 │   ├── components/        # Componentes reutilizables
 │   ├── api/               # Cliente HTTP y configuración de llamadas al backend
 │   ├── hooks/             # Hooks personalizados
+│   ├── models/            # Adaptadores de datos entre API y frontend
 │   ├── imports/           # Imports y módulos auxiliares
 │   ├── screens/           # Pantallas principales del sistema
 │   ├── services/          # Comunicación con servicios externos y API
+│   ├── data.js            # Utilidades de formato
 │   ├── App.jsx            # Componente principal de la app
 │   ├── main.jsx           # Punto de entrada de React
 │   └── App.css            # Estilos globales de la aplicación
@@ -43,19 +45,43 @@ saga-up-frontend/
 Contiene componentes reutilizables de la interfaz, como botones, tarjetas, barras de navegación, formularios y otros elementos que pueden reutilizarse en distintas pantallas.
 
 ### src/api
-Contiene el cliente HTTP usado para enviar solicitudes al backend. En esta rama se utiliza para el inicio de sesión.
+Contiene el cliente HTTP para las solicitudes al backend. Añade el token de sesión en el encabezado `Authorization: Bearer`.
 
 ### src/hooks
 Aquí se colocan hooks personalizados para manejar lógica reutilizable, estados y eventos, como autenticación, validación de formularios o consumo de APIs.
 
+### src/models
+Adapta las respuestas y solicitudes de children, child_records, child_internal_description, children_assistance, guardians y tuition al modelo camelCase utilizado por los hooks y pantallas.
+
 ### src/services
-Contiene las funciones que se comunican con el backend. Actualmente, esta rama incluye el servicio de inicio de sesión; registro, perfil y otras operaciones se añadirán cuando estén dentro del alcance de su respectivo trabajo.
+Cada servicio gestiona su propio dominio y se conecta directamente al backend, sin datos simulados:
+
+- `childService.js`: `GET/POST /children`, `PUT/DELETE /children/:id`.
+- `guardianService.js`: `GET/POST /guardians`, `DELETE /guardians/:id`.
+- `enrollmentService.js`: `GET /enrollments` para consultar tuition. La ruta se asume provisionalmente y debe validarse con el contrato del backend.
+- `childGuardianService.js`: rutas anidadas para consultar, crear y eliminar relaciones entre children y guardians. Estas rutas se asumieron provisionalmente y deben ajustarse al contrato que confirme el backend.
+- `childRecordService.js`: `GET/POST /children/:id/records` y `PUT/DELETE /children/:id/records/:recordId` para consultar y gestionar la ficha de salud `child_records`. Estas rutas son una suposición del frontend y deben confirmarse con el backend.
+- `childInternalDescriptionService.js`: operaciones CRUD anidadas bajo `/children/:id/internal-descriptions` para `child_internal_description`. Ruta provisional pendiente de confirmar con el backend.
+- `childrenAssistanceService.js`: operaciones CRUD anidadas bajo `/children/:id/assistance` para `children_assistance`. Ruta provisional pendiente de confirmar con el backend.
+
+### src/data.js
+Contiene funciones de formato y plantillas de mensajes; no contiene registros de prueba.
 
 ### src/imports
 Se usan para centralizar importaciones o archivos auxiliares necesarios en varias partes del proyecto.
 
 ### src/screens
 Contiene las pantallas principales de la aplicación, como login, dashboard, perfil de usuario, administración, entre otras.
+
+## Rutas de la aplicación
+
+- `/login`: inicio de sesión.
+- `/register`: registro público.
+- `/children`: pantalla de beneficiarios, cargada desde el backend.
+- `/guardians`: pantalla de acudientes, cargada desde el backend.
+- `/enrollments`: pantalla de matrículas, cargada desde el backend.
+
+Las rutas `/children`, `/guardians` y `/enrollments` están disponibles directamente para facilitar la revisión de las pantallas. Aún no tienen protección por roles; antes de producción, la autorización debe implementarse en el frontend y validarse también en el backend.
 
 ## Requisitos previos
 

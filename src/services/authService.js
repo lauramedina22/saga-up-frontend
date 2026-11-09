@@ -1,4 +1,4 @@
-import apiClient from "../api/apiClient"
+import { authApiClient as apiClient } from "../api/apiClient"
 
 // authService  sabe a DONDE ir (pone la ruta y datos del usuario)
 

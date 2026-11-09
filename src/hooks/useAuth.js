@@ -94,9 +94,11 @@ export function useAuth() {
 
       //  Guarda la sesión en el estado de React (para que la app sepa que ya entraste)
       setSession(nextSession)
+      return true
 
     } catch (error) {
       setLoginError(getErrorMessage(error))
+      return false
     } finally {
       setLoginLoading(false)
     }
@@ -120,6 +122,11 @@ export function useAuth() {
     }
   }
 
+  const logout = () => {
+    sessionStorage.removeItem(SESSION_KEY)
+    setSession(null)
+  }
+
   return {
     session,
     login,
@@ -129,5 +136,6 @@ export function useAuth() {
     registerLoading,
     registerError,
     registerSuccess,
+    logout,
   }
 }
