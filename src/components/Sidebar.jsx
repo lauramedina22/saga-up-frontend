@@ -1,4 +1,4 @@
-import logo from "../imports/texto.png"
+import logo from "../imports/sidebar.jpg"
 
 const Icon = ({ path, className = "h-5 w-5" }) => (
   <svg
