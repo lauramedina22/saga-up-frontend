@@ -188,6 +188,57 @@ export function ServiceIllustration({ serviceId }) {
         </div>
       )
 
+    case "podcast":
+      return (
+        <div className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-[#E7F7F5] to-[#C8EFE9]">
+          <div className="absolute size-28 rounded-full bg-[#008375]/15 animate-pulse" />
+          <div className="absolute size-20 rounded-full bg-[#F2A900]/20" />
+          {/* Ilustración: Micrófono de Podcast & Ondas de Audio */}
+          <svg
+            className="relative size-20"
+            viewBox="0 0 80 80"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Ondas de sonido laterales */}
+            <path
+              d="M18 32C15 36 15 44 18 48M12 26C8 34 8 46 12 54"
+              stroke="#E87722"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            <path
+              d="M62 32C65 36 65 44 62 48M68 26C72 34 72 46 68 54"
+              stroke="#F2A900"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            {/* Cuerpo del micrófono */}
+            <rect
+              x="32"
+              y="18"
+              width="16"
+              height="28"
+              rx="8"
+              fill="#008375"
+            />
+            {/* Rejilla del micrófono */}
+            <line x1="36" y1="26" x2="44" y2="26" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+            <line x1="36" y1="32" x2="44" y2="32" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+            {/* Soporte curvo del micrófono */}
+            <path
+              d="M26 36V40C26 47.732 32.268 54 40 54C47.732 54 54 47.732 54 40V36"
+              stroke="#008375"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+            />
+            {/* Base del micrófono */}
+            <path d="M40 54V64" stroke="#008375" strokeWidth="3.5" strokeLinecap="round" />
+            <path d="M30 64H50" stroke="#008375" strokeWidth="4" strokeLinecap="round" />
+          </svg>
+        </div>
+      )
+
     default:
       return null
   }

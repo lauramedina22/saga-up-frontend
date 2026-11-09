@@ -51,6 +51,18 @@ const EXTERNAL_SERVICES = [
     description:
       "Asistente inteligente con Inteligencia Artificial para la formulación de proyectos, convocatorias y propuestas sociales.",
     url: "https://lupe-ai.fundacionasisco.org",
+    buttonText: "Ir a la plataforma",
+  },
+  {
+    id: "podcast",
+    title: "PODCAST ASISCO UP",
+    category: "Historias & Voces",
+    badgeLabel: "Spotify",
+    badgeBg: "bg-[#E7F7F5] text-[#008375] border-[#008375]/30",
+    description:
+      "Espacio de audio con testimonios, reflexiones y vivencias de los beneficiarios, familias y equipo de la fundación.",
+    url: "https://open.spotify.com/show/6zx1TrmAWPFzaIhjaDCmZI?si=0bf11d39b5e54517",
+    buttonText: "Ir a Spotify",
   },
 ]
 
@@ -111,7 +123,7 @@ export default function ServicesScreen() {
                   rel="noopener noreferrer"
                   className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#008375] px-4 py-2 text-sm font-extrabold text-white shadow-xs transition-all hover:bg-[#086B65] hover:brightness-105 active:scale-[0.98]"
                 >
-                  <span>Ir a la plataforma</span>
+                  <span>{service.buttonText || "Ir a la plataforma"}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
