@@ -1,0 +1,106 @@
+{
+  "info": {
+    "_postman_id": "aa9f9228-2938-4c48-9827-9c0eed2bd283",
+    "name": "Suma21 Transaction Reports",
+    "description": "Read-only, paginated reports of approved sale and monetary donation transactions. Set accessToken to a valid bearer token before running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Approved sale transactions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/transactions/sales?page=1&limit=50",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "transactions", "sales"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "50" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns a paginated sales report', function () {",
+              "  pm.response.to.have.status(200);",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.data).to.be.an('array');",
+              "  pm.expect(body.pagination).to.have.property('total');",
+              "  body.data.forEach(function (item) {",
+              "    pm.expect(item.amount_in_cents).to.be.a('number');",
+              "    pm.expect(item).to.have.property('payment_method');",
+              "    pm.expect(item).to.have.property('completed_at');",
+              "    pm.expect(item.items).to.be.an('array');",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Approved monetary donation transactions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/transactions/donations?page=1&limit=50",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "transactions", "donations"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "50" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('returns a paginated monetary donations report', function () {",
+              "  pm.response.to.have.status(200);",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.data).to.be.an('array');",
+              "  pm.expect(body.pagination).to.have.property('total');",
+              "  body.data.forEach(function (item) {",
+              "    pm.expect(item.amount_in_cents).to.be.a('number');",
+              "    pm.expect(item).to.have.property('payment_method');",
+              "    pm.expect(item).to.have.property('completed_at');",
+              "    pm.expect(item.donation_id).to.be.a('string');",
+              "  });",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

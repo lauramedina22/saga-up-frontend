@@ -62,9 +62,6 @@ export default function ServicesScreen() {
         <h1 className="text-3xl font-extrabold text-foreground">
           Más Servicios
         </h1>
-        <p className="mt-1 text-sm font-semibold text-muted">
-          Ecosistema digital de proyectos integrados de la Fundación ASISCO UP
-        </p>
       </div>
 
       {/* Cuadrícula Responsive */}
