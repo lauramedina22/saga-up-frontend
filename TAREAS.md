@@ -47,7 +47,7 @@ Cada quien continúa los módulos que ya construyó:
 | Y2 | Profesionales/talleristas + edición/eliminación de horarios | `/professionals`, `/professionals-workshops` | Alto | ⏳ Pendiente |
 | Y3 | Asistencia de personal completa (filtros, editar, eliminar) | `/staff-assistance` | Medio | ⏳ Pendiente |
 | Y4 | Módulo de Practicantes (`Interns.jsx`) | `/interns` | Medio | ⏳ Pendiente |
-| Y5 | Actualizar Dashboard con los nuevos módulos | Lectura de los anteriores | Bajo | ⏳ Pendiente |
+| Y5 | Actualizar Dashboard con los nuevos módulos |  de los anterioresLectura | Bajo | ⏳ Pendiente |
 
 
 > [!NOTE]

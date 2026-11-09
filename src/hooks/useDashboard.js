@@ -5,6 +5,7 @@ import { enrollmentService } from "../services/enrollmentService"
 import { staffWorkshopService } from "../services/staffWorkshopService"
 import { childRecordService } from "../services/childRecordService"
 import { childInternalDescriptionService } from "../services/childInternalDescriptionService"
+import { staffService } from "../services/staffService"
 
 export function useDashboard() {
   const [data, setData] = useState({
@@ -15,6 +16,9 @@ export function useDashboard() {
     enrollments: [],
     healthRecords: [],
     crisisDescriptions: [],
+    staff: [],
+    interns: [],
+    assistance: [],
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -31,12 +35,16 @@ export function useDashboard() {
         workshopsRes,
         schedulesRes,
         enrollmentsRes,
+        staffRes,
+        internsRes,
       ] = await Promise.allSettled([
         childService.getChildrenData(),
         guardianService.getGuardianData(),
         staffWorkshopService.getWorkshops(),
         staffWorkshopService.getSchedules(),
         enrollmentService.getEnrollmentData(),
+        staffService.getStaff(),
+        staffService.getInterns(),
       ])
 
       const children =
@@ -55,6 +63,14 @@ export function useDashboard() {
         enrollmentsRes.status === "fulfilled"
           ? enrollmentsRes.value?.enrollments || []
           : []
+      const staff = staffRes.status === "fulfilled" ? staffRes.value || [] : []
+      const interns = internsRes.status === "fulfilled" ? internsRes.value || [] : []
+      let assistance = []
+      try {
+        assistance = (await staffWorkshopService.getStaffAssistance()) || []
+      } catch {
+        assistance = []
+      }
 
       // 2. Si tenemos niños, intentamos traer fichas de salud y descripciones para alertas críticas
       let healthRecords = []
@@ -97,6 +113,9 @@ export function useDashboard() {
         enrollments,
         healthRecords,
         crisisDescriptions,
+        staff,
+        interns,
+        assistance,
       })
     } catch (err) {
       setError(err?.message || "No se pudo cargar la información del panel.")

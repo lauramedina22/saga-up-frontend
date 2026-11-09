@@ -288,6 +288,18 @@ export const staffWorkshopService = {
     return toProfessionalWorkshopModel(newSchedule)
   },
 
+  async updateSchedule(id, scheduleData, partial = true) {
+    const payload = toProfessionalWorkshopPayload(scheduleData)
+    const response = partial
+      ? await apiClient.patch(`/professionals-workshops/${id}`, payload)
+      : await apiClient.put(`/professionals-workshops/${id}`, payload)
+    return toProfessionalWorkshopModel(response)
+  },
+
+  async deleteSchedule(id) {
+    return apiClient.delete(`/professionals-workshops/${id}`)
+  },
+
   // Turnos de personal (staff_assistance)
   async getStaffAssistance() {
     try {
@@ -319,5 +331,28 @@ export const staffWorkshopService = {
 
     inMemoryShifts = [newShift, ...inMemoryShifts]
     return toStaffAssistanceModel(newShift)
+  },
+
+  async getStaffAssistanceFiltered(filters = {}) {
+    const params = new URLSearchParams()
+    if (filters.staffId) params.set("staff_id", filters.staffId)
+    if (filters.dateWorking) params.set("date_working", filters.dateWorking)
+    const response = await apiClient.get(`/staff-assistance?${params.toString()}`)
+    const list = Array.isArray(response)
+      ? response
+      : response?.staff_assistance ?? response?.data ?? []
+    return list.map(toStaffAssistanceModel)
+  },
+
+  async updateStaffShift(id, shiftData, partial = true) {
+    const payload = toStaffAssistancePayload(shiftData)
+    const response = partial
+      ? await apiClient.patch(`/staff-assistance/${id}`, payload)
+      : await apiClient.put(`/staff-assistance/${id}`, payload)
+    return toStaffAssistanceModel(response)
+  },
+
+  async deleteStaffShift(id) {
+    return apiClient.delete(`/staff-assistance/${id}`)
   },
 }

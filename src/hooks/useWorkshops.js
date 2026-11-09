@@ -53,6 +53,28 @@ export function useWorkshops() {
     return created
   }
 
+  const updateSchedule = async (id, scheduleData) => {
+    const updated = await staffWorkshopService.updateSchedule(id, scheduleData)
+    setSchedules((prev) => prev.map((item) => item.professionalWorkshopId === id ? updated : item))
+    return updated
+  }
+
+  const deleteSchedule = async (id) => {
+    await staffWorkshopService.deleteSchedule(id)
+    setSchedules((prev) => prev.filter((item) => item.professionalWorkshopId !== id))
+  }
+
+  const updateShift = async (id, shiftData) => {
+    const updated = await staffWorkshopService.updateStaffShift(id, shiftData)
+    setShifts((prev) => prev.map((item) => item.staffAssistanceId === id ? updated : item))
+    return updated
+  }
+
+  const deleteShift = async (id) => {
+    await staffWorkshopService.deleteStaffShift(id)
+    setShifts((prev) => prev.filter((item) => item.staffAssistanceId !== id))
+  }
+
   const createStaff = async (staffData, extraData) => {
     const created = await staffWorkshopService.createStaff(staffData, extraData)
     setStaffList((prev) => [created, ...prev])
@@ -71,5 +93,9 @@ export function useWorkshops() {
     createSchedule,
     recordShift,
     createStaff,
+    updateSchedule,
+    deleteSchedule,
+    updateShift,
+    deleteShift,
   }
 }

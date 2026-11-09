@@ -11,13 +11,14 @@ export function toStaffModel(raw = {}) {
     fullName: raw.full_name ?? raw.name ?? "",
     documentTypeId: normalizeNumber(raw.document_type_id),
     documentNumber: raw.document_number ?? "",
-    roleId: normalizeNumber(raw.role_id),
+    roleId: normalizeNumber(raw.staff_role_id ?? raw.role_id),
     hireDate: normalizeDate(raw.hire_date),
     exitDate: normalizeDate(raw.exit_date),
     contractTypeId: normalizeNumber(raw.contract_type_id),
-    statusId: normalizeNumber(raw.status_id ?? 1),
+    statusId: normalizeNumber(raw.staff_status_id ?? raw.status_id ?? 1),
     phone: raw.phone ?? "",
     email: raw.email ?? "",
+    securityUserId: raw.security_user_id ?? null,
     hoursWorked: normalizeNumber(raw.hours_worked ?? 0),
     hoursPayed: normalizeNumber(raw.hours_payed ?? 0),
     // Relaciones opcionales incrustadas
@@ -31,11 +32,11 @@ export function toStaffPayload(model = {}) {
     full_name: model.fullName ?? "",
     document_type_id: normalizeNumber(model.documentTypeId),
     document_number: model.documentNumber ?? "",
-    role_id: normalizeNumber(model.roleId),
+    staff_role_id: normalizeNumber(model.roleId),
     hire_date: normalizeDate(model.hireDate),
     exit_date: normalizeDate(model.exitDate),
     contract_type_id: normalizeNumber(model.contractTypeId),
-    status_id: normalizeNumber(model.statusId ?? 1),
+    staff_status_id: normalizeNumber(model.statusId),
     phone: model.phone ?? "",
     email: model.email ?? "",
     hours_worked: normalizeNumber(model.hoursWorked ?? 0),
@@ -52,6 +53,7 @@ export function toProfessionalModel(raw = {}) {
     observations: raw.observations ?? "",
     timeDonor: normalizeBoolean(raw.time_donor),
   }
+
 }
 
 export function toProfessionalPayload(model = {}) {
