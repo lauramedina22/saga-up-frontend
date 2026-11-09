@@ -309,7 +309,8 @@ export function CreateChildDialog({
             )}
             <div className="sm:col-span-2">
               <TextArea
-                label="Observaciones"
+                label="Anamnesis"
+                hint="Antecedentes y observaciones iniciales del beneficiario"
                 rows={3}
                 value={form.notes}
                 onChange={(event) => update("notes", event.target.value)}
@@ -486,7 +487,8 @@ export function EditChildDialog({ child, onClose, onSave }) {
             </SelectField>
             <div className="sm:col-span-2">
               <TextArea
-                label="Observaciones"
+                label="Anamnesis"
+                hint="Antecedentes y observaciones iniciales del beneficiario"
                 rows={3}
                 value={form.notes}
                 onChange={(e) => update("notes", e.target.value)}

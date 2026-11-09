@@ -219,7 +219,7 @@ function ChildDetails({
                 ["Fecha de ingreso", child.admissionDate],
                 ["Fecha de retiro", child.exitDate],
                 ["Estado del beneficiario", statusLabel],
-                ["Observaciones", child.notes],
+                ["Anamnesis", child.notes],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-xl bg-surface-muted p-3">
                   <dt className="text-xs font-extrabold uppercase tracking-wide text-muted">

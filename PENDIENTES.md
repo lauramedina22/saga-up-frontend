@@ -29,9 +29,5 @@
 - **Por solucionar:** Aplicar la función de formateo (`formatTime` que extrae solo `HH:mm`) para que muestre únicamente la hora legible (ej. `10:30 - 11:30`).
 
 ## 4. Anamnesis (vinculada a Beneficiarios — `children`)
-- **Estado:** 🟡 Pendiente de clarificación con Backend.
-- **Situación:** el Swagger actual no expone ningún endpoint ni esquema de anamnesis.
-- **Por aclarar:**
-  1. Campos requeridos (antecedentes perinatales, desarrollo, familiares, médicos, etc.).
-  2. Si será un endpoint nuevo o se extenderá `/child-records` o `/child-internal-descriptions`.
-  3. Quién puede registrarla/consultarla (roles).
+- **Estado:** 🟢 Resuelto en Frontend.
+- **Implementación:** Mapeada directamente en el frontend sobre el campo `notes` de la tabla `children`. Ahora tanto en la visualización como en los modales de creación y edición se expone como **"Anamnesis"**.
