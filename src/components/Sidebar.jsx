@@ -68,67 +68,101 @@ export default function Sidebar({
   onLogout,
   userName = "Usuario",
   userRole = "",
+  isOpen = false,
+  onClose,
 }) {
   const initials = userName.trim().charAt(0).toLocaleUpperCase("es-CO") || "U"
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 flex h-dvh w-20 flex-col border-r border-border bg-surface sm:w-64">
-      <div className="border-b border-border px-3 py-5 sm:px-5 sm:py-6">
-        <img
-          src={logo}
-          alt="Fundación ASISCO UP"
-          className="mx-auto w-12 object-contain sm:mx-0 sm:w-36"
+    <>
+      {/* Backdrop overlay para pantallas móviles */}
+      {isOpen && (
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Cerrar menú"
+          onClick={onClose}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === "Escape") && onClose?.()}
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity sm:hidden"
         />
-      </div>
+      )}
 
-      <nav aria-label="Navegación principal" className="flex-1 overflow-y-auto px-2 py-3">
-        {navItems.map((item) => {
-          const active = currentScreen === item.screen
-
-          return (
-            <button
-              key={item.screen}
-              type="button"
-              onClick={() => onNavigate(item.screen)}
-              aria-label={item.label}
-              aria-current={active ? "page" : undefined}
-              title={item.label}
-              className={`mb-1 flex min-h-12 w-full items-center justify-center gap-3 rounded-xl px-2 py-3 text-left text-[15px] font-bold transition-colors sm:justify-start sm:px-4 ${
-                active
-                  ? "bg-primary text-foreground shadow-sm"
-                  : "text-foreground hover:bg-primary-soft hover:text-primary-hover"
-              }`}
-            >
-              <Icon path={item.icon} className="h-5 w-5 shrink-0" />
-              <span className="hidden sm:inline">{item.label}</span>
-            </button>
-          )
-        })}
-      </nav>
-
-      <div className="border-t border-border p-2 sm:p-3">
-        <div className="mb-1 flex items-center justify-center gap-3 px-2 py-2 sm:justify-start sm:px-4">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-foreground">
-            {initials}
-          </div>
-          <div className="hidden min-w-0 flex-1 sm:block">
-            <p className="truncate text-sm font-semibold text-foreground">{userName}</p>
-            <p className="truncate text-xs text-muted">{userRole}</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onLogout}
-          aria-label="Cerrar sesión"
-          className="flex min-h-11 w-full items-center justify-center gap-3 rounded-xl px-2 py-2 text-sm font-bold text-muted transition-colors hover:bg-danger-soft hover:text-danger sm:justify-start sm:px-4"
-        >
-          <Icon
-            path="M8.25 9V5.25A2.25 2.25 0 0110.5 3h6a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0116.5 21h-6a2.25 2.25 0 01-2.25-2.25V15m-3 0l-3-3m0 0l3-3m-3 3H15"
-            className="h-4 w-4"
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-64 flex-col border-r border-border bg-surface shadow-2xl transition-transform duration-300 sm:z-40 sm:shadow-none sm:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-5 sm:py-6">
+          <img
+            src={logo}
+            alt="Fundación ASISCO UP"
+            className="w-32 object-contain sm:w-36"
           />
-          <span className="hidden sm:inline">Cerrar sesión</span>
-        </button>
-      </div>
-    </aside>
+          {/* Botón cerrar para móvil */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex size-9 items-center justify-center rounded-xl text-muted hover:bg-surface-muted hover:text-foreground sm:hidden"
+            aria-label="Cerrar menú"
+          >
+            <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <nav aria-label="Navegación principal" className="flex-1 overflow-y-auto px-3 py-3">
+          {navItems.map((item) => {
+            const active = currentScreen === item.screen
+
+            return (
+              <button
+                key={item.screen}
+                type="button"
+                onClick={() => {
+                  onNavigate(item.screen)
+                  onClose?.()
+                }}
+                aria-label={item.label}
+                aria-current={active ? "page" : undefined}
+                title={item.label}
+                className={`mb-1 flex min-h-12 w-full items-center justify-start gap-3 rounded-xl px-4 py-3 text-left text-[15px] font-bold transition-colors ${
+                  active
+                    ? "bg-primary text-foreground shadow-sm"
+                    : "text-foreground hover:bg-primary-soft hover:text-primary-hover"
+                }`}
+              >
+                <Icon path={item.icon} className="h-5 w-5 shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            )
+          })}
+        </nav>
+
+        <div className="border-t border-border p-3">
+          <div className="mb-2 flex items-center gap-3 px-3 py-2">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-foreground">
+              {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">{userName}</p>
+              <p className="truncate text-xs text-muted">{userRole}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onLogout}
+            aria-label="Cerrar sesión"
+            className="flex min-h-11 w-full items-center justify-start gap-3 rounded-xl px-4 py-2 text-sm font-bold text-muted transition-colors hover:bg-danger-soft hover:text-danger"
+          >
+            <Icon
+              path="M8.25 9V5.25A2.25 2.25 0 0110.5 3h6a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0116.5 21h-6a2.25 2.25 0 01-2.25-2.25V15m-3 0l-3-3m0 0l3-3m-3 3H15"
+              className="h-4 w-4"
+            />
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </aside>
+    </>
   )
 }

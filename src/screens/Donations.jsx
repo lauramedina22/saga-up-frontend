@@ -63,6 +63,7 @@ export default function DonationsScreen() {
           variant="secondary"
           onClick={() => refresh()}
           loading={loading}
+          className="w-full sm:w-auto"
         >
           Actualizar
         </Button>

@@ -99,6 +99,7 @@ export default function SalesScreen() {
           variant="secondary"
           onClick={() => refresh()}
           loading={loading}
+          className="w-full sm:w-auto"
         >
           Sincronizar
         </Button>
@@ -439,11 +440,11 @@ export default function SalesScreen() {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-enter"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4 backdrop-blur-xs animate-enter"
           onClick={() => setSelectedProduct(null)}
         >
           <div
-            className="w-full max-w-lg rounded-3xl bg-surface p-6 shadow-2xl border border-border max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl bg-surface p-5 sm:p-6 shadow-2xl border border-border max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-3 border-b border-border">
@@ -459,7 +460,7 @@ export default function SalesScreen() {
               </button>
             </div>
 
-            <div className="relative mt-4 w-full h-64 rounded-2xl overflow-hidden bg-surface-muted border border-border">
+            <div className="relative mt-4 w-full h-56 sm:h-64 rounded-2xl overflow-hidden bg-surface-muted border border-border">
               <img
                 src={selectedProduct.imageUrl || bisuteriaImg}
                 alt={selectedProduct.name}
@@ -502,11 +503,12 @@ export default function SalesScreen() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3 pt-2">
+            <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2">
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => setSelectedProduct(null)}
+                className="w-full sm:w-auto"
               >
                 Cerrar
               </Button>
@@ -516,6 +518,7 @@ export default function SalesScreen() {
                   showToast(`Solicitud registrada para: ${selectedProduct.name}`)
                   setSelectedProduct(null)
                 }}
+                className="w-full sm:w-auto"
               >
                 Registrar salida / venta
               </Button>

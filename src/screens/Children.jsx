@@ -97,24 +97,25 @@ function ChildDetails({
         <Button variant="tertiary" onClick={onBack} className="mb-5 px-0">
           Volver a beneficiarios
         </Button>
-        <Card className="mb-4 rounded-3xl p-6">
+        <Card className="mb-4 rounded-3xl p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
               <Avatar name={`${child.firstName} ${child.lastName}`} size="lg" />
               <div className="min-w-0">
-                <h1 className="truncate text-2xl font-extrabold text-foreground">
+                <h1 className="truncate text-xl sm:text-2xl font-extrabold text-foreground">
                   {child.firstName} {child.lastName}
                 </h1>
-                <p className="text-sm font-semibold text-muted">
+                <p className="text-xs sm:text-sm font-semibold text-muted">
                   ID: #{display(child.childId)} · Doc: {display(child.documentNumber)} · {display(statusLabel)}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => setEditingChild(true)}
+                className="flex-1 sm:flex-initial"
               >
                 Editar
               </Button>
@@ -123,6 +124,7 @@ function ChildDetails({
                   type="button"
                   variant="danger"
                   onClick={onDelete}
+                  className="flex-1 sm:flex-initial"
                 >
                   Desactivar
                 </Button>
@@ -963,36 +965,39 @@ export default function ChildrenScreen() {
         {filteredChildren.map((child) => (
           <article
             key={child.childId}
-            className="flex items-center gap-3 rounded-3xl border border-border bg-surface p-3 shadow-sm"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 rounded-3xl border border-border bg-surface p-3 sm:p-3.5 shadow-sm"
           >
             <button
               type="button"
               onClick={() => setSelectedId(child.childId)}
-              className="flex min-w-0 flex-1 items-center gap-4 rounded-2xl p-2 text-left hover:bg-background"
+              className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4 rounded-2xl p-1 sm:p-2 text-left hover:bg-background transition-colors"
             >
               <Avatar name={`${child.firstName} ${child.lastName}`} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-extrabold">
+                <span className="block truncate font-extrabold text-foreground">
                   {child.firstName} {child.lastName}
                 </span>
-                <span className="block truncate text-sm text-muted">
+                <span className="block truncate text-xs sm:text-sm text-muted">
                   Documento: {display(child.documentNumber)}
                 </span>
               </span>
             </button>
-            {!child.exitDate ? (
-              <Button
-                type="button"
-                variant="danger"
-                onClick={() => setDeleting(child)}
-              >
-                Desactivar
-              </Button>
-            ) : (
-              <span className="shrink-0 rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
-                Retirado: {child.exitDate}
-              </span>
-            )}
+            <div className="flex shrink-0 justify-end px-1 sm:p-0">
+              {!child.exitDate ? (
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={() => setDeleting(child)}
+                  className="w-full sm:w-auto text-xs sm:text-sm py-2 min-h-9"
+                >
+                  Desactivar
+                </Button>
+              ) : (
+                <span className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
+                  Retirado: {child.exitDate}
+                </span>
+              )}
+            </div>
           </article>
         ))}
         {!loading && filteredChildren.length === 0 && (
