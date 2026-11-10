@@ -30,7 +30,7 @@ const EXTERNAL_SERVICES = [
     badgeBg: "bg-[#FFFBEB] text-[#8A5A00] border-[#F2A900]/30",
     description:
       "Entorno virtual de aprendizaje y formación pedagógica adaptada con recursos educativos interactivos.",
-    url: "https://aulaup.onrender.com/ y https://aulaup-bxss.onrender.com/",
+    url: "https://aulaup-bxss.onrender.com/"
   },
   {
     id: "sonup",

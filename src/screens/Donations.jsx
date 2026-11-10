@@ -55,7 +55,7 @@ export default function DonationsScreen() {
             Donaciones
           </h1>
           <p className="text-sm font-semibold text-muted">
-            Reporte de donaciones monetarias solidarias aprobadas en SUMA 21
+            Reporte de donaciones aprobadas en SUMA 21
           </p>
         </div>
         <Button
@@ -125,11 +125,10 @@ export default function DonationsScreen() {
               key={method}
               type="button"
               onClick={() => setFilterMethod(method)}
-              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${
-                filterMethod === method
+              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${filterMethod === method
                   ? "bg-primary text-white shadow-xs"
                   : "border border-border bg-surface text-muted hover:text-foreground"
-              }`}
+                }`}
             >
               {method === "TODOS" ? "Todos los medios" : method}
             </button>
