@@ -17,7 +17,7 @@ function formatFecha(isoString) {
 }
 
 export default function DonationsScreen() {
-  const { donations, loading, error, refresh } = useSuma21()
+  const { donations, loading, error, refresh } = useSuma21("donaciones")
   const [filterMethod, setFilterMethod] = useState("TODOS")
   const [search, setSearch] = useState("")
 

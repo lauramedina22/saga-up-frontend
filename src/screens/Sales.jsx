@@ -18,8 +18,8 @@ function formatFecha(isoString) {
 }
 
 export default function SalesScreen() {
-  const { products, accounts, inventory, sales, loading, error, refresh } = useSuma21()
   const [activeTab, setActiveTab] = useState("productos") // 'productos' | 'inventario' | 'ventas' | 'cuentas'
+  const { products, accounts, inventory, sales, loading, error, refresh } = useSuma21(activeTab)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [toastMessage, setToastMessage] = useState("")

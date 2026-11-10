@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { suma21Service } from "../services/suma21Service.js"
 
-export function useSuma21() {
+export function useSuma21(resource = "productos") {
   const [products, setProducts] = useState([])
   const [accounts, setAccounts] = useState([])
   const [inventory, setInventory] = useState([])
@@ -10,65 +10,65 @@ export function useSuma21() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-  const loadData = useCallback(async () => {
-    setLoading(true)
-    setError("")
-    try {
-      const [
-        productsData,
-        accountsData,
-        inventoryData,
-        salesData,
-        donationsData,
-      ] = await Promise.allSettled([
-        suma21Service.getProducts(),
-        suma21Service.getAccounts(),
-        suma21Service.getInventory(),
-        suma21Service.getSaleTransactions(),
-        suma21Service.getDonationTransactions(),
-      ])
-
-      if (productsData.status === "fulfilled") {
-        setProducts(productsData.value)
-      } else {
-        setError(productsData.reason?.message || "No fue posible cargar los productos de SUMA 21.")
+  const loadData = useCallback(
+    async ({ force = false, target = resource } = {}) => {
+      setLoading(true)
+      setError("")
+      if (force) {
+        suma21Service.clearCache()
       }
 
-      if (accountsData.status === "fulfilled") {
-        setAccounts(accountsData.value)
-      }
+      try {
+        if (target === "donaciones" || target === "donations") {
+          const donationsData = await suma21Service.getDonationTransactions({ force })
+          setDonations(donationsData)
+          return
+        }
 
-      if (inventoryData.status === "fulfilled" && inventoryData.value.length > 0) {
-        setInventory(inventoryData.value)
-      } else if (productsData.status === "fulfilled") {
-        const fallbackInventory = productsData.value.map((p) => ({
-          id: p.id,
-          productId: p.id,
-          productName: p.name,
-          description: p.description,
-          quantity: p.stockQty,
-          unitPrice: p.unitPrice,
-        }))
-        setInventory(fallbackInventory)
-      }
+        if (target === "inventario") {
+          const inventoryData = await suma21Service.getInventory({ force })
+          setInventory(inventoryData)
+          return
+        }
 
-      if (salesData.status === "fulfilled") {
-        setSales(salesData.value)
-      }
+        if (target === "ventas") {
+          const salesData = await suma21Service.getSaleTransactions({ force })
+          setSales(salesData)
+          return
+        }
 
-      if (donationsData.status === "fulfilled") {
-        setDonations(donationsData.value)
+        // Por defecto ("productos"): 1 sola petición al catálogo para evitar HTTP 429
+        const productsData = await suma21Service.getProducts({ force })
+        setProducts(productsData)
+        setInventory((prev) =>
+          prev.length > 0
+            ? prev
+            : productsData.map((p) => ({
+                id: p.id,
+                productId: p.id,
+                productName: p.name,
+                description: p.description,
+                quantity: p.stockQty,
+                unitPrice: p.unitPrice,
+              })),
+        )
+      } catch (err) {
+        setError(err.message || "Error al conectar con SUMA 21.")
+      } finally {
+        setLoading(false)
       }
-    } catch (err) {
-      setError(err.message || "Error al conectar con SUMA 21.")
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    },
+    [resource],
+  )
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
+    loadData({ target: resource })
+  }, [loadData, resource])
+
+  const refresh = useCallback(
+    () => loadData({ force: true, target: resource }),
+    [loadData, resource],
+  )
 
   return {
     products,
@@ -78,6 +78,6 @@ export function useSuma21() {
     donations,
     loading,
     error,
-    refresh: loadData,
+    refresh,
   }
 }

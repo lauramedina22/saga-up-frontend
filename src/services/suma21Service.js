@@ -7,89 +7,124 @@ import {
   toSuma21DonationTransactionModel,
 } from "../models/suma21Model.js"
 
+const CACHE_TTL_MS = 60_000 // 60 segundos de caché para evitar errores 429 (Too Many Requests)
+const inFlightRequests = new Map()
+const responseCache = new Map()
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function fetchWithCacheAndRetry(key, path, { force = false } = {}) {
+  if (!force && responseCache.has(key)) {
+    const cached = responseCache.get(key)
+    if (Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      return cached.data
+    }
+  }
+
+  // Si ya hay una petición idéntica en curso (ej. por React StrictMode), reutilizarla
+  if (inFlightRequests.has(key)) {
+    return inFlightRequests.get(key)
+  }
+
+  const requestPromise = (async () => {
+    try {
+      let response
+      try {
+        response = await apiClient.get(path)
+      } catch (error) {
+        // Si el servidor responde 429 (Too Many Requests), esperar un momento y reintentar una vez
+        if (error?.status === 429) {
+          await sleep(1500)
+          response = await apiClient.get(path)
+        } else {
+          throw error
+        }
+      }
+
+      responseCache.set(key, {
+        data: response,
+        timestamp: Date.now(),
+      })
+      return response
+    } finally {
+      inFlightRequests.delete(key)
+    }
+  })()
+
+  inFlightRequests.set(key, requestPromise)
+  return requestPromise
+}
+
+function extractList(response) {
+  if (Array.isArray(response)) return response
+  if (Array.isArray(response?.data)) return response.data
+  if (Array.isArray(response?.items)) return response.items
+  return []
+}
+
 export const suma21Service = {
-  async getProducts() {
-    const response = await apiClient.get("/api/suma21/products")
-    const list = Array.isArray(response)
-      ? response
-      : Array.isArray(response?.items)
-        ? response.items
-        : Array.isArray(response?.data)
-          ? response.data
-          : []
-    return list.map(toSuma21ProductModel)
+  clearCache() {
+    responseCache.clear()
   },
 
-  async getAccounts() {
+  async getProducts(options) {
+    const response = await fetchWithCacheAndRetry(
+      "products",
+      "/api/suma21/products",
+      options,
+    )
+    return extractList(response).map(toSuma21ProductModel)
+  },
+
+  async getAccounts(options) {
     try {
-      const response = await apiClient.get("/api/suma21/accounts")
-      const list = Array.isArray(response)
-        ? response
-        : Array.isArray(response?.items)
-          ? response.items
-          : Array.isArray(response?.data)
-            ? response.data
-            : []
-      return list.map(toSuma21AccountModel)
+      const response = await fetchWithCacheAndRetry(
+        "accounts",
+        "/api/suma21/accounts",
+        options,
+      )
+      return extractList(response).map(toSuma21AccountModel)
     } catch {
       return []
     }
   },
 
-  async getInventory() {
+  async getInventory(options) {
     try {
-      const response = await apiClient.get("/api/suma21/inventory")
-      const list = Array.isArray(response)
-        ? response
-        : Array.isArray(response?.items)
-          ? response.items
-          : Array.isArray(response?.data)
-            ? response.data
-            : []
-      return list.map(toSuma21InventoryModel)
+      const response = await fetchWithCacheAndRetry(
+        "inventory",
+        "/api/suma21/inventory",
+        options,
+      )
+      return extractList(response).map(toSuma21InventoryModel)
     } catch {
       return []
     }
   },
 
-  async getSaleTransactions() {
+  async getSaleTransactions(options) {
     try {
-      // Intentar primero a través de la ruta del backend proxy
-      let response
-      try {
-        response = await apiClient.get("/api/suma21/transactions/sales?page=1&limit=50")
-      } catch {
-        response = await apiClient.get("/api/v1/transactions/sales?page=1&limit=50")
-      }
-      const list = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response)
-          ? response
-          : Array.isArray(response?.items)
-            ? response.items
-            : []
-      return list.map(toSuma21SaleTransactionModel)
+      const response = await fetchWithCacheAndRetry(
+        "sales",
+        "/api/suma21/transactions/sales?page=1&limit=50",
+        options,
+      )
+      return extractList(response).map(toSuma21SaleTransactionModel)
     } catch {
       return []
     }
   },
 
-  async getDonationTransactions() {
+  async getDonationTransactions(options) {
     try {
-      let response
-      try {
-        response = await apiClient.get("/api/suma21/transactions/donations?page=1&limit=50")
-      } catch {
-        response = await apiClient.get("/api/v1/transactions/donations?page=1&limit=50")
-      }
-      const list = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response)
-          ? response
-          : Array.isArray(response?.items)
-            ? response.items
-            : []
-      return list.map(toSuma21DonationTransactionModel)
+      const response = await fetchWithCacheAndRetry(
+        "donations",
+        "/api/suma21/transactions/donations?page=1&limit=50",
+        options,
+      )
+      return extractList(response).map(toSuma21DonationTransactionModel)
     } catch {
       return []
     }
