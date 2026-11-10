@@ -30,8 +30,12 @@ export default function WorkshopsScreen() {
     error,
     createWorkshop,
     createSchedule,
+    updateSchedule,
     recordShift,
     createStaff,
+    deleteSchedule,
+    deleteShift,
+    updateShift,
   } = useWorkshops()
   const { children } = useChildren()
 
@@ -46,6 +50,8 @@ export default function WorkshopsScreen() {
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false)
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false)
   const [selectedSchedule, setSelectedSchedule] = useState(null)
+  const [editingShift, setEditingShift] = useState(null)
+  const [shiftFilters, setShiftFilters] = useState({ staffId: "", dateWorking: "" })
 
   // Form states
   const [workshopForm, setWorkshopForm] = useState({
@@ -122,15 +128,50 @@ export default function WorkshopsScreen() {
   const handleCreateSchedule = async (e) => {
     e.preventDefault()
     if (!scheduleForm.workshopId || !scheduleForm.professionalId) return
-    await createSchedule(scheduleForm)
+    if (selectedSchedule) {
+      await updateSchedule(selectedSchedule.professionalWorkshopId, scheduleForm)
+    } else {
+      await createSchedule(scheduleForm)
+    }
+    setSelectedSchedule(null)
     setIsScheduleModalOpen(false)
+  }
+
+  const openScheduleEditor = (schedule) => {
+    setSelectedSchedule(schedule)
+    setScheduleForm({
+      workshopId: schedule.workshopId || "",
+      professionalId: schedule.professionalId || "",
+      dayWeek: schedule.dayWeek || "Lunes",
+      timeStarts: schedule.timeStarts || "09:00",
+      timeEnds: schedule.timeEnds || "10:30",
+      endsOn: schedule.endsOn || "",
+      observations: schedule.observations || "",
+    })
+    setIsScheduleModalOpen(true)
   }
 
   const handleRecordShift = async (e) => {
     e.preventDefault()
     if (!shiftForm.staffId || !shiftForm.dateWorking) return
-    await recordShift(shiftForm)
+    if (editingShift) {
+      await updateShift(editingShift, shiftForm)
+    } else {
+      await recordShift(shiftForm)
+    }
+    setEditingShift(null)
     setIsShiftModalOpen(false)
+  }
+
+  const openShiftEditor = (shift) => {
+    setEditingShift(shift.staffAssistanceId)
+    setShiftForm({
+      staffId: shift.staffId || "",
+      dateWorking: shift.dateWorking || "",
+      timeIn: shift.timeIn || "",
+      timeOut: shift.timeOut || "",
+    })
+    setIsShiftModalOpen(true)
   }
 
   const handleCreateStaff = async (e) => {
@@ -233,7 +274,7 @@ export default function WorkshopsScreen() {
           )}
           {activeTab === "schedules" && (
             <Button
-              onClick={() => setIsScheduleModalOpen(true)}
+              onClick={() => { setSelectedSchedule(null); setIsScheduleModalOpen(true) }}
               className="bg-primary text-foreground hover:bg-primary-hover hover:text-white"
             >
               <Icon path="M12 4.5v15m7.5-7.5h-15" className="size-5" />
@@ -242,11 +283,15 @@ export default function WorkshopsScreen() {
           )}
           <Button
             variant="secondary"
-            onClick={() => setIsShiftModalOpen(true)}
+            onClick={() => { setEditingShift(null); setIsShiftModalOpen(true) }}
           >
             <Icon path="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" className="size-5" />
             Registrar Turno
           </Button>
+        </div>
+        <div className="flex flex-wrap gap-3 border-b border-border p-4">
+          <Field label="Filtrar colaborador" value={shiftFilters.staffId} onChange={(e) => setShiftFilters({ ...shiftFilters, staffId: e.target.value })} />
+          <Field label="Filtrar fecha" type="date" value={shiftFilters.dateWorking} onChange={(e) => setShiftFilters({ ...shiftFilters, dateWorking: e.target.value })} />
         </div>
       </div>
 
@@ -488,6 +533,7 @@ export default function WorkshopsScreen() {
                     className="w-full text-xs"
                     onClick={() => {
                       setScheduleForm((prev) => ({ ...prev, workshopId: workshop.workshopId }))
+                      setSelectedSchedule(null)
                       setIsScheduleModalOpen(true)
                     }}
                   >
@@ -560,6 +606,20 @@ export default function WorkshopsScreen() {
                       <Icon path="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" className="size-4" />
                       Tomar Asistencia
                     </Button>
+                    <Button
+                      variant="danger"
+                      className="text-xs py-1.5 px-3.5 min-h-9"
+                      onClick={() => deleteSchedule(schedule.professionalWorkshopId)}
+                    >
+                      Eliminar horario
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="text-xs py-1.5 px-3.5 min-h-9"
+                      onClick={() => openScheduleEditor(schedule)}
+                    >
+                      Editar horario
+                    </Button>
                   </div>
                 </Card>
               )
@@ -603,10 +663,11 @@ export default function WorkshopsScreen() {
                     <th className="px-6 py-3.5">Hora Entrada</th>
                     <th className="px-6 py-3.5">Hora Salida</th>
                     <th className="px-6 py-3.5">Estado</th>
+                    <th className="px-6 py-3.5">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {shifts.map((shift) => {
+                  {shifts.filter((shift) => (!shiftFilters.staffId || String(shift.staffId) === String(shiftFilters.staffId)) && (!shiftFilters.dateWorking || shift.dateWorking === shiftFilters.dateWorking)).map((shift) => {
                     const person = staffList.find((s) => s.staffId === shift.staffId)
                     return (
                       <tr key={shift.staffAssistanceId} className="hover:bg-surface-muted/20">
@@ -621,12 +682,20 @@ export default function WorkshopsScreen() {
                             Completado
                           </span>
                         </td>
+                        <td className="px-6 py-4">
+                          <Button variant="secondary" className="mr-2 text-xs" onClick={() => openShiftEditor(shift)}>
+                            Editar
+                          </Button>
+                          <Button variant="danger" className="text-xs" onClick={() => deleteShift(shift.staffAssistanceId)}>
+                            Eliminar
+                          </Button>
+                        </td>
                       </tr>
                     )
                   })}
                   {shifts.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-muted">
+                      <td colSpan={6} className="px-6 py-8 text-center text-muted">
                         No hay turnos registrados en la bitácora.
                       </td>
                     </tr>
@@ -840,7 +909,7 @@ export default function WorkshopsScreen() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-3xl border border-border bg-surface p-6 shadow-2xl">
             <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
-              <h2 className="text-xl font-extrabold text-foreground">Programar Sesión de Taller</h2>
+              <h2 className="text-xl font-extrabold text-foreground">{selectedSchedule ? "Editar horario de taller" : "Programar Sesión de Taller"}</h2>
               <button
                 type="button"
                 onClick={() => setIsScheduleModalOpen(false)}

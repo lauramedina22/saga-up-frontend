@@ -14,6 +14,9 @@ export default function DashboardScreen({ session }) {
     enrollments,
     healthRecords,
     crisisDescriptions,
+    staff,
+    interns,
+    assistance,
     loading,
     error,
     refresh,
@@ -34,6 +37,10 @@ export default function DashboardScreen({ session }) {
     const totalGuardians = guardians.length
     const totalWorkshops = workshops.length
     const totalEnrollments = enrollments.length
+    const activeStaff = staff.filter((person) => !person.exitDate).length
+    const linkedStaff = staff.filter((person) => person.securityUserId).length
+    const activeAssignments = schedules.filter((schedule) => !schedule.endsOn).length
+    const todayAssistance = assistance.filter((item) => item.dateWorking === new Date().toISOString().slice(0, 10)).length
 
     // Pagos
     const paidEnrollments = enrollments.filter(
@@ -66,8 +73,13 @@ export default function DashboardScreen({ session }) {
       maleCount,
       femaleCount,
       otherCount,
+      activeStaff,
+      linkedStaff,
+      activeAssignments,
+      todayAssistance,
+      interns: interns.length,
     }
-  }, [children, guardians, workshops, enrollments])
+  }, [children, guardians, workshops, enrollments, staff, schedules, assistance, interns])
 
   // Alertas de salud o consideraciones especiales
   const criticalAlerts = useMemo(() => {
@@ -317,6 +329,21 @@ export default function DashboardScreen({ session }) {
             <span className="text-success group-hover:underline">Detalles →</span>
           </div>
         </div>
+      </section>
+
+      <section aria-label="Métricas de personal" className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          ["Personal activo", stats.activeStaff, "/staff"],
+          ["Cuentas vinculadas", stats.linkedStaff, "/staff"],
+          ["Asignaciones activas", stats.activeAssignments, "/workshops"],
+          ["Practicantes", stats.interns, "/interns"],
+        ].map(([label, value, route]) => (
+          <button key={label} type="button" onClick={() => navigate(route)} className="rounded-2xl border border-border bg-surface p-5 text-left shadow-card transition hover:border-primary/50">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted">{label}</span>
+            <p className="mt-2 text-3xl font-extrabold text-foreground">{value}</p>
+            <span className="text-xs font-semibold text-primary">Gestionar →</span>
+          </button>
+        ))}
       </section>
 
       {/* 3. ALERTAS DE SALUD Y ATENCIÓN PRIORITARIA */}

@@ -66,6 +66,7 @@ function createClient(envKey) {
     get: (path) => request(envKey, "GET", path),
     post: (path, body) => request(envKey, "POST", path, body),
     put: (path, body) => request(envKey, "PUT", path, body),
+    patch: (path, body) => request(envKey, "PATCH", path, body),
     delete: (path) => request(envKey, "DELETE", path),
   }
 }
