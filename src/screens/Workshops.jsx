@@ -207,22 +207,26 @@ export default function WorkshopsScreen() {
       }
     }
 
-    await createStaff(staffData, extraData)
-    setIsStaffModalOpen(false)
-    setStaffForm({
-      fullName: "",
-      documentNumber: "",
-      phone: "",
-      email: "",
-      staffType: "professional",
-      titles: "",
-      institutions: "",
-      timeDonor: false,
-      university: "",
-      career: "",
-      foundationRole: "",
-      durationMonths: 6,
-    })
+    try {
+      await createStaff(staffData, extraData)
+      setIsStaffModalOpen(false)
+      setStaffForm({
+        fullName: "",
+        documentNumber: "",
+        phone: "",
+        email: "",
+        staffType: "professional",
+        titles: "",
+        institutions: "",
+        timeDonor: false,
+        university: "",
+        career: "",
+        foundationRole: "",
+        durationMonths: 6,
+      })
+    } catch {
+      // El hook expone el error en la vista.
+    }
   }
 
   const openAttendanceModal = (schedule) => {

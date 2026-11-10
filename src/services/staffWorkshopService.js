@@ -3,7 +3,9 @@ import {
   toStaffModel,
   toStaffPayload,
   toProfessionalModel,
+  toProfessionalPayload,
   toInternModel,
+  toInternPayload,
   toStaffAssistanceModel,
   toStaffAssistancePayload,
 } from "../models/staffModel.js"
@@ -175,7 +177,35 @@ export const staffWorkshopService = {
         ? response
         : response?.staff ?? response?.data
       if (Array.isArray(list) && list.length > 0) {
-        return list.map(toStaffModel)
+        const [professionalsResponse, internsResponse] = await Promise.all([
+          apiClient.get("/professionals"),
+          apiClient.get("/interns"),
+        ])
+        const professionals = (
+          Array.isArray(professionalsResponse)
+            ? professionalsResponse
+            : professionalsResponse?.professionals ?? professionalsResponse?.data ?? []
+        ).map(toProfessionalModel)
+        const interns = (
+          Array.isArray(internsResponse)
+            ? internsResponse
+            : internsResponse?.interns ?? internsResponse?.data ?? []
+        ).map(toInternModel)
+
+        return list.map((item) => {
+          const staff = toStaffModel(item)
+          return {
+            ...staff,
+            professional:
+              staff.professional ||
+              professionals.find((professional) => professional.staffId === staff.staffId) ||
+              null,
+            intern:
+              staff.intern ||
+              interns.find((intern) => intern.staffId === staff.staffId) ||
+              null,
+          }
+        })
       }
     } catch {
       // Usar mock si la API no tiene este endpoint
@@ -204,9 +234,63 @@ export const staffWorkshopService = {
         : null,
     }
     try {
-      await apiClient.post("/staff", newStaffItem)
-    } catch {
-      // fallback in-memory
+      const response = await apiClient.post("/staff", toStaffPayload(staffData))
+      const createdStaff = response?.staff ?? response?.data ?? response
+      const staffRecord = Array.isArray(createdStaff)
+        ? createdStaff[0]
+        : createdStaff
+      const persistedStaff = toStaffModel(staffRecord)
+      const staffId = persistedStaff.staffId
+
+      if (!staffId) {
+        throw new Error("La API no devolvió el identificador del colaborador creado.")
+      }
+
+      if (extraData.professional) {
+        await apiClient.post(
+          "/professionals",
+          toProfessionalPayload({
+            staffId,
+            titles: extraData.professional.titles,
+            institutions: extraData.professional.institutions,
+            observations: extraData.professional.observations,
+            timeDonor: extraData.professional.timeDonor ?? extraData.professional.time_donor,
+          }),
+        )
+      }
+
+      if (extraData.intern) {
+        await apiClient.post(
+          "/interns",
+          toInternPayload({
+            staffId,
+            university: extraData.intern.university,
+            career: extraData.intern.career,
+            foundationRole: extraData.intern.foundationRole ?? extraData.intern.foundation_role,
+            durationMonths: extraData.intern.durationMonths ?? extraData.intern.duration_months,
+          }),
+        )
+      }
+
+      return toStaffModel({
+        ...staffRecord,
+        professional: extraData.professional
+          ? {
+              professional_id: `prof-${staffId}`,
+              staff_id: staffId,
+              ...extraData.professional,
+            }
+          : null,
+        intern: extraData.intern
+          ? {
+              intern_id: `intern-${staffId}`,
+              staff_id: staffId,
+              ...extraData.intern,
+            }
+          : null,
+      })
+    } catch (requestError) {
+      if (import.meta.env.VITE_API_URL) throw requestError
     }
     inMemoryStaff = [newStaffItem, ...inMemoryStaff]
     return toStaffModel(newStaffItem)

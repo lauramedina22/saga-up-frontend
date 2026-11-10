@@ -34,13 +34,10 @@ export function toStaffPayload(model = {}) {
     document_number: model.documentNumber ?? "",
     staff_role_id: normalizeNumber(model.roleId),
     hire_date: normalizeDate(model.hireDate),
-    exit_date: normalizeDate(model.exitDate),
     contract_type_id: normalizeNumber(model.contractTypeId),
     staff_status_id: normalizeNumber(model.statusId),
     phone: model.phone ?? "",
     email: model.email ?? "",
-    hours_worked: normalizeNumber(model.hoursWorked ?? 0),
-    hours_payed: normalizeNumber(model.hoursPayed ?? 0),
   }
 }
 

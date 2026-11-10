@@ -76,9 +76,15 @@ export function useWorkshops() {
   }
 
   const createStaff = async (staffData, extraData) => {
-    const created = await staffWorkshopService.createStaff(staffData, extraData)
-    setStaffList((prev) => [created, ...prev])
-    return created
+    try {
+      setError(null)
+      const created = await staffWorkshopService.createStaff(staffData, extraData)
+      setStaffList((prev) => [created, ...prev])
+      return created
+    } catch (err) {
+      setError(err?.message || "No fue posible guardar el colaborador.")
+      throw err
+    }
   }
 
   return {
