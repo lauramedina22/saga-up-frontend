@@ -20,7 +20,7 @@ const EXTERNAL_SERVICES = [
     badgeBg: "bg-[#FFF4E3] text-[#E87722] border-[#E87722]/30",
     description:
       "Sistema de gestión de donaciones monetarias, insumos en especie y ventas solidarias para la sostenibilidad de programas.",
-    url: "https://suma21-backend.onrender.com",
+    url: "https://suma21-frontend.onrender.com",
   },
   {
     id: "aulaup",
@@ -30,7 +30,7 @@ const EXTERNAL_SERVICES = [
     badgeBg: "bg-[#FFFBEB] text-[#8A5A00] border-[#F2A900]/30",
     description:
       "Entorno virtual de aprendizaje y formación pedagógica adaptada con recursos educativos interactivos.",
-    url: "https://aulaup.fundacionasisco.org",
+    url: "https://aulaup-bxss.onrender.com/"
   },
   {
     id: "sonup",

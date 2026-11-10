@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   Navigate,
   Outlet,
@@ -7,6 +8,7 @@ import {
   useNavigate,
 } from "react-router-dom"
 import Sidebar from "./components/Sidebar"
+import logo from "./imports/sidebar.jpg"
 import { useAuth } from "./hooks/useAuth"
 import Login from "./screens/Login"
 import Register from "./screens/Register"
@@ -25,6 +27,7 @@ import InternsScreen from "./screens/Interns"
 function AppLayout({ session, onLogout }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const currentScreen =
     pathname === "/children"
       ? "beneficiarios"
@@ -68,19 +71,46 @@ function AppLayout({ session, onLogout }) {
       personal: "/staff",
       practicantes: "/interns",
     }
-    if (routes[screen]) navigate(routes[screen])
+    if (routes[screen]) {
+      navigate(routes[screen])
+      setMobileMenuOpen(false)
+    }
   }
 
+  const userInitial = userName.trim().charAt(0).toUpperCase() || "U"
+
   return (
-    <div className="min-h-dvh pl-20 sm:pl-64">
+    <div className="min-h-dvh pl-0 sm:pl-64">
+      {/* Barra superior para dispositivos móviles */}
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-surface px-4 shadow-xs sm:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(true)}
+          className="flex size-10 items-center justify-center rounded-xl text-foreground hover:bg-surface-muted active:scale-95 transition-all"
+          aria-label="Abrir menú de navegación"
+        >
+          <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <img src={logo} alt="Fundación ASISCO UP" className="h-8 object-contain" />
+        <div className="flex size-8 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-foreground shadow-xs">
+          {userInitial}
+        </div>
+      </header>
+
       <Sidebar
         currentScreen={currentScreen}
         onNavigate={handleNavigate}
         onLogout={onLogout}
         userName={userName}
         userRole={userRole}
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
       />
-      <Outlet />
+      <main className="w-full">
+        <Outlet />
+      </main>
     </div>
   )
 }

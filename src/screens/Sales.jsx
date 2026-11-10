@@ -2,7 +2,7 @@ import { useState } from "react"
 import { formatCOP } from "../data"
 import { useSuma21 } from "../hooks/useSuma21"
 import { Badge, Button, Card, EmptyState } from "../components/ui"
-import bisuteriaImg from "../imports/bisuteria.jpg"
+import hoodieImg from "../imports/hoodie.jpg"
 
 function formatFecha(isoString) {
   if (!isoString) return "-"
@@ -99,6 +99,7 @@ export default function SalesScreen() {
           variant="secondary"
           onClick={() => refresh()}
           loading={loading}
+          className="w-full sm:w-auto"
         >
           Sincronizar
         </Button>
@@ -109,33 +110,30 @@ export default function SalesScreen() {
         <button
           type="button"
           onClick={() => setActiveTab("productos")}
-          className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
-            activeTab === "productos"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted hover:text-foreground"
-          }`}
+          className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${activeTab === "productos"
+            ? "border-primary text-primary"
+            : "border-transparent text-muted hover:text-foreground"
+            }`}
         >
           Productos ({products.length})
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("inventario")}
-          className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
-            activeTab === "inventario"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted hover:text-foreground"
-          }`}
+          className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${activeTab === "inventario"
+            ? "border-primary text-primary"
+            : "border-transparent text-muted hover:text-foreground"
+            }`}
         >
           Control de Inventario ({inventory.length})
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("ventas")}
-          className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
-            activeTab === "ventas"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted hover:text-foreground"
-          }`}
+          className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${activeTab === "ventas"
+            ? "border-primary text-primary"
+            : "border-transparent text-muted hover:text-foreground"
+            }`}
         >
           Historial de Ventas ({sales.length})
         </button>
@@ -143,11 +141,10 @@ export default function SalesScreen() {
           <button
             type="button"
             onClick={() => setActiveTab("cuentas")}
-            className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${
-              activeTab === "cuentas"
-                ? "border-primary text-primary"
-                : "border-transparent text-muted hover:text-foreground"
-            }`}
+            className={`shrink-0 border-b-2 px-4 py-2 text-sm font-extrabold transition-colors ${activeTab === "cuentas"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted hover:text-foreground"
+              }`}
           >
             Cuentas ({accounts.length})
           </button>
@@ -199,7 +196,7 @@ export default function SalesScreen() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredProducts.map((product) => {
-                const imgSource = product.imageUrl || bisuteriaImg
+                const imgSource = product.imageUrl || hoodieImg
 
                 return (
                   <article
@@ -212,7 +209,7 @@ export default function SalesScreen() {
                         alt={product.name}
                         className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                         onError={(e) => {
-                          e.target.src = bisuteriaImg
+                          e.target.src = hoodieImg
                         }}
                       />
                       <div className="absolute top-3 right-3">
@@ -439,11 +436,11 @@ export default function SalesScreen() {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-enter"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4 backdrop-blur-xs animate-enter"
           onClick={() => setSelectedProduct(null)}
         >
           <div
-            className="w-full max-w-lg rounded-3xl bg-surface p-6 shadow-2xl border border-border max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl bg-surface p-5 sm:p-6 shadow-2xl border border-border max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-3 border-b border-border">
@@ -459,13 +456,13 @@ export default function SalesScreen() {
               </button>
             </div>
 
-            <div className="relative mt-4 w-full h-64 rounded-2xl overflow-hidden bg-surface-muted border border-border">
+            <div className="relative mt-4 w-full h-56 sm:h-64 rounded-2xl overflow-hidden bg-surface-muted border border-border">
               <img
-                src={selectedProduct.imageUrl || bisuteriaImg}
+                src={selectedProduct.imageUrl || hoodieImg}
                 alt={selectedProduct.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.target.src = bisuteriaImg
+                  e.target.src = hoodieImg
                 }}
               />
               <div className="absolute top-3 right-3">
@@ -502,11 +499,12 @@ export default function SalesScreen() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-end gap-3 pt-2">
+            <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2">
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => setSelectedProduct(null)}
+                className="w-full sm:w-auto"
               >
                 Cerrar
               </Button>
@@ -516,6 +514,7 @@ export default function SalesScreen() {
                   showToast(`Solicitud registrada para: ${selectedProduct.name}`)
                   setSelectedProduct(null)
                 }}
+                className="w-full sm:w-auto"
               >
                 Registrar salida / venta
               </Button>

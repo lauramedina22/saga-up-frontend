@@ -106,6 +106,7 @@ export default function AuditLogs() {
           variant="secondary"
           onClick={() => loadLogs()}
           loading={loading}
+          className="w-full sm:w-auto"
         >
           Actualizar
         </Button>
@@ -127,7 +128,7 @@ export default function AuditLogs() {
       )}
 
       {/* Tarjetas resumen con métricas */}
-      <div className="mb-6 grid grid-cols-3 gap-3">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
           <p className="text-2xl font-extrabold text-success">{insertCount}</p>
           <p className="text-xs font-semibold text-muted">Creaciones</p>

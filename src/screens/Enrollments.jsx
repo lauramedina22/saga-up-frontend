@@ -111,7 +111,11 @@ export default function EnrollmentsScreen() {
             {enrollments.length} registros
           </p>
         </div>
-        <Button type="button" onClick={() => setCreating(true)}>
+        <Button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="w-full sm:w-auto"
+        >
           + Registrar pago
         </Button>
       </div>
@@ -130,7 +134,7 @@ export default function EnrollmentsScreen() {
         </p>
       )}
 
-      <div className="mb-6 grid grid-cols-2 gap-4">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
           <p className="text-2xl font-extrabold text-foreground">
             {enrollments.length}
@@ -187,23 +191,25 @@ export default function EnrollmentsScreen() {
           return (
             <article
               key={enrollment.id}
-              className="flex items-center gap-4 rounded-3xl border border-border bg-surface p-4 shadow-sm"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-3xl border border-border bg-surface p-4 shadow-sm"
             >
-              <Avatar
-                name={childName}
-                size="sm"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="font-extrabold text-foreground">
-                  {childName}
-                </p>
-                <p className="text-sm text-muted">
-                  Fecha de pago: {formatFecha(enrollment.paidDate)} · Medio:{" "}
-                  {paymentMethodName}
-                </p>
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                <Avatar
+                  name={childName}
+                  size="sm"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="font-extrabold text-foreground truncate">
+                    {childName}
+                  </p>
+                  <p className="text-xs sm:text-sm text-muted">
+                    Fecha de pago: {formatFecha(enrollment.paidDate)} · Medio:{" "}
+                    {paymentMethodName}
+                  </p>
+                </div>
               </div>
-              <div className="flex shrink-0 items-center gap-3">
-                <div className="flex flex-col items-end gap-1.5">
+              <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 sm:shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
+                <div className="flex items-center sm:flex-col sm:items-end gap-2 sm:gap-1.5">
                   <Badge
                     tone={
                       statusName.toLowerCase().includes("pago") ||

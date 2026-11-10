@@ -148,18 +148,18 @@ export default function DashboardScreen({ session }) {
   }).format(new Date())
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
       {/* 1. ENCABEZADO Y BIENVENIDA */}
       <header className="mb-8 flex flex-col justify-between gap-4 border-b border-border pb-6 md:flex-row md:items-center">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
               Fundación ASISCO UP
             </span>
             <span className="text-muted">•</span>
             <span className="text-xs capitalize text-muted">{todayStr}</span>
           </div>
-          <h1 className="mt-1 text-3xl font-extrabold text-foreground sm:text-4xl">
+          <h1 className="mt-1 text-2xl font-extrabold text-foreground sm:text-4xl">
             Bienvenido, {userName}
           </h1>
           <p className="mt-1 text-sm font-medium text-muted">
@@ -167,12 +167,12 @@ export default function DashboardScreen({ session }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <Button
             variant="secondary"
             onClick={refresh}
             loading={loading}
-            className="text-sm"
+            className="text-sm w-full sm:w-auto"
             title="Recargar métricas"
           >
             <Icon
@@ -185,7 +185,7 @@ export default function DashboardScreen({ session }) {
           <Button
             variant="primary"
             onClick={() => navigate("/children")}
-            className="text-sm shadow-md"
+            className="text-sm shadow-md w-full sm:w-auto"
           >
             <Icon
               path="M12 4.5v15m7.5-7.5h-15"

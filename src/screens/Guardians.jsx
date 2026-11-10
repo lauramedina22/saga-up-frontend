@@ -57,25 +57,26 @@ function GuardianDetails({
         <Button variant="tertiary" onClick={onBack} className="mb-5 px-0">
           Volver a acudientes
         </Button>
-        <Card className="mb-4 rounded-3xl p-6">
-          <div className="flex items-center gap-4">
+        <Card className="mb-4 rounded-3xl p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Avatar name={guardian.fullName} size="lg" />
-            <div>
-              <h1 className="text-2xl font-extrabold">{guardian.fullName}</h1>
-              <p className="text-sm text-muted">
+            <div className="min-w-0">
+              <h1 className="truncate text-xl sm:text-2xl font-extrabold">{guardian.fullName}</h1>
+              <p className="text-xs sm:text-sm text-muted">
                 ID de registro: {display(guardian.guardianId)}
               </p>
             </div>
           </div>
         </Card>
 
-        <Card className="rounded-3xl p-5">
+        <Card className="rounded-3xl p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-extrabold">Datos de guardians</h2>
+            <h2 className="text-lg sm:text-xl font-extrabold">Datos del acudiente</h2>
             <Button
               type="button"
               variant="secondary"
               onClick={() => setEditingGuardian(true)}
+              className="w-full sm:w-auto"
             >
               Editar acudiente
             </Button>
@@ -394,35 +395,40 @@ export default function GuardiansScreen() {
           return (
             <article
               key={guardian.guardianId}
-              className="flex items-center gap-3 rounded-3xl border border-border bg-surface p-3 shadow-sm"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 rounded-3xl border border-border bg-surface p-3 sm:p-3.5 shadow-sm"
             >
               <button
                 type="button"
                 onClick={() => setSelectedId(guardian.guardianId)}
-                className="flex min-w-0 flex-1 items-center gap-4 rounded-2xl p-2 text-left hover:bg-background"
+                className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4 rounded-2xl p-1 sm:p-2 text-left hover:bg-background transition-colors"
               >
                 <Avatar name={guardian.fullName} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-extrabold">
+                  <span className="block truncate font-extrabold text-foreground">
                     {guardian.fullName}
                   </span>
-                  <span className="block truncate text-sm text-muted">
+                  <span className="block truncate text-xs sm:text-sm text-muted">
                     {linkedCount
                       ? `${linkedCount} beneficiario(s) vinculado(s)`
                       : "Sin beneficiarios vinculados"}
                   </span>
-                  <span className="mt-0.5 block truncate text-xs text-subtle">
-                    {guardian.phone}
-                  </span>
+                  {guardian.phone && (
+                    <span className="mt-0.5 block truncate text-xs text-subtle">
+                      Tel: {guardian.phone}
+                    </span>
+                  )}
                 </span>
               </button>
-              <Button
-                type="button"
-                variant="danger"
-                onClick={() => setDeleting(guardian)}
-              >
-                Eliminar
-              </Button>
+              <div className="flex shrink-0 justify-end px-1 sm:p-0">
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={() => setDeleting(guardian)}
+                  className="w-full sm:w-auto text-xs sm:text-sm py-2 min-h-9"
+                >
+                  Eliminar
+                </Button>
+              </div>
             </article>
           )
         })}
