@@ -654,7 +654,7 @@ export default function FinancialScreen() {
         <div className="mb-5 flex flex-col justify-between gap-4 border-b border-border pb-4 lg:flex-row lg:items-center">
           <div>
             <h2 className="text-lg font-extrabold text-foreground">
-              Libro Mayor de Movimientos Financieros ({unifiedTransactions.length})
+              Movimientos Financieros ({unifiedTransactions.length})
             </h2>
             <p className="text-xs font-semibold text-muted">
               Historial unificado de Donaciones, Ventas de Tienda Solidaria y Matrículas
@@ -674,11 +674,10 @@ export default function FinancialScreen() {
                   key={tab.id}
                   type="button"
                   onClick={() => setSourceFilter(tab.id)}
-                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-extrabold transition-colors ${
-                    sourceFilter === tab.id
-                      ? "bg-primary text-foreground shadow-xs"
-                      : "border border-border bg-surface text-muted hover:text-foreground"
-                  }`}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-extrabold transition-colors ${sourceFilter === tab.id
+                    ? "bg-primary text-foreground shadow-xs"
+                    : "border border-border bg-surface text-muted hover:text-foreground"
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -743,9 +742,9 @@ export default function FinancialScreen() {
                       <Badge
                         tone={
                           tx.status === "APPROVED" ||
-                          tx.status.includes("PAGO") ||
-                          tx.status.includes("PAGA") ||
-                          tx.status === "COMPLETADO"
+                            tx.status.includes("PAGO") ||
+                            tx.status.includes("PAGA") ||
+                            tx.status === "COMPLETADO"
                             ? "success"
                             : "warning"
                         }
