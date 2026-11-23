@@ -21,6 +21,7 @@ import DashboardScreen from "./screens/Dashboard"
 import AuditLogsScreen from "./screens/AuditLogs"
 import ServicesScreen from "./screens/Services"
 import DonationsScreen from "./screens/Donations"
+import FinancialScreen from "./screens/Financial"
 import StaffScreen from "./screens/Staff"
 import InternsScreen from "./screens/Interns"
 
@@ -41,15 +42,17 @@ function AppLayout({ session, onLogout }) {
               ? "ventas"
               : pathname === "/donations" || pathname === "/donaciones"
                 ? "donaciones"
-                : pathname === "/audit-logs" || pathname === "/auditoria"
-                  ? "auditoria"
-                  : pathname === "/services" || pathname === "/servicios"
-                    ? "servicios"
+                : pathname === "/financial" || pathname === "/financiero"
+                  ? "financiero"
+                  : pathname === "/audit-logs" || pathname === "/auditoria"
+                    ? "auditoria"
+                    : pathname === "/services" || pathname === "/servicios"
+                      ? "servicios"
                       : pathname === "/staff" || pathname === "/personal"
                         ? "personal"
                         : pathname === "/interns" || pathname === "/practicantes"
                           ? "practicantes"
-                      : "dashboard"
+                          : "dashboard"
   const userName =
     session?.usuario?.username ||
     session?.usuario?.email ||
@@ -66,6 +69,7 @@ function AppLayout({ session, onLogout }) {
       talleristas: "/workshops",
       ventas: "/sales",
       donaciones: "/donations",
+      financiero: "/financial",
       auditoria: "/audit-logs",
       servicios: "/services",
       personal: "/staff",
@@ -187,6 +191,8 @@ const App = () => {
         <Route path="/ventas" element={<SalesScreen />} />
         <Route path="/donations" element={<DonationsScreen />} />
         <Route path="/donaciones" element={<DonationsScreen />} />
+        <Route path="/financial" element={<FinancialScreen />} />
+        <Route path="/financiero" element={<FinancialScreen />} />
         <Route path="/audit-logs" element={<AuditLogsScreen />} />
         <Route path="/auditoria" element={<AuditLogsScreen />} />
         <Route path="/services" element={<ServicesScreen />} />

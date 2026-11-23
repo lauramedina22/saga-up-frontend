@@ -42,8 +42,33 @@ export default function EnrollmentsScreen() {
       enrollment.status === filter
     )
   })
-  const totalAmount = enrollments.reduce(
-    (total, enrollment) => total + (Number(enrollment.amount) || 0),
+
+  const isPaidEnrollment = (enrollment) => {
+    const statusName = (
+      findCatalogLabel(catalogs.tuition_statuses, enrollment.tuitionStatusId) ||
+      enrollment.status ||
+      ""
+    ).toLowerCase()
+    return (
+      statusName.includes("pago") ||
+      statusName.includes("paga") ||
+      statusName.includes("completado")
+    )
+  }
+
+  const paidAmount = enrollments.reduce(
+    (total, enrollment) =>
+      isPaidEnrollment(enrollment)
+        ? total + (Number(enrollment.amount) || 0)
+        : total,
+    0,
+  )
+
+  const pendingAmount = enrollments.reduce(
+    (total, enrollment) =>
+      !isPaidEnrollment(enrollment)
+        ? total + (Number(enrollment.amount) || 0)
+        : total,
     0,
   )
 
@@ -142,11 +167,18 @@ export default function EnrollmentsScreen() {
           <p className="text-sm font-medium text-muted">Pagos registrados</p>
         </div>
         <div className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
-          <p className="text-2xl font-extrabold text-foreground">
-            {formatCOP(totalAmount)}
-          </p>
+          <div className="flex flex-wrap items-baseline gap-2">
+            <p className="text-2xl font-extrabold text-foreground">
+              {formatCOP(paidAmount)}
+            </p>
+            {pendingAmount > 0 && (
+              <span className="rounded-full bg-warning-soft px-2.5 py-0.5 text-xs font-extrabold text-warning">
+                + {formatCOP(pendingAmount)} pendientes
+              </span>
+            )}
+          </div>
           <p className="text-sm font-medium text-muted">
-            Valor total registrado
+            Valor total registrado (en estado PAGO)
           </p>
         </div>
       </div>

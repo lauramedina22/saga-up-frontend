@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { suma21Service } from "../services/suma21Service.js"
+import { enrollmentService } from "../services/enrollmentService.js"
 
 export function useSuma21(resource = "productos") {
   const [products, setProducts] = useState([])
@@ -7,6 +8,7 @@ export function useSuma21(resource = "productos") {
   const [inventory, setInventory] = useState([])
   const [sales, setSales] = useState([])
   const [donations, setDonations] = useState([])
+  const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
@@ -19,6 +21,27 @@ export function useSuma21(resource = "productos") {
       }
 
       try {
+        if (target === "financiero" || target === "financial") {
+          // Carga secuencial hacia SUMA 21 para respetar el rate-limit + matrículas de SAGA UP
+          const enrollmentPromise = enrollmentService
+            .getEnrollmentData()
+            .then((res) => res.enrollments || [])
+            .catch(() => [])
+
+          const productsData = await suma21Service.getProducts({ force }).catch(() => [])
+          const salesData = await suma21Service.getSaleTransactions({ force }).catch(() => [])
+          const donationsData = await suma21Service
+            .getDonationTransactions({ force })
+            .catch(() => [])
+          const enrollmentsData = await enrollmentPromise
+
+          setProducts(productsData)
+          setSales(salesData)
+          setDonations(donationsData)
+          setEnrollments(enrollmentsData)
+          return
+        }
+
         if (target === "donaciones" || target === "donations") {
           const donationsData = await suma21Service.getDonationTransactions({ force })
           setDonations(donationsData)
@@ -76,6 +99,7 @@ export function useSuma21(resource = "productos") {
     inventory,
     sales,
     donations,
+    enrollments,
     loading,
     error,
     refresh,

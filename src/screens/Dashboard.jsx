@@ -43,14 +43,14 @@ export default function DashboardScreen({ session }) {
     const todayAssistance = assistance.filter((item) => item.dateWorking === new Date().toISOString().slice(0, 10)).length
 
     // Pagos
-    const paidEnrollments = enrollments.filter(
-      (e) => e.status === "pagado" || e.status === "completado",
-    ).length
-    const pendingEnrollments = enrollments.filter(
-      (e) => e.status === "pendiente" || e.status === "por_pagar",
-    ).length
+    const isPaid = (e) => {
+      const st = String(e.status || "").toLowerCase()
+      return st.includes("pago") || st.includes("paga") || st.includes("completado")
+    }
+    const paidEnrollments = enrollments.filter(isPaid).length
+    const pendingEnrollments = enrollments.filter((e) => !isPaid(e)).length
     const totalRevenue = enrollments.reduce(
-      (sum, e) => sum + (Number(e.amount) || 0),
+      (sum, e) => (isPaid(e) ? sum + (Number(e.amount) || 0) : sum),
       0,
     )
 
@@ -160,7 +160,7 @@ export default function DashboardScreen({ session }) {
             <span className="text-xs capitalize text-muted">{todayStr}</span>
           </div>
           <h1 className="mt-1 text-2xl font-extrabold text-foreground sm:text-4xl">
-            Bienvenido, {userName}
+            Bienvenida, {userName}
           </h1>
           <p className="mt-1 text-sm font-medium text-muted">
             Panel de gestión y seguimiento integral de beneficiarios.
@@ -483,11 +483,10 @@ export default function DashboardScreen({ session }) {
                   <div
                     className="h-full bg-success transition-all duration-500"
                     style={{
-                      width: `${
-                        stats.totalChildren > 0
-                          ? (stats.activeChildren / stats.totalChildren) * 100
-                          : 0
-                      }%`,
+                      width: `${stats.totalChildren > 0
+                        ? (stats.activeChildren / stats.totalChildren) * 100
+                        : 0
+                        }%`,
                     }}
                   />
                 </div>
@@ -505,22 +504,20 @@ export default function DashboardScreen({ session }) {
                   <div
                     className="bg-info transition-all duration-500"
                     style={{
-                      width: `${
-                        stats.totalChildren > 0
-                          ? (stats.maleCount / stats.totalChildren) * 100
-                          : 0
-                      }%`,
+                      width: `${stats.totalChildren > 0
+                        ? (stats.maleCount / stats.totalChildren) * 100
+                        : 0
+                        }%`,
                     }}
                     title="Masculino"
                   />
                   <div
                     className="bg-primary transition-all duration-500"
                     style={{
-                      width: `${
-                        stats.totalChildren > 0
-                          ? (stats.femaleCount / stats.totalChildren) * 100
-                          : 0
-                      }%`,
+                      width: `${stats.totalChildren > 0
+                        ? (stats.femaleCount / stats.totalChildren) * 100
+                        : 0
+                        }%`,
                     }}
                     title="Femenino"
                   />
@@ -548,11 +545,10 @@ export default function DashboardScreen({ session }) {
                     <div
                       className="h-full bg-primary transition-all duration-500"
                       style={{
-                        width: `${
-                          stats.totalEnrollments > 0
-                            ? (stats.paidEnrollments / stats.totalEnrollments) * 100
-                            : 0
-                        }%`,
+                        width: `${stats.totalEnrollments > 0
+                          ? (stats.paidEnrollments / stats.totalEnrollments) * 100
+                          : 0
+                          }%`,
                       }}
                     />
                   </div>

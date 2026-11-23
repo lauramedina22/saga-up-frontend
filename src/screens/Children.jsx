@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { formatCOP, formatFecha } from "../data"
-import { Avatar, Button, Card, Field } from "../components/ui"
+import { Avatar, Button, Card, Field, Icon } from "../components/ui"
 import {
   ChildGuardianDialog,
   ChildInternalDescriptionDialog,
@@ -48,6 +48,7 @@ function ChildDetails({
   onUpdateChild,
   onBack,
   onDelete,
+  onReactivate,
 }) {
   const [recordDialog, setRecordDialog] = useState(null)
   const [deletingRecord, setDeletingRecord] = useState(null)
@@ -119,7 +120,7 @@ function ChildDetails({
               >
                 Editar
               </Button>
-              {!child.exitDate && (
+              {!child.exitDate ? (
                 <Button
                   type="button"
                   variant="danger"
@@ -128,6 +129,18 @@ function ChildDetails({
                 >
                   Desactivar
                 </Button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onReactivate}
+                  className="inline-flex min-h-11 flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-xl border border-success/30 bg-success-soft px-4 py-2 text-sm font-extrabold text-success transition-all hover:bg-success hover:text-white active:scale-[0.98]"
+                >
+                  <Icon
+                    path="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                    className="size-4"
+                  />
+                  <span>Volver a vincular</span>
+                </button>
               )}
             </div>
           </div>
@@ -781,12 +794,14 @@ export default function ChildrenScreen() {
     createGuardian,
     updateChild,
     deleteChild,
+    reactivateChild,
   } = useChildren()
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("activos")
   const [selectedId, setSelectedId] = useState(null)
   const [creating, setCreating] = useState(false)
   const [deleting, setDeleting] = useState(null)
+  const [reactivatingId, setReactivatingId] = useState(null)
   const [toast, setToast] = useState("")
 
   const activeCount = children.filter((child) => !child.exitDate).length
@@ -806,6 +821,17 @@ export default function ChildrenScreen() {
   const showToast = (message) => {
     setToast(message)
     window.setTimeout(() => setToast(""), 3000)
+  }
+
+  const handleReactivate = async (childRecord) => {
+    setReactivatingId(childRecord.childId)
+    const result = await reactivateChild(childRecord)
+    setReactivatingId(null)
+    if (result.ok) {
+      showToast(result.message)
+    } else {
+      showToast(result.message)
+    }
   }
 
   if (selected) {
@@ -839,6 +865,7 @@ export default function ChildrenScreen() {
           onUpdateChild={updateChild}
           onBack={() => setSelectedId(null)}
           onDelete={() => setDeleting(selected)}
+          onReactivate={() => handleReactivate(selected)}
         />
         {deleting && (
           <DeletePersonDialog
@@ -993,9 +1020,27 @@ export default function ChildrenScreen() {
                   Desactivar
                 </Button>
               ) : (
-                <span className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800">
-                  Retirado: {child.exitDate}
-                </span>
+                <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
+                  <span className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-800">
+                    Retirado: {child.exitDate}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={reactivatingId === child.childId}
+                    onClick={() => handleReactivate(child)}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-success/30 bg-success-soft px-3 py-1.5 text-xs font-extrabold text-success transition-all hover:bg-success hover:text-white active:scale-95 disabled:opacity-60"
+                  >
+                    <Icon
+                      path="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                      className={`size-3.5 ${reactivatingId === child.childId ? "animate-spin" : ""}`}
+                    />
+                    <span>
+                      {reactivatingId === child.childId
+                        ? "Vinculando…"
+                        : "Volver a vincular"}
+                    </span>
+                  </button>
+                </div>
               )}
             </div>
           </article>

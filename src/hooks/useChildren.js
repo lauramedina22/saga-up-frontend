@@ -312,6 +312,33 @@ export function useChildren() {
     }
   }
 
+  const reactivateChild = async (child) => {
+    try {
+      const updatedChild = await childService.updateChild(child.childId, {
+        ...child,
+        exitDate: null,
+        statusId: 1,
+      })
+      setChildren((current) =>
+        current.map((item) =>
+          item.childId === child.childId ? updatedChild : item,
+        ),
+      )
+      return {
+        ok: true,
+        message: "Beneficiario vinculado nuevamente.",
+        child: updatedChild,
+      }
+    } catch (requestError) {
+      return {
+        ok: false,
+        message:
+          requestError.message ||
+          "No fue posible volver a vincular el beneficiario.",
+      }
+    }
+  }
+
   const createRelationship = async (relationship) => {
     const created = await childGuardianService.createRelationship(relationship)
     setRelationships((current) => [...current, created])
@@ -378,6 +405,7 @@ export function useChildren() {
     deleteAssistance,
     updateChild,
     deleteChild,
+    reactivateChild,
     searchByDocument,
   }
 }
