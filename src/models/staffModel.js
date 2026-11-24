@@ -84,13 +84,35 @@ export function toInternPayload(model = {}) {
   }
 }
 
+function timeToDecimalHours(value) {
+  if (value === undefined || value === null || value === "") return null
+  const match = String(value).match(/^(\d{1,2}):([0-5]\d)$/)
+  if (!match) return null
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  if (hours > 23) return null
+  return `${hours}.${String(minutes).padStart(2, "0")}`
+}
+
+function decimalHoursToTime(value) {
+  if (value === undefined || value === null || value === "") return ""
+  const text = String(value).trim()
+  if (/^\d{1,2}:\d{2}$/.test(text)) return text
+  const match = text.match(/^(\d{1,2})(?:[.,](\d{1,2}))?$/)
+  if (!match) return text
+  const hours = Number(match[1])
+  const minutes = Number(match[2] || "0")
+  if (hours > 23 || minutes > 59) return text
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+}
+
 export function toStaffAssistanceModel(raw = {}) {
   return {
     staffAssistanceId: normalizeId(raw.staff_assistance_id ?? raw.staff_assistance ?? raw.id),
     staffId: normalizeId(raw.staff_id),
     dateWorking: normalizeDate(raw.date_working),
-    timeIn: raw.time_in ?? "",
-    timeOut: raw.time_out ?? "",
+    timeIn: decimalHoursToTime(raw.time_in),
+    timeOut: decimalHoursToTime(raw.time_out),
   }
 }
 
@@ -98,7 +120,7 @@ export function toStaffAssistancePayload(model = {}) {
   return {
     staff_id: normalizeId(model.staffId),
     date_working: normalizeDate(model.dateWorking),
-    time_in: model.timeIn ?? "",
-    time_out: model.timeOut ?? "",
+    time_in: timeToDecimalHours(model.timeIn),
+    time_out: timeToDecimalHours(model.timeOut),
   }
 }

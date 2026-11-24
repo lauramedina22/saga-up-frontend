@@ -2,7 +2,26 @@ import { useState } from "react"
 import { useWorkshops } from "../hooks/useWorkshops"
 import { useChildren } from "../hooks/useChildren"
 import { Avatar, Badge, Button, Card, Field, Icon, SelectField, TextArea } from "../components/ui"
-import { formatFecha } from "../data"
+import { formatFecha, formatTime, formatTime12 } from "../data"
+
+const SHIFT_TIME_OPTIONS = Array.from({ length: 48 }, (_, index) => {
+  const hour = Math.floor(index / 2)
+  const minute = index % 2 === 0 ? "00" : "30"
+  const value = `${String(hour).padStart(2, "0")}:${minute}`
+  return { value, label: formatTime12(value) }
+})
+
+const getShiftDuration = (shift) => {
+  const toMinutes = (value) => {
+    const match = String(value || "").match(/^(\d{1,2}):([0-5]\d)$/)
+    return match ? Number(match[1]) * 60 + Number(match[2]) : null
+  }
+  const entrance = toMinutes(shift.timeIn)
+  const exit = toMinutes(shift.timeOut)
+  return entrance !== null && exit !== null && exit > entrance
+    ? (exit - entrance) / 60
+    : 0
+}
 
 const TABS = [
   { id: "staff", label: "Talleristas y Personal", icon: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" },
@@ -52,6 +71,7 @@ export default function WorkshopsScreen() {
   const [selectedSchedule, setSelectedSchedule] = useState(null)
   const [editingShift, setEditingShift] = useState(null)
   const [shiftFilters, setShiftFilters] = useState({ staffId: "", dateWorking: "" })
+  const [shiftError, setShiftError] = useState("")
 
   // Form states
   const [workshopForm, setWorkshopForm] = useState({
@@ -111,6 +131,14 @@ export default function WorkshopsScreen() {
     return true
   })
 
+  const filteredShifts = shifts.filter((shift) => {
+    const matchesStaff = !shiftFilters.staffId ||
+      String(shift.staffId) === String(shiftFilters.staffId)
+    const matchesDate = !shiftFilters.dateWorking ||
+      String(shift.dateWorking) === String(shiftFilters.dateWorking)
+    return matchesStaff && matchesDate
+  })
+
   // Handlers para submit
   const handleCreateWorkshop = async (e) => {
     e.preventDefault()
@@ -153,23 +181,44 @@ export default function WorkshopsScreen() {
 
   const handleRecordShift = async (e) => {
     e.preventDefault()
-    if (!shiftForm.staffId || !shiftForm.dateWorking) return
-    if (editingShift) {
-      await updateShift(editingShift, shiftForm)
-    } else {
-      await recordShift(shiftForm)
+    setShiftError("")
+    if (!shiftForm.staffId || !shiftForm.dateWorking) {
+      setShiftError("Selecciona el colaborador y la fecha.")
+      return
     }
-    setEditingShift(null)
-    setIsShiftModalOpen(false)
+    try {
+      if (editingShift) {
+        await updateShift(editingShift, shiftForm)
+      } else {
+        await recordShift(shiftForm)
+      }
+      setEditingShift(null)
+      setIsShiftModalOpen(false)
+    } catch (requestError) {
+      setShiftError(requestError?.message || "No fue posible guardar el turno.")
+    }
   }
 
   const openShiftEditor = (shift) => {
+    setShiftError("")
     setEditingShift(shift.staffAssistanceId)
     setShiftForm({
       staffId: shift.staffId || "",
       dateWorking: shift.dateWorking || "",
       timeIn: shift.timeIn || "",
       timeOut: shift.timeOut || "",
+    })
+    setIsShiftModalOpen(true)
+  }
+
+  const openNewShift = () => {
+    setShiftError("")
+    setEditingShift(null)
+    setShiftForm({
+      staffId: "",
+      dateWorking: new Date().toISOString().slice(0, 10),
+      timeIn: "08:00",
+      timeOut: "12:00",
     })
     setIsShiftModalOpen(true)
   }
@@ -287,15 +336,11 @@ export default function WorkshopsScreen() {
           )}
           <Button
             variant="secondary"
-            onClick={() => { setEditingShift(null); setIsShiftModalOpen(true) }}
+            onClick={openNewShift}
           >
             <Icon path="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" className="size-5" />
             Registrar Turno
           </Button>
-        </div>
-        <div className="flex flex-wrap gap-3 border-b border-border p-4">
-          <Field label="Filtrar colaborador" value={shiftFilters.staffId} onChange={(e) => setShiftFilters({ ...shiftFilters, staffId: e.target.value })} />
-          <Field label="Filtrar fecha" type="date" value={shiftFilters.dateWorking} onChange={(e) => setShiftFilters({ ...shiftFilters, dateWorking: e.target.value })} />
         </div>
       </div>
 
@@ -474,14 +519,20 @@ export default function WorkshopsScreen() {
                   <div className="mt-5 border-t border-border pt-4 flex items-center justify-between">
                     <div>
                       <span className="text-[11px] font-bold uppercase text-muted">Horas trabajadas</span>
-                      <p className="text-sm font-extrabold text-foreground">{person.hoursWorked} hrs</p>
+                      <p className="text-sm font-extrabold text-foreground">
+                        {shifts
+                          .filter((shift) => String(shift.staffId) === String(person.staffId))
+                          .reduce((total, shift) => total + getShiftDuration(shift), 0)
+                          .toFixed(2)
+                          .replace(/\.00$/, "")} hrs
+                      </p>
                     </div>
                     <Button
                       variant="secondary"
                       className="text-xs py-1.5 px-3 min-h-8"
                       onClick={() => {
+                        openNewShift()
                         setShiftForm((prev) => ({ ...prev, staffId: person.staffId }))
-                        setIsShiftModalOpen(true)
                       }}
                     >
                       + Turno
@@ -587,7 +638,7 @@ export default function WorkshopsScreen() {
                     <div className="rounded-2xl bg-surface-muted p-3 text-right">
                       <span className="block text-xs font-bold text-muted">Horario</span>
                       <span className="text-sm font-extrabold text-foreground">
-                        {schedule.timeStarts} - {schedule.timeEnds}
+                        {formatTime(schedule.timeStarts)} - {formatTime(schedule.timeEnds)}
                       </span>
                     </div>
                   </div>
@@ -598,32 +649,34 @@ export default function WorkshopsScreen() {
                     </p>
                   )}
 
-                  <div className="mt-5 border-t border-border pt-4 flex items-center justify-between">
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
                     <span className="text-xs text-muted">
                       Válido hasta: {formatFecha(schedule.endsOn)}
                     </span>
-                    <Button
-                      variant="primary"
-                      className="text-xs py-1.5 px-3.5 min-h-9"
-                      onClick={() => openAttendanceModal(schedule)}
-                    >
-                      <Icon path="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" className="size-4" />
-                      Tomar Asistencia
-                    </Button>
-                    <Button
-                      variant="danger"
-                      className="text-xs py-1.5 px-3.5 min-h-9"
-                      onClick={() => deleteSchedule(schedule.professionalWorkshopId)}
-                    >
-                      Eliminar horario
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      className="text-xs py-1.5 px-3.5 min-h-9"
-                      onClick={() => openScheduleEditor(schedule)}
-                    >
-                      Editar horario
-                    </Button>
+                    <div className="flex flex-wrap gap-1.5">
+                      <Button
+                        variant="primary"
+                        className="min-h-8 px-2.5 py-1 text-[11px]"
+                        onClick={() => openAttendanceModal(schedule)}
+                      >
+                        <Icon path="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" className="size-3.5" />
+                        Tomar Asistencia
+                      </Button>
+                      <Button
+                        variant="danger"
+                        className="min-h-8 px-2.5 py-1 text-[11px]"
+                        onClick={() => deleteSchedule(schedule.professionalWorkshopId)}
+                      >
+                        Eliminar horario
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="min-h-8 px-2.5 py-1 text-[11px]"
+                        onClick={() => openScheduleEditor(schedule)}
+                      >
+                        Editar horario
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               )
@@ -652,10 +705,41 @@ export default function WorkshopsScreen() {
               <Button
                 variant="secondary"
                 className="text-xs py-1.5 px-3 min-h-8"
-                onClick={() => setIsShiftModalOpen(true)}
+                onClick={openNewShift}
               >
                 + Nuevo Turno
               </Button>
+            </div>
+
+            <div className="flex flex-wrap items-end gap-3 border-b border-border px-6 py-4">
+              <SelectField
+                label="Filtrar colaborador"
+                value={shiftFilters.staffId}
+                onChange={(e) => setShiftFilters({ ...shiftFilters, staffId: e.target.value })}
+              >
+                <option value="">Todos los colaboradores</option>
+                {staffList.map((person) => (
+                  <option key={person.staffId} value={person.staffId}>
+                    {person.fullName}
+                  </option>
+                ))}
+              </SelectField>
+              <Field
+                label="Filtrar fecha"
+                type="date"
+                value={shiftFilters.dateWorking}
+                onChange={(e) => setShiftFilters({ ...shiftFilters, dateWorking: e.target.value })}
+              />
+              {(shiftFilters.staffId || shiftFilters.dateWorking) && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="mb-0.5 text-xs"
+                  onClick={() => setShiftFilters({ staffId: "", dateWorking: "" })}
+                >
+                  Limpiar filtros
+                </Button>
+              )}
             </div>
 
             <div className="overflow-x-auto">
@@ -671,7 +755,7 @@ export default function WorkshopsScreen() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {shifts.filter((shift) => (!shiftFilters.staffId || String(shift.staffId) === String(shiftFilters.staffId)) && (!shiftFilters.dateWorking || shift.dateWorking === shiftFilters.dateWorking)).map((shift) => {
+                  {filteredShifts.map((shift) => {
                     const person = staffList.find((s) => s.staffId === shift.staffId)
                     return (
                       <tr key={shift.staffAssistanceId} className="hover:bg-surface-muted/20">
@@ -679,8 +763,8 @@ export default function WorkshopsScreen() {
                           {person ? person.fullName : `Colaborador #${shift.staffId}`}
                         </td>
                         <td className="px-6 py-4 text-muted">{formatFecha(shift.dateWorking)}</td>
-                        <td className="px-6 py-4 font-semibold text-foreground">{shift.timeIn || "--:--"}</td>
-                        <td className="px-6 py-4 font-semibold text-foreground">{shift.timeOut || "--:--"}</td>
+                        <td className="px-6 py-4 font-semibold text-foreground">{formatTime12(shift.timeIn)}</td>
+                        <td className="px-6 py-4 font-semibold text-foreground">{formatTime12(shift.timeOut)}</td>
                         <td className="px-6 py-4">
                           <span className="inline-flex rounded-full bg-success-soft px-2.5 py-1 text-xs font-bold text-success">
                             Completado
@@ -697,10 +781,12 @@ export default function WorkshopsScreen() {
                       </tr>
                     )
                   })}
-                  {shifts.length === 0 && (
+                  {filteredShifts.length === 0 && (
                     <tr>
                       <td colSpan={6} className="px-6 py-8 text-center text-muted">
-                        No hay turnos registrados en la bitácora.
+                        {shifts.length === 0
+                          ? "No hay turnos registrados en la bitácora."
+                          : "No hay turnos que coincidan con los filtros seleccionados."}
                       </td>
                     </tr>
                   )}
@@ -1025,10 +1111,12 @@ export default function WorkshopsScreen() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-6 shadow-2xl">
             <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
-              <h2 className="text-xl font-extrabold text-foreground">Registrar Turno de Trabajo</h2>
+              <h2 className="text-xl font-extrabold text-foreground">
+                {editingShift ? "Editar Turno de Trabajo" : "Registrar Turno de Trabajo"}
+              </h2>
               <button
                 type="button"
-                onClick={() => setIsShiftModalOpen(false)}
+                onClick={() => { setEditingShift(null); setIsShiftModalOpen(false) }}
                 className="rounded-lg p-1 text-muted hover:text-foreground"
               >
                 ✕
@@ -1036,6 +1124,11 @@ export default function WorkshopsScreen() {
             </div>
 
             <form onSubmit={handleRecordShift} className="space-y-4">
+              {shiftError && (
+                <p className="rounded-xl bg-danger-soft p-3 text-sm font-semibold text-danger">
+                  {shiftError}
+                </p>
+              )}
               <SelectField
                 label="Colaborador / Tallerista"
                 required
@@ -1059,28 +1152,36 @@ export default function WorkshopsScreen() {
               />
 
               <div className="grid grid-cols-2 gap-3">
-                <Field
+                <SelectField
                   label="Hora de Entrada"
-                  type="time"
                   required
                   value={shiftForm.timeIn}
                   onChange={(e) => setShiftForm({ ...shiftForm, timeIn: e.target.value })}
-                />
-                <Field
+                >
+                  <option value="" disabled>Seleccionar hora</option>
+                  {SHIFT_TIME_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </SelectField>
+                <SelectField
                   label="Hora de Salida"
-                  type="time"
                   required
                   value={shiftForm.timeOut}
                   onChange={(e) => setShiftForm({ ...shiftForm, timeOut: e.target.value })}
-                />
+                >
+                  <option value="" disabled>Seleccionar hora</option>
+                  {SHIFT_TIME_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </SelectField>
               </div>
 
               <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-border">
-                <Button variant="secondary" type="button" onClick={() => setIsShiftModalOpen(false)}>
+                <Button variant="secondary" type="button" onClick={() => { setEditingShift(null); setIsShiftModalOpen(false) }}>
                   Cancelar
                 </Button>
                 <Button variant="primary" type="submit">
-                  Registrar Turno
+                  {editingShift ? "Actualizar Turno" : "Registrar Turno"}
                 </Button>
               </div>
             </form>
@@ -1100,7 +1201,7 @@ export default function WorkshopsScreen() {
                   Asistencia: {selectedSchedule.workshop?.name || "Taller"}
                 </h2>
                 <p className="text-xs text-muted">
-                  {selectedSchedule.dayWeek} · {selectedSchedule.timeStarts} a {selectedSchedule.timeEnds} · Tallerista: {selectedSchedule.professionalName}
+                  {selectedSchedule.dayWeek} · {formatTime(selectedSchedule.timeStarts)} a {formatTime(selectedSchedule.timeEnds)} · Tallerista: {selectedSchedule.professionalName}
                 </p>
               </div>
               <button

@@ -13,6 +13,23 @@ export const formatFecha = (date) => {
     : new Intl.DateTimeFormat("es-CO").format(parsedDate)
 }
 
+export const formatTime = (time) => {
+  if (!time) return ""
+  const match = String(time).match(/(?:T|\b)(\d{2}:\d{2})/)
+  return match ? match[1] : String(time).slice(0, 5)
+}
+
+export const formatTime12 = (time) => {
+  const normalized = formatTime(time)
+  if (!normalized) return "--:--"
+  const [hourText, minute] = normalized.split(":")
+  const hour = Number(hourText)
+  if (!Number.isFinite(hour)) return normalized
+  const suffix = hour >= 12 ? "PM" : "AM"
+  const hour12 = hour % 12 || 12
+  return `${String(hour12).padStart(2, "0")}:${minute} ${suffix}`
+}
+
 export const plantillas = [
   {
     tipo: "confirmacion_datos",

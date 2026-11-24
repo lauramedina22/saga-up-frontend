@@ -16,6 +16,15 @@ import {
   toProfessionalWorkshopPayload,
 } from "../models/workshopModel.js"
 
+function timeTextToMinutes(value) {
+  const match = String(value || "").match(/^(\d{1,2}):([0-5]\d)$/)
+  if (!match) return null
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  if (hours > 23) return null
+  return hours * 60 + minutes
+}
+
 // Datos iniciales de demostración basados en las entidades del backend
 const MOCK_STAFF = [
   {
@@ -386,35 +395,37 @@ export const staffWorkshopService = {
 
   // Turnos de personal (staff_assistance)
   async getStaffAssistance() {
-    try {
-      const response = await apiClient.get("/staff-assistance")
-      const list = Array.isArray(response)
-        ? response
-        : response?.staff_assistance ?? response?.data
-      if (Array.isArray(list) && list.length > 0) {
-        return list.map(toStaffAssistanceModel)
-      }
-    } catch {
-      // fallback
-    }
-    return inMemoryShifts.map(toStaffAssistanceModel)
+    const response = await apiClient.get("/staff-assistance")
+    const list = Array.isArray(response)
+      ? response
+      : response?.staff_assistance ?? response?.data
+    return Array.isArray(list) ? list.map(toStaffAssistanceModel) : []
   },
 
   async recordStaffShift(shiftData) {
-    const newId = String(Date.now())
-    const newShift = {
-      staff_assistance_id: newId,
-      ...toStaffAssistancePayload(shiftData),
+    const payload = toStaffAssistancePayload(shiftData)
+    if (!payload.staff_id) throw new Error("Selecciona un colaborador.")
+    if (!payload.date_working) throw new Error("Selecciona una fecha.")
+    if (payload.time_in === null || payload.time_out === null) {
+      throw new Error("Las horas deben tener el formato válido.")
     }
-
-    try {
-      await apiClient.post("/staff-assistance", toStaffAssistancePayload(shiftData))
-    } catch {
-      // fallback
+    const entrance = timeTextToMinutes(shiftData.timeIn)
+    const exit = timeTextToMinutes(shiftData.timeOut)
+    if (entrance === null || exit === null) {
+      throw new Error("Las horas deben tener el formato válido.")
     }
-
-    inMemoryShifts = [newShift, ...inMemoryShifts]
-    return toStaffAssistanceModel(newShift)
+    if (exit <= entrance) {
+      throw new Error("La hora de salida no puede ser anterior a la hora de entrada.")
+    }
+    const response = await apiClient.post("/staff-assistance", payload)
+    if (response && typeof response === "object") {
+      return toStaffAssistanceModel(response)
+    }
+    const refreshed = await this.getStaffAssistance()
+    return refreshed.find((shift) =>
+      String(shift.staffId) === String(payload.staff_id) &&
+      shift.dateWorking === payload.date_working
+    ) || refreshed[0]
   },
 
   async getStaffAssistanceFiltered(filters = {}) {
@@ -430,6 +441,19 @@ export const staffWorkshopService = {
 
   async updateStaffShift(id, shiftData, partial = true) {
     const payload = toStaffAssistancePayload(shiftData)
+    if (!payload.staff_id) throw new Error("Selecciona un colaborador.")
+    if (!payload.date_working) throw new Error("Selecciona una fecha.")
+    if (payload.time_in === null || payload.time_out === null) {
+      throw new Error("Las horas deben tener el formato válido.")
+    }
+    const entrance = timeTextToMinutes(shiftData.timeIn)
+    const exit = timeTextToMinutes(shiftData.timeOut)
+    if (entrance === null || exit === null) {
+      throw new Error("Las horas deben tener el formato válido.")
+    }
+    if (exit <= entrance) {
+      throw new Error("La hora de salida no puede ser anterior a la hora de entrada.")
+    }
     const response = partial
       ? await apiClient.patch(`/staff-assistance/${id}`, payload)
       : await apiClient.put(`/staff-assistance/${id}`, payload)

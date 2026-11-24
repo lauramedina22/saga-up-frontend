@@ -25,6 +25,12 @@ export function normalizeDate(value) {
     : parsedDate.toISOString().slice(0, 10)
 }
 
+export function normalizeTime(value) {
+  if (value === undefined || value === null || value === "") return ""
+  const match = String(value).match(/(?:T|\b)(\d{2}:\d{2})/)
+  return match ? match[1] : String(value).slice(0, 5)
+}
+
 export function normalizeNumber(value) {
   if (value === undefined || value === null || value === "") return null
   const parsedValue = Number(value)

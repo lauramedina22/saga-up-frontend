@@ -2,6 +2,7 @@ import {
   normalizeDate,
   normalizeId,
   normalizeNumber,
+  normalizeTime,
 } from "./modelUtils.js"
 
 export function toWorkshopModel(raw = {}) {
@@ -32,8 +33,8 @@ export function toProfessionalWorkshopModel(raw = {}) {
     workshopId: normalizeId(raw.workshop_id),
     dayWeek: raw.day_week ?? "",
     endsOn: normalizeDate(raw.ends_on),
-    timeStarts: raw.time_starts ?? "",
-    timeEnds: raw.time_ends ?? "",
+    timeStarts: normalizeTime(raw.time_starts),
+    timeEnds: normalizeTime(raw.time_ends),
     observations: raw.observations ?? "",
     // Campos incrustados en caso de joins
     workshop: raw.workshop ? toWorkshopModel(raw.workshop) : null,
